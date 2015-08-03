@@ -92,8 +92,12 @@ def count_votes(post_id):
         option_1 = len(Vote.query.filter(Vote.post_id==post_id, Vote.vote==3).all())
         option_2 = len(Vote.query.filter(Vote.post_id==post_id, Vote.vote==4).all())
 
-    option_1_percent = float(option_1) / (option_1 + option_2)
-    option_2_percent = float(option_2) / (option_1 + option_2)
+    if option_1 == 0 and option_2 == 0:
+        option_1_percent = None
+        option_2_percent = None
+    else:
+        option_1_percent = float(option_1) / (option_1 + option_2)
+        option_2_percent = float(option_2) / (option_1 + option_2)
 
     return option_1, option_1_percent, option_2, option_2_percent
 
@@ -130,9 +134,25 @@ def user_profile(user_id):
 
 
 
-#
-# @app.route('/')
-# def process_question():
+
+@app.route('/home/post')
+def post_question():
+    return render_template("post_question.html")
+
+@app.route('/home/post/process', methods=['POST'])
+def process_question():
+    description = request.form.get('description')
+    option1 = request.form.get('option1')
+    option2 = request.form.get('option2')
+    author_id = session['loggedin']
+
+    new_post = Post(author_id=author_id, description=description, option_text_1=option1, option_text_2=option2)
+    db.session.add(new_post)
+    db.session.commit()
+
+    flash('Your question has been posted')
+
+    return redirect(url_for('user_profile', user_id=author_id))
 
 #
 # @app.route('/users/<int:user_id>')
