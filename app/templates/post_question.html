@@ -1,0 +1,23 @@
+
+{% extends 'base.html' %}
+{% block content %}
+<form action='/process_question', method='post'>
+    <label>Short Description of your questions
+        <textarea rows="4" cols="50" name="description"></textarea>
+    </label>
+    <div>
+        <label>Option 1
+            <textarea rows="4" cols="20" name="option1"></textarea>
+        </label>
+    </div>
+
+    <div>
+        <label>Option 2
+            <textarea rows="4" cols="20" name="option2"></textarea>
+        </label>
+    </div>
+    <br>
+    <input type="submit" value="Login">
+</form>
+
+{% endblock %}

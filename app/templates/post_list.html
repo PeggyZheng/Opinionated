@@ -1,0 +1,38 @@
+
+{% extends 'base.html' %}
+{% block content %}
+
+<ul class="posts">
+    {% for post in posts %}
+    <li class="posts">
+        <div>
+            <a href="/home/{{ post.post_id }}">{{ post.description }}</a>
+        </div>
+        <div>
+            {% if post.option_text_1 %}
+            {{ post.option_text_1 }}
+            {% endif %}
+        </div>
+
+        <div>
+            {% if post.option_text_2 %}
+            {{ post.option_text_2 }}
+            {% endif %}
+        </div>
+
+        <div>
+            {% if post.option_pic_1 %}
+            {{ post.option_pic_1 }}
+            {% endif %}
+        </div>
+
+        <div>
+            {% if post.option_pic_2 %}
+            {{ post.option_pic_2 }}
+            {% endif %}
+        </div>
+    </li>
+    {% endfor %}
+</ul>
+
+{% endblock %}

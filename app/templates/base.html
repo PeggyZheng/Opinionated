@@ -1,0 +1,29 @@
+<!doctype html>
+<html>
+<head>
+  <title>Opinionated</title>
+</head>
+
+<body>
+<h1>Opinionated</h1>
+
+  {% with messages = get_flashed_messages() %}
+  {% if messages %}
+    <ul>
+    {% for message in messages %}
+      <li>{{ message }}</li>
+    {% endfor %}
+    </ul>
+  {% endif %}
+{% endwith %}
+
+<!-- <input type="button" value="Logout" action="/logout"> -->
+
+<a href="/logout">log out</a>
+
+
+
+  {% block content %} put your content here {% endblock %}
+
+</body>
+</html>

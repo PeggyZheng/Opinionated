@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<ul class="posts">
+
+    <li class="posts">
+        <div>
+            <a href="/user/{{ post.author.user_id }}">{{ post.author.user_id }}</a>
+        </div>
+        <div>
+            {% if post.option_text_1 %}
+            {{ post.option_text_1 }}
+            {{ vote_result[0]}}
+            {{ vote_result[1]}}
+            {% endif %}
+        </div>
+
+        <div>
+            {% if post.option_text_2 %}
+            {{ post.option_text_2 }}
+            {{ vote_result[2]}}
+            {{ vote_result[3]}}
+            {% endif %}
+        </div>
+
+        <div>
+            {% if post.option_pic_1 %}
+            {{ post.option_pic_1 }}
+            {{ vote_result[0]}}
+            {{ vote_result[1]}}
+            {% endif %}
+        </div>
+
+        <div>
+            {% if post.option_pic_2 %}
+            {{ post.option_pic_2 }}
+            {{ vote_result[2]}}
+            {{ vote_result[3]}}
+            {% endif %}
+        </div>
+    </li>
+</ul>
+
+{% endblock %}
