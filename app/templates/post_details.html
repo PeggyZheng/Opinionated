@@ -10,35 +10,63 @@
         <div>
             {% if post.option_text_1 %}
             {{ post.option_text_1 }}
-            {{ vote_result[0]}}
-            {{ vote_result[1]}}
-            {% endif %}
+            <div id="option1">
+                {{ vote_result[0]}}
+                {{ vote_result[1]}}
+                {% endif %}
+            </div>
+
         </div>
 
         <div>
             {% if post.option_text_2 %}
             {{ post.option_text_2 }}
-            {{ vote_result[2]}}
-            {{ vote_result[3]}}
-            {% endif %}
+            <div id="option2">
+                {{ vote_result[2]}}
+                {{ vote_result[3]}}
+                {% endif %}
+            </div>
+
         </div>
 
         <div>
             {% if post.option_pic_1 %}
             {{ post.option_pic_1 }}
-            {{ vote_result[0]}}
-            {{ vote_result[1]}}
-            {% endif %}
+            <div id="option1">
+                {{ vote_result[0]}}
+                {{ vote_result[1]}}
+                {% endif %}
+            </div>
         </div>
 
         <div>
             {% if post.option_pic_2 %}
             {{ post.option_pic_2 }}
-            {{ vote_result[2]}}
-            {{ vote_result[3]}}
-            {% endif %}
+           <div id="option2">
+                {{ vote_result[2]}}
+                {{ vote_result[3]}}
+                {% endif %}
+           </div>
         </div>
     </li>
 </ul>
+
+<form action="/home/{{ post.post_id }}/refresh" method="post">
+    <input type="radio" name="vote" value="1">option 1
+    <input type="radio" name="vote" value="2">option 2
+    <br>
+    <input type="submit">
+</form>
+
+
+<!--<script src="https://code.jquery.com/jquery.js"></script>-->
+<!--<script>-->
+    <!--function updateVote(evt) {-->
+        <!--var vote =-->
+    <!--}-->
+    <!--$.post('')-->
+
+
+<!--</script>-->
 
 {% endblock %}

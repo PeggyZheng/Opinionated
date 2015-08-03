@@ -78,8 +78,6 @@ def show_post_detail(post_id):
     vote_result = count_votes(post.post_id)
     return render_template('post_details.html', post=post, vote_result=vote_result)
 
-# @app.route('/')
-# def process_question():
 
 def count_votes(post_id):
     post = Post.query.get(post_id)
@@ -91,10 +89,25 @@ def count_votes(post_id):
         option_1 = len(Vote.query.filter(Vote.post_id==post_id, Vote.vote==3).all())
         option_2 = len(Vote.query.filter(Vote.post_id==post_id, Vote.vote==4).all())
 
-    option_1_percent = option_1 / (option_1 + option_2)
-    option_2_percent = option_2 / (option_1 + option_2)
+    option_1_percent = float(option_1) / (option_1 + option_2)
+    option_2_percent = float(option_2) / (option_1 + option_2)
 
     return option_1, option_1_percent, option_2, option_2_percent
+
+@app.route('/home/<int:post_id>/refresh', methods=['POST', 'GET'])
+def process_vote(post_id):
+    vote = request.form.get('vote')
+    user_id = session['loggedin']
+    int_vote = int(vote)
+    new_vote = Vote(user_id=user_id, post_id=post_id, vote=vote)
+    db.session.add(new_vote)
+    db.session.commit()
+
+    return redirect(url_for('show_post_detail', post_id=post_id))
+
+
+# @app.route('/')
+# def process_question():
 
 #
 # @app.route('/users/<int:user_id>')
