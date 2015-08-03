@@ -1,11 +1,13 @@
 {% extends 'base.html' %}
 {% block content %}
 
+<a href="/home">Home</a>
+
 <ul class="posts">
 
     <li class="posts">
         <div>
-            <a href="/user/{{ post.author.user_id }}">{{ post.author.user_id }}</a>
+            <a href="/home/user/{{ post.author.user_id }}">{{ post.author.user_id }}</a>
         </div>
         <div>
             {% if post.option_text_1 %}
@@ -51,7 +53,7 @@
     </li>
 </ul>
 
-<form action="/home/{{ post.post_id }}/refresh" method="post">
+<form action="/home/post/{{ post.post_id }}/refresh" method="post">
     <input type="radio" name="vote" value="1">option 1
     <input type="radio" name="vote" value="2">option 2
     <br>

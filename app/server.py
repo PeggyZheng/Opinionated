@@ -71,15 +71,18 @@ def show_all_posts():
     return render_template('post_list.html', posts=posts)
 
 
-@app.route('/home/<int:post_id>')
+@app.route('/home/post/<int:post_id>')
 def show_post_detail(post_id):
-    """show the details of the post and users' votes on it"""
+    """show the details of the post and users' votes on it
+    User can also vote on the questions"""
     post = Post.query.get(post_id)
     vote_result = count_votes(post.post_id)
     return render_template('post_details.html', post=post, vote_result=vote_result)
 
 
 def count_votes(post_id):
+    """this is a helper function that counts the vote on a particular questions and returns
+    the result in integer(actual number of votes) and percentage(allocation)"""
     post = Post.query.get(post_id)
     if post.option_text_1:
         option_1 = len(Vote.query.filter(Vote.post_id==post_id, Vote.vote==1).all())
@@ -94,8 +97,10 @@ def count_votes(post_id):
 
     return option_1, option_1_percent, option_2, option_2_percent
 
-@app.route('/home/<int:post_id>/refresh', methods=['POST', 'GET'])
+@app.route('/home/post/<int:post_id>/refresh', methods=['POST', 'GET'])
 def process_vote(post_id):
+    """this is the function that prcoess users' votes, so it updates the database and refresh the post-details
+    page to show the updated votes and vote allocation"""
     vote = request.form.get('vote')
     user_id = session['loggedin']
     int_vote = int(vote)
@@ -106,6 +111,26 @@ def process_vote(post_id):
     return redirect(url_for('show_post_detail', post_id=post_id))
 
 
+@app.route('/home/user/<int:user_id>')
+def user_profile(user_id):
+    """this is the page that will show users' all posts, and all things they have voted on"""
+    posts = Post.query.filter_by(author_id=user_id).all()
+    votes = Vote.query.filter_by(user_id=user_id).all()
+    my_votes = []
+    for vote in votes:
+        dict = {1: vote.post.option_text_1,
+                2: vote.post.option_text_2,
+                3: vote.post.option_pic_1,
+                4: vote.post.option_pic_2}
+        my_vote = dict[vote.vote]
+        my_votes.append((vote, my_vote))
+
+
+    return render_template("user_profile.html", posts=posts, my_votes=my_votes)
+
+
+
+#
 # @app.route('/')
 # def process_question():
 
