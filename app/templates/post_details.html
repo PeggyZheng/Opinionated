@@ -76,6 +76,31 @@
     <input type="submit">
 </form>
 
+<h3>Comments</h3>
+<form action="/home/post/{{post.post_id}}/comment/refresh" method="post">
+    <textarea rows="4" cols="100" name="new_comment"></textarea>
+    <br>
+    <input type="submit">
+</form>
+
+<ul class="comments">
+    {% if comments %}
+
+        {% for comment in comments %}
+        <li>
+            <a href="/home/user/{{ comment.user_id }}">{{ comment.user_id }}</a>:
+            {{ comment.content }}
+        </li>
+        {% endfor %}
+
+    {% else %}
+        <p>Oops, looks like no one has commented yet</p>
+    {% endif %}
+
+</ul>
+
+
+
 
 <!--<script src="https://code.jquery.com/jquery.js"></script>-->
 <!--<script>-->

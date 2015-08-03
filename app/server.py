@@ -16,6 +16,8 @@ app.secret_key = "ABC"
 app.jinja_env.undefined = StrictUndefined
 
 
+#######################################################################################################
+#functions that handles login and logout
 
 @app.route("/")
 def login():
@@ -23,21 +25,6 @@ def login():
 
     return render_template("login.html")
 
-
-# @app.route("/users")
-# def user_list():
-#     """Show list of users."""
-#
-#     users = User.query.all()
-#     return render_template("user_list.html", users=users)
-#
-# @app.route("/movies")
-# def movie_list():
-#     """Show list of movies."""
-#     movies = Movie.query.order_by(Movie.title).all()
-#     return render_template("movie_list.html", movies=movies)
-#
-#
 @app.route('/login', methods=['POST'])
 def login_user():
     """login page for user"""
@@ -64,6 +51,9 @@ def logout_user():
     flash("You have logged out")
     return redirect(url_for('login'))
 
+#######################################################################################################
+#functions that render posts pages
+
 @app.route('/home')
 def show_all_posts():
     """the homepage of the site where all the posts will be shown in a table"""
@@ -73,11 +63,12 @@ def show_all_posts():
 
 @app.route('/home/post/<int:post_id>')
 def show_post_detail(post_id):
-    """show the details of the post and users' votes on it
+    """show the details of the post (post description, choices available), users' votes on it and comments;
     User can also vote on the questions"""
     post = Post.query.get(post_id)
     vote_result = count_votes(post.post_id)
-    return render_template('post_details.html', post=post, vote_result=vote_result)
+    comments = Comment.query.filter_by(post_id=post_id).all()
+    return render_template('post_details.html', post=post, vote_result=vote_result, comments=comments)
 
 
 def count_votes(post_id):
@@ -101,18 +92,8 @@ def count_votes(post_id):
 
     return option_1, option_1_percent, option_2, option_2_percent
 
-@app.route('/home/post/<int:post_id>/refresh', methods=['POST', 'GET'])
-def process_vote(post_id):
-    """this is the function that prcoess users' votes, so it updates the database and refresh the post-details
-    page to show the updated votes and vote allocation"""
-    vote = request.form.get('vote')
-    user_id = session['loggedin']
-    int_vote = int(vote)
-    new_vote = Vote(user_id=user_id, post_id=post_id, vote=vote)
-    db.session.add(new_vote)
-    db.session.commit()
-
-    return redirect(url_for('show_post_detail', post_id=post_id))
+#######################################################################################################
+#functions that render users profile
 
 
 @app.route('/home/user/<int:user_id>')
@@ -132,7 +113,26 @@ def user_profile(user_id):
 
     return render_template("user_profile.html", posts=posts, my_votes=my_votes)
 
+#######################################################################################################
+#functions that handles votes
 
+@app.route('/home/post/<int:post_id>/refresh', methods=['POST', 'GET'])
+def process_vote(post_id):
+    """this is the function that prcoess users' votes, so it updates the database and refresh the post-details
+    page to show the updated votes and vote allocation"""
+    vote = request.form.get('vote')
+    user_id = session['loggedin']
+    int_vote = int(vote)
+    new_vote = Vote(user_id=user_id, post_id=post_id, vote=vote)
+    db.session.add(new_vote)
+    db.session.commit()
+
+    return redirect(url_for('show_post_detail', post_id=post_id))
+
+
+
+#######################################################################################################
+#functions that handles posting a question
 
 
 @app.route('/home/post')
@@ -154,110 +154,29 @@ def process_question():
 
     return redirect(url_for('user_profile', user_id=author_id))
 
-#
-# @app.route('/users/<int:user_id>')
-# def show_user_details(user_id):
-#     """show the details of the users, include its user id, age, zipcode and movies that they rate"""
-#     user = User.query.get(user_id)
-#     score_and_title = db.session.query(Movie.movie_id, Movie.title, Rating.score).join(Rating).filter(Rating.user_id==user_id).order_by(Movie.title).all()
-#     return render_template('user_profile.html', user=user, score_and_title=score_and_title)
-#
-# @app.route('/movies/<int:movie_id>')
-# def show_movie_details(movie_id):
-#     """show the details of the movies that include the a dropdown menu that allows the users to
-#     update/add their ratings and show the all the ratings for that specific movie"""
-#     movie = Movie.query.get(movie_id)
-#     ratings = movie.ratings
-#
-#
-#
-#     user_id = session.get("loggedin")
-#
-#     if user_id:
-#         user_rating = Rating.query.filter_by(
-#             movie_id=movie_id, user_id=user_id).first()
-#
-#     else:
-#         user_rating = None
-#
-#     # Get average rating of movie
-#
-#     rating_scores = [r.score for r in movie.ratings]
-#     avg_rating = float(sum(rating_scores)) / len(rating_scores)
-#
-#     prediction = None
-#
-#     # Prediction code: only predict if the user hasn't rated it.
-#     print "user id is", user_id
-#     if user_id:
-#         user = User.query.get(user_id)
-#         print "user is", user
-#         if user:
-#             print "this is where we generate prediction"
-#             prediction = user.predict_rating(movie)
-#     print "This is a test to see prediction", prediction
-#     beratement = add_eye_prediction(prediction, user_rating, movie)
-#
-#     return render_template(
-#         "movie_profile.html",
-#         movie=movie,
-#         user_rating=user_rating,
-#         average=avg_rating,
-#         prediction=prediction,
-#         ratings=ratings,
-#         beratement=beratement
-#         )
-#
-# def add_eye_prediction(prediction, user_rating, movie):
-#
-#     if prediction:
-#         # User hasn't scored; use our prediction if we made one
-#         effective_rating = prediction
-#
-#     elif user_rating:
-#         # User has already scored for real; use that
-#         effective_rating = user_rating.score
-#
-#     else:
-#         # User hasn't scored, and we couldn't get a prediction
-#         effective_rating = None
-#
-#     # Get the eye's rating, either by predicting or using real rating
-#
-#     the_eye = User.query.filter_by(email="the-eye@of-judgment.com").one()
-#     eye_rating = Rating.query.filter_by(
-#         user_id=the_eye.user_id, movie_id=movie.movie_id).first()
-#
-#     if eye_rating is None:
-#         eye_rating = the_eye.predict_rating(movie)
-#
-#     else:
-#         eye_rating = eye_rating.score
-#
-#     if eye_rating and effective_rating:
-#         difference = abs(eye_rating - effective_rating)
-#
-#     else:
-#         # We couldn't get an eye rating, so we'll skip difference
-#         difference = None
-#
-#     BERATEMENT_MESSAGES = [
-#         "I suppose you don't have such bad taste after all.",
-#         "I regret every decision that I've ever made that has brought me" +
-#             " to listen to your opinion.",
-#         "Words fail me, as your taste in movies has clearly failed you.",
-#         "That movie is great. For a clown to watch. Idiot.",
-#         "Words cannot express the awfulness of your taste."
-#     ]
-#
-#     if difference is not None:
-#         beratement = BERATEMENT_MESSAGES[int(difference)]
-#
-#     else:
-#         beratement = None
-#
-#     return beratement
-#
+#######################################################################################################
+#the functions that handles comments
+
+@app.route('/home/post/<int:post_id>/comment/refresh', methods=['POST'])
+def process_comments(post_id):
+    user_id = session.get('loggedin', None)
+    if user_id:
+        content = request.form.get('new_comment')
+        post_id = post_id
+        new_comment = Comment(content=content, user_id=user_id, post_id=post_id)
+        db.session.add(new_comment)
+        db.session.commit()
+        return redirect(url_for('show_post_detail', post_id=post_id))
+
+    else:
+        flash("You need to login first")
+        return redirect(url_for('login'))
+
+
+
+
+
+
 # @app.route('/movies/<int:movie_id>', methods=['POST'])
 # def update_movie_rating(movie_id):
 #     """update the ratings for a particular movie and particular users and update the db"""
