@@ -137,10 +137,12 @@ def process_vote(post_id):
 
 @app.route('/home/post')
 def post_question():
+    """This is the render the page that users can edit their questions/posts """
     return render_template("post_question.html")
 
 @app.route('/home/post/process', methods=['POST'])
 def process_question():
+    """Process the questions that user added, and updated the database"""
     description = request.form.get('description')
     option1 = request.form.get('option1')
     option2 = request.form.get('option2')
@@ -159,6 +161,7 @@ def process_question():
 
 @app.route('/home/post/<int:post_id>/comment/refresh', methods=['POST'])
 def process_comments(post_id):
+    """process the comments the users entered """
     user_id = session.get('loggedin', None)
     if user_id:
         content = request.form.get('new_comment')
