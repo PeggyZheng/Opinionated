@@ -99,19 +99,26 @@ def count_votes(post_id):
 @app.route('/home/user/<int:user_id>')
 def user_profile(user_id):
     """this is the page that will show users' all posts, and all things they have voted on"""
+    post_dict = {}
     posts = Post.query.filter_by(author_id=user_id).all()
-    votes = Vote.query.filter_by(user_id=user_id).all()
-    my_votes = []
-    for vote in votes:
-        dict = {1: vote.post.option_text_1,
-                2: vote.post.option_text_2,
-                3: vote.post.option_pic_1,
-                4: vote.post.option_pic_2}
-        my_vote = dict[vote.vote]
-        my_votes.append((vote, my_vote))
+    for post in posts:
+        choices = Choice.query.filter_by(post_id=post.post_id).all()
+        post_dict[post] = choices
+
+    my_votes = Vote.query.filter_by(user_id=user_id).all()
+    # for vote in votes:
+    #
+    # my_votes = []
+    # for vote in votes:
+    #     dict = {1: vote.post.option_text_1,
+    #             2: vote.post.option_text_2,
+    #             3: vote.post.option_pic_1,
+    #             4: vote.post.option_pic_2}
+    #     my_vote = dict[vote.vote]
+    #     my_votes.append((vote, my_vote))
 
 
-    return render_template("user_profile.html", posts=posts, my_votes=my_votes)
+    return render_template("user_profile.html", post_dict=post_dict, my_votes=my_votes)
 
 #######################################################################################################
 #functions that handles votes
@@ -148,8 +155,13 @@ def process_question():
     option2 = request.form.get('option2')
     author_id = session['loggedin']
 
-    new_post = Post(author_id=author_id, description=description, option_text_1=option1, option_text_2=option2)
+    new_post = Post(author_id=author_id, description=description)
     db.session.add(new_post)
+    db.session.commit()
+    new_choice1 = Choice(text_choice=option1, post_id=new_post.post_id)
+    new_choice2 = Choice(text_choice=option2, post_id=new_post.post_id)
+    db.session.add(new_choice1)
+    db.session.add(new_choice2)
     db.session.commit()
 
     flash('Your question has been posted')
