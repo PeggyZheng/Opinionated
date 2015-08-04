@@ -3,7 +3,7 @@
 from jinja2 import StrictUndefined
 from flask_debugtoolbar import DebugToolbarExtension
 from flask import Flask, render_template, redirect, request, flash, session, url_for
-from models import User, Comment, Post, Vote, connect_to_db, db
+from models import User, Comment, Post, Vote, Choice, connect_to_db, db
 
 
 app = Flask(__name__)
@@ -57,8 +57,13 @@ def logout_user():
 @app.route('/home')
 def show_all_posts():
     """the homepage of the site where all the posts will be shown in a table"""
+    dict = {}
     posts = Post.query.all()
-    return render_template('post_list.html', posts=posts)
+    for post in posts:
+        choices = Choice.query.filter_by(post_id=post.post_id).all()
+        dict[post] = choices
+
+    return render_template('post_list.html', dict=dict)
 
 
 @app.route('/home/post/<int:post_id>')
@@ -66,31 +71,26 @@ def show_post_detail(post_id):
     """show the details of the post (post description, choices available), users' votes on it and comments;
     User can also vote on the questions"""
     post = Post.query.get(post_id)
-    vote_result = count_votes(post.post_id)
+    choices = Choice.query.filter_by(post_id=post.post_id).all()
+    vote_dict, total_votes = count_votes(post.post_id)
     comments = Comment.query.filter_by(post_id=post_id).all()
-    return render_template('post_details.html', post=post, vote_result=vote_result, comments=comments)
+    return render_template('post_details.html', post=post, vote_dict=vote_dict, comments=comments, choices=choices,
+                           total_votes=total_votes)
 
 
 def count_votes(post_id):
     """this is a helper function that counts the vote on a particular questions and returns
     the result in integer(actual number of votes) and percentage(allocation)"""
     post = Post.query.get(post_id)
-    if post.option_text_1:
-        option_1 = len(Vote.query.filter(Vote.post_id==post_id, Vote.vote==1).all())
-        option_2 = len(Vote.query.filter(Vote.post_id==post_id, Vote.vote==2).all())
+    choices = Choice.query.filter_by(post_id=post_id).all()
+    vote_dict = {}
+    for choice in choices:
+        votes = len(Vote.query.filter_by(vote=choice.choice_id).all())
+        vote_dict[choice] = votes
+    total_votes = sum(vote_dict.values())
+    return vote_dict, total_votes
 
-    else:
-        option_1 = len(Vote.query.filter(Vote.post_id==post_id, Vote.vote==3).all())
-        option_2 = len(Vote.query.filter(Vote.post_id==post_id, Vote.vote==4).all())
 
-    if option_1 == 0 and option_2 == 0:
-        option_1_percent = None
-        option_2_percent = None
-    else:
-        option_1_percent = float(option_1) / (option_1 + option_2)
-        option_2_percent = float(option_2) / (option_1 + option_2)
-
-    return option_1, option_1_percent, option_2, option_2_percent
 
 #######################################################################################################
 #functions that render users profile
@@ -118,12 +118,12 @@ def user_profile(user_id):
 
 @app.route('/home/post/<int:post_id>/refresh', methods=['POST', 'GET'])
 def process_vote(post_id):
-    """this is the function that prcoess users' votes, so it updates the database and refresh the post-details
+    """this is the function that process users' votes, so it updates the database and refresh the post-details
     page to show the updated votes and vote allocation"""
     vote = request.form.get('vote')
     user_id = session['loggedin']
     int_vote = int(vote)
-    new_vote = Vote(user_id=user_id, post_id=post_id, vote=vote)
+    new_vote = Vote(user_id=user_id, vote=int_vote)
     db.session.add(new_vote)
     db.session.commit()
 

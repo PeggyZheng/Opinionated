@@ -4,7 +4,6 @@ import sys
 from app.models import User
 
 
-
 class UserModelTestCase(unittest.TestCase):
 
     def test_set_password(self):

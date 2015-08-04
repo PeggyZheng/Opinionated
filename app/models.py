@@ -23,6 +23,7 @@ class User(db.Model):
     __tablename__ = 'users'
 
     user_id = db.Column(db.Integer, autoincrement=True, primary_key=True)
+    user_name = db.Column(db.String(64))
     email = db.Column(db.String(64), nullable=False)
     password_hash = db.Column(db.String(128))
     location = db.Column(db.String(64))
@@ -85,14 +86,14 @@ class Post(db.Model):
     post_id = db.Column(db.Integer, autoincrement=True, primary_key=True)
     author_id = db.Column(db.Integer, db.ForeignKey('users.user_id'), nullable=False)
     description = db.Column(db.Text)
-    option_text_1 = db.Column(db.Text)
-    option_text_2 = db.Column(db.Text)
-    option_pic_1 = db.Column(db.String)
-    option_pic_2 = db.Column(db.String)
+    # option_text_1 = db.Column(db.Text)
+    # option_text_2 = db.Column(db.Text)
+    # option_pic_1 = db.Column(db.String)
+    # option_pic_2 = db.Column(db.String)
     timestamp = db.Column(db.TIMESTAMP, index=True, default=datetime.utcnow() )
 
-    author = db.relationship("User",
-                       backref=db.backref("posts", order_by=timestamp))
+    author = db.relationship("User", backref=db.backref("posts", order_by=timestamp))
+
 
 
     def __repr__(self):
@@ -101,20 +102,20 @@ class Post(db.Model):
 
 
 class Vote(db.Model):
-    """Users's vote on a specific question/post"""
+    """Users' vote on a specific question/post"""
 
     __tablename__ = 'votes'
 
     vote_id = db.Column(db.Integer, autoincrement=True, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.user_id'), nullable=False)
-    post_id = db.Column(db.Integer, db.ForeignKey('posts.post_id'), nullable=False)
-    vote = db.Column(db.Integer)
-    timestamp = db.Column(db.TIMESTAMP, index=True, default=datetime.utcnow())
+    # post_id = db.Column(db.Integer, db.ForeignKey('posts.post_id'), nullable=False)
+    vote = db.Column(db.Integer, db.ForeignKey('choices.choice_id'), nullable=False)
+    timestamp = db.Column(db.TIMESTAMP, default=datetime.utcnow())
 
-    user = db.relationship("User",
-                       backref=db.backref("votes", order_by=timestamp))
-    post = db.relationship("Post",
-                       backref=db.backref("votes", order_by=timestamp))
+    user = db.relationship("User", backref=db.backref("votes", order_by=timestamp))
+    # post = db.relationship("Post", backref=db.backref("votes", order_by=timestamp))
+
+    choice = db.relationship("Choice", backref=db.backref("vote", order_by=timestamp))
 
 
 
@@ -122,7 +123,17 @@ class Vote(db.Model):
         """Return the post id and description when printed"""
         return "<Vote vote_id=%s, vote=%s>" % (self.vote_id, self.vote)
 
+class Choice(db.Model):
+    """ Files (images, videos, audio etc) associated with specific post """
 
+    __tablename__ = "choices"
+
+    choice_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    text_choice = db.Column(db.Text)
+    file_name = db.Column(db.String(250))
+    post_id = db.Column(db.Integer, db.ForeignKey('posts.post_id'), nullable=False)
+
+    post = db.relationship("Post", backref=db.backref("choices", order_by=choice_id))
 
 
 ##############################################################################

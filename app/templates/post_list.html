@@ -7,35 +7,27 @@
 <a href="/home/post">I want to post a question</a>
 
 <ul class="posts">
-    {% for post in posts %}
+    {% for post in dict %}
+
     <li class="posts">
         <div>
             <a href="/home/post/{{ post.post_id }}">{{ post.description }}</a>
         </div>
+        {% for choice in dict[post] %}
         <div>
-            {% if post.option_text_1 %}
-            {{ post.option_text_1 }}
+            {% if choice.text_choice %}
+            {{ choice.text_choice }}
             {% endif %}
         </div>
 
         <div>
-            {% if post.option_text_2 %}
-            {{ post.option_text_2 }}
+            {% if choice.file_name %}
+            {{ choice.file_name }}
             {% endif %}
         </div>
-
-        <div>
-            {% if post.option_pic_1 %}
-            {{ post.option_pic_1 }}
-            {% endif %}
-        </div>
-
-        <div>
-            {% if post.option_pic_2 %}
-            {{ post.option_pic_2 }}
-            {% endif %}
-        </div>
+        {% endfor %}
     </li>
+
     {% endfor %}
 </ul>
 

@@ -7,15 +7,18 @@
 
     <li class="posts">
         <div>
-            <a href="/home/user/{{ post.author.user_id }}">{{ post.author.user_id }}</a>
+            <a href="/home/user/{{ post.author.user_id }}">{{ post.author.user_name }}</a>
         </div>
+        {{ post.description }} ({{ total_votes }} people have voted on this)
+    <form action="/home/post/{{ post.post_id }}/refresh" method="post">
+        {% for choice in choices %}
         <div>
-            {% if post.option_text_1 %}
-            {{ post.option_text_1 }}
+            {% if choice.text_choice %}
+            <input type="radio" name="vote" value="{{ choice.choice_id }}">{{ choice.text_choice }}
             <div id="option1">
-                {{ vote_result[0]}}
-                {% if vote_result[1] %}
-                    {{ vote_result[1]}}
+                number of votes: {{ vote_dict[choice] }}
+                {% if total_votes != 0 %}
+                    percentage: {{ vote_dict[choice]/ total_votes }}
                 {% else %}
                     <p>No one has voted yet</p>
                 {% endif %}
@@ -25,56 +28,24 @@
         </div>
 
         <div>
-            {% if post.option_text_2 %}
-            {{ post.option_text_2 }}
+            {% if choice.file_name %}
+            <input type="radio" name="vote" value="{{ choice.choice_id }}">{{ choice.file_name }}
             <div id="option2">
-                {{ vote_result[2]}}
-                {% if vote_result[3] %}
-                    {{ vote_result[3]}}
+                {{ vote_dict[choice] }}
+                {% if total_votes != 0 %}
+                    {{ vote_dict[choice]/ total_votes }}
                 {% else %}
                     <p>No one has voted yet</p>
                 {% endif %}
-                {% endif %}
+            {% endif %}
             </div>
 
         </div>
-
-        <div>
-            {% if post.option_pic_1 %}
-            {{ post.option_pic_1 }}
-            <div id="option1">
-                {{ vote_result[0]}}
-                {% if vote_result[1] %}
-                    {{ vote_result[1]}}
-                {% else %}
-                    <p>No one has voted yet</p>
-                {% endif %}
-                {% endif %}
-            </div>
-        </div>
-
-        <div>
-            {% if post.option_pic_2 %}
-            {{ post.option_pic_2 }}
-           <div id="option2">
-                {{ vote_result[2]}}
-                {% if vote_result[3] %}
-                    {{ vote_result[3]}}
-                {% else %}
-                    <p>No one has voted yet</p>
-                {% endif %}
-                {% endif %}
-           </div>
-        </div>
+        {% endfor %}
+    <input type="submit">
+    </form>
     </li>
 </ul>
-
-<form action="/home/post/{{ post.post_id }}/refresh" method="post">
-    <input type="radio" name="vote" value="1">option 1
-    <input type="radio" name="vote" value="2">option 2
-    <br>
-    <input type="submit">
-</form>
 
 <h3>Comments</h3>
 <form action="/home/post/{{post.post_id}}/comment/refresh" method="post">
@@ -88,7 +59,7 @@
 
         {% for comment in comments %}
         <li>
-            <a href="/home/user/{{ comment.user_id }}">{{ comment.user_id }}</a>:
+            <a href="/home/user/{{ comment.user_id }}">{{ comment.user.user_name }}</a>:
             {{ comment.content }}
         </li>
         {% endfor %}
