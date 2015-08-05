@@ -29,11 +29,16 @@
 
         <div>
             {% if choice.file_name %}
-            <input type="radio" name="vote" value="{{ choice.choice_id }}">{{ choice.file_name }}
+            <input type="radio" name="vote" value="{{ choice.choice_id }}">
+            <div class="container">
+
+                <img src="https://s3-us-west-2.amazonaws.com/opinionated/{{hash_files[choice]}}" alt="{{ choice.file_name }}"\
+                        width="300px" height="auto">
+            </div>
             <div id="option2">
-                {{ vote_dict[choice] }}
+                number of votes: {{ vote_dict[choice] }}
                 {% if total_votes != 0 %}
-                    {{ vote_dict[choice]/ total_votes }}
+                    percentage: {{ vote_dict[choice]/ total_votes }}
                 {% else %}
                     <p>No one has voted yet</p>
                 {% endif %}

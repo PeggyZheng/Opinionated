@@ -4,6 +4,10 @@ from flask_sqlalchemy import SQLAlchemy
 from flask import Flask
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
+from boto.s3.connection import S3Connection
+from boto.s3.key import Key
+import os
+import hashlib
 
 
 
@@ -13,6 +17,9 @@ from datetime import datetime
 
 db = SQLAlchemy()
 
+# setup for s3
+conn = S3Connection(os.environ["AWS_ACCESS_KEY"], os.environ["AWS_SECRET_KEY"])
+bucket = conn.get_bucket(os.environ['AWS_BUCKET'])
 
 ##############################################################################
 # Model definitions
@@ -134,6 +141,23 @@ class Choice(db.Model):
     post_id = db.Column(db.Integer, db.ForeignKey('posts.post_id'), nullable=False)
 
     post = db.relationship("Post", backref=db.backref("choices", order_by=choice_id))
+
+    def __repr__(self):
+        """Return the post id and description when printed"""
+        return "<Choice text_choice=%s, file_name=%s, post_id=%s>" % \
+               (self.text_choice, self.file_name, self.post_id)
+    #
+    # def store_img(self, file):
+    #     k = Key(bucket)
+    #     k.key = hashlib.sha512(str(self.choice_id)).hexdigest()
+    #     k.set_contents_from_file(file)
+    #     k.set_canned_acl('public-read')
+    #
+    # def retrieve_img(self, choice_list):
+    #     hash_files = {}
+    #     for choice in choice_list:
+    #         hash_files[choice] = hashlib.sha512(str(choice.choice_id)).hexdigest()
+
 
 
 ##############################################################################

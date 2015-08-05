@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<a href="/home">Home</a>
+
+<h3>All my posts</h3>
+
+<ul class="posts">
+    {% for post in posts %}
+    <li class="posts">
+        <div>
+            <a href="/home/post/{{ post.post_id }}">{{ post.description }}</a>
+        </div>
+        {% for choice in post.choices %}
+        <div>
+            {% if choice.text_choice %}
+             {{ choice.text_choice }}
+            {% endif %}
+        </div>
+
+        <div>
+            {% if choice.file_name %}
+            <div class="container">
+                 <img src="https://s3-us-west-2.amazonaws.com/opinionated/{{hash_files[choice]}}" alt="{{ choice.file_name }}" \
+                      width="300px" height="auto">
+            </div>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </li>
+    {% endfor %}
+</ul>
+
+<h3>All my votes</h3>
+
+<ul class="votes">
+
+    {% for vote in my_votes %}
+
+
+    <li class="votes">
+        <div>
+            <a href="/home/post/{{ vote.choice.post_id }}">{{ vote.choice.post.description }}</a>
+        </div>
+        <div>
+            {% if vote.choice.text_choice %}
+            I voted on {{ vote.choice.text_choice }}
+            {% else %}
+            I voted on {{ vote.choice.file_name }}
+            {% endif %}
+        </div>
+
+    </li>
+    {% endfor %}
+</ul>
+
+
+{% endblock %}

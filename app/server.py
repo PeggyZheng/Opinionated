@@ -10,7 +10,6 @@ from boto.s3.key import Key
 import hashlib
 import os
 
-
 # define allowed file type for uploading
 ALLOWED_EXTENSIONS = set(['txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'])
 
@@ -85,10 +84,13 @@ def show_post_detail(post_id):
     User can also vote on the questions"""
     post = Post.query.get(post_id)
     choices = Choice.query.filter_by(post_id=post.post_id).all()
+    hash_files = {}
+    for choice in choices:
+        hash_files[choice] = hashlib.sha512(str(choice.choice_id)).hexdigest()
     vote_dict, total_votes = count_votes(post.post_id)
     comments = Comment.query.filter_by(post_id=post_id).all()
     return render_template('post_details.html', post=post, vote_dict=vote_dict, comments=comments, choices=choices,
-                           total_votes=total_votes)
+                           total_votes=total_votes, hash_files=hash_files)
 
 
 def count_votes(post_id):
@@ -115,9 +117,13 @@ def user_profile(user_id):
     # post_dict = {}
     posts = Post.query.filter_by(author_id=user_id).all()
     my_votes = Vote.query.filter_by(user_id=user_id).all()
+    hash_files = {}
+    for post in posts:
+        choices = Choice.query.filter_by(post_id=post.post_id).all()
+        for choice in choices:
+            hash_files[choice] = hashlib.sha512(str(choice.choice_id)).hexdigest()
 
-
-    return render_template("user_profile.html", posts=posts, my_votes=my_votes)
+    return render_template("user_profile.html", posts=posts, my_votes=my_votes, hash_files=hash_files)
 
 #######################################################################################################
 #functions that handles votes
@@ -177,16 +183,18 @@ def process_question():
 
     filelist = [fileupload1, fileupload2]
     for file in filelist:
-        # if file and
-        filename = secure_filename(file.filename)
-        new_choice_img = Choice(file_name=filename, post_id=new_post.post_id)
-        db.session.add(new_choice_img)
-        db.session.commit()
+        if file and allowed_file(file.filename):
+            filename = secure_filename(file.filename)
+            new_choice_img = Choice(file_name=filename, post_id=new_post.post_id)
+            db.session.add(new_choice_img)
+            db.session.commit()
 
-        k = Key(bucket)
-        k.key = hashlib.sha512(str(new_choice_img.choice_id)).hexdigest()
-        k.set_contents_from_file(file)
-        k.set_canned_acl('public-read')
+            k = Key(bucket)
+            k.key = hashlib.sha512(str(new_choice_img.choice_id)).hexdigest()
+            k.set_contents_from_file(file)
+            k.set_canned_acl('public-read')
+        else:
+            flash('the file type you uploaded is not valid')
 
 
     flash('Your question has been posted')
