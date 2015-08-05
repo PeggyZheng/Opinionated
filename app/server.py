@@ -89,9 +89,24 @@ def show_post_detail(post_id):
         hash_files[choice] = hashlib.sha512(str(choice.choice_id)).hexdigest()
     vote_dict, total_votes = count_votes(post.post_id)
     comments = Comment.query.filter_by(post_id=post_id).all()
-    return render_template('post_details.html', post=post, vote_dict=vote_dict, comments=comments, choices=choices,
-                           total_votes=total_votes, hash_files=hash_files)
+    text_choices, img_choices = check_choice_type(post_id)
+    return render_template('post_details.html', post=post, vote_dict=vote_dict, comments=comments, total_votes=total_votes,
+                           hash_files=hash_files, text_choices=text_choices, img_choices=img_choices)
 
+
+def check_choice_type(post_id):
+    """a helper function that checks the choice type so we can pass it in to template for different displaying
+    config"""
+    post = Post.query.get(post_id)
+    choices = Choice.query.filter_by(post_id=post.post_id).all()
+    text_choices = []
+    img_choices = []
+    for choice in choices:
+        if choice.text_choice:
+            text_choices.append(choice)
+        elif choice.file_name:
+            img_choices.append(choice)
+    return text_choices, img_choices
 
 def count_votes(post_id):
     """this is a helper function that counts the vote on a particular questions and returns

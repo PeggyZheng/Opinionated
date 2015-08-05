@@ -11,52 +11,73 @@
         </div>
         {{ post.description }} ({{ total_votes }} people have voted on this)
     <form action="/home/post/{{ post.post_id }}/refresh" method="post">
-        {% for choice in choices %}
-        <div>
-            {% if choice.text_choice %}
-            <input type="radio" name="vote" value="{{ choice.choice_id }}">{{ choice.text_choice }}
-            <div id="option1">
-                number of votes: {{ vote_dict[choice] }}
-                {% if total_votes != 0 %}
-                    percentage: {{ vote_dict[choice]/ total_votes }}
-                {% else %}
-                    <p>No one has voted yet</p>
+
+            {% macro simple_display_choice(choice_list, hash_files) %}
+            {% for choice in choice_list %}
+
+                {% if choice.text_choice %}
+                     <input type="radio" name="vote" value="{{ choice.choice_id }}" class="choice">
+                     <div>{{ choice.text_choice }}</div>
                 {% endif %}
-            {% endif %}
-            </div>
 
-        </div>
-
-        <div>
-            {% if choice.file_name %}
-            <input type="radio" name="vote" value="{{ choice.choice_id }}">
-            <div class="container">
-
-                <img src="https://s3-us-west-2.amazonaws.com/opinionated/{{hash_files[choice]}}" alt="{{ choice.file_name }}"\
+                {% if choice.file_name %}
+                     <input type="radio" name="vote" value="{{ choice.choice_id }}" class="choice">
+                     <div>
+                         <img src="https://s3-us-west-2.amazonaws.com/opinionated/{{hash_files[choice]}}" alt="{{ choice.file_name }}"\
                         width="300px" height="auto">
-            </div>
-            <div id="option2">
-                number of votes: {{ vote_dict[choice] }}
-                {% if total_votes != 0 %}
-                    percentage: {{ vote_dict[choice]/ total_votes }}
-                {% else %}
-                    <p>No one has voted yet</p>
+                     </div>
                 {% endif %}
+            <div>
+            number of votes: {{ vote_dict[choice] }}
+            {% if total_votes != 0 %}
+                percentage: {{ vote_dict[choice]/ total_votes }}
+            {% else %}
+                <p>No one has voted yet</p>
             {% endif %}
-            </div>
+        </div>
+            {% endfor %}
+            {% endmacro %}
 
+
+        {% macro display_text_and_img(text_choices, img_choices, hash_files) %}
+        {% for text_choice in text_choices %}
+
+            <input type="radio" name="vote" value="{{ text_choice.choice_id }}">
+        <div>
+            {{ text_choice.text_choice }}
+        </div>
+        <div>
+            {% set img_choice = img_choices[loop.index0] %}
+            <img src="https://s3-us-west-2.amazonaws.com/opinionated/{{hash_files[img_choice]}}" alt="{{ img_choice.file_name }}"\
+                        width="300px" height="auto">
+        </div>
+        <div>
+            number of votes: {{ vote_dict[text_choice] }}
+            {% if total_votes != 0 %}
+                percentage: {{ vote_dict[text_choice]/ total_votes }}
+            {% else %}
+                <p>No one has voted yet</p>
+            {% endif %}
         </div>
         {% endfor %}
-    <input type="submit">
+        {% endmacro %}
+
+    {% if text_choices and img_choices %}
+        {{ display_text_and_img(text_choices, img_choices, hash_files) }}
+    {% else %}
+        {{ simple_display_choice((text_choices + img_choices), hash_files) }}
+    {% endif %}
+
+    <input type="submit" value="Vote">
     </form>
     </li>
 </ul>
 
 <h3>Comments</h3>
 <form action="/home/post/{{post.post_id}}/comment/refresh" method="post">
-    <textarea rows="4" cols="100" name="new_comment"></textarea>
+    <textarea rows="4" cols="100" name="new_comment" id="comment-content"></textarea>
     <br>
-    <input type="submit">
+    <input id="comment-submit" type="submit">
 </form>
 
 <ul class="comments">
@@ -69,6 +90,9 @@
         </li>
         {% endfor %}
 
+    <p>test for jquey</p>
+    <div #show-comment></div>
+
     {% else %}
         <p>Oops, looks like no one has commented yet</p>
     {% endif %}
@@ -80,10 +104,16 @@
 
 <!--<script src="https://code.jquery.com/jquery.js"></script>-->
 <!--<script>-->
-    <!--function updateVote(evt) {-->
-        <!--var vote =-->
+    <!--function handleComments(evt) {-->
+        <!-- -->
     <!--}-->
-    <!--$.post('')-->
+        <!--var formInputs = {comment: $("#comment-content").val()};-->
+        <!--$.post('/home/post/{{post.post_id}}/comment/refresh', formInputs, function (result) {-->
+            <!--$('#your-vote').text('You vote has been updated');-->
+
+    <!--}-->
+
+
 
 
 <!--</script>-->
