@@ -4,7 +4,15 @@ from jinja2 import StrictUndefined
 from flask_debugtoolbar import DebugToolbarExtension
 from flask import Flask, render_template, redirect, request, flash, session, url_for
 from models import User, Comment, Post, Vote, Choice, connect_to_db, db
+from werkzeug.utils import secure_filename
+from boto.s3.connection import S3Connection
+from boto.s3.key import Key
+import hashlib
+import os
 
+
+# define allowed file type for uploading
+ALLOWED_EXTENSIONS = set(['txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'])
 
 app = Flask(__name__)
 
@@ -14,6 +22,11 @@ app.secret_key = "ABC"
 # Normally, if you use an undefined variable in Jinja2, it fails silently.
 # This is horrible. Fix this so that, instead, it raises an error.
 app.jinja_env.undefined = StrictUndefined
+
+# setup for s3
+print os.environ['']
+conn = S3Connection(os.environ["AWS_ACCESS_KEY"], os.environ["AWS_SECRET_KEY"])
+bucket = conn.get_bucket(os.environ['AWS_BUCKET'])
 
 
 #######################################################################################################
@@ -45,7 +58,7 @@ def login_user():
 
 @app.route('/logout')
 def logout_user():
-    """Log out the user; remove the user from the session and flash a notificatio message"""
+    """Log out the user; remove the user from the session and flash a notification message"""
     session.pop('loggedin', None)
 
     flash("You have logged out")
@@ -59,11 +72,8 @@ def show_all_posts():
     """the homepage of the site where all the posts will be shown in a table"""
     dict = {}
     posts = Post.query.all()
-    for post in posts:
-        choices = Choice.query.filter_by(post_id=post.post_id).all()
-        dict[post] = choices
 
-    return render_template('post_list.html', dict=dict)
+    return render_template('post_list.html', posts=posts)
 
 
 @app.route('/home/post/<int:post_id>')
@@ -99,26 +109,12 @@ def count_votes(post_id):
 @app.route('/home/user/<int:user_id>')
 def user_profile(user_id):
     """this is the page that will show users' all posts, and all things they have voted on"""
-    post_dict = {}
+    # post_dict = {}
     posts = Post.query.filter_by(author_id=user_id).all()
-    for post in posts:
-        choices = Choice.query.filter_by(post_id=post.post_id).all()
-        post_dict[post] = choices
-
     my_votes = Vote.query.filter_by(user_id=user_id).all()
-    # for vote in votes:
-    #
-    # my_votes = []
-    # for vote in votes:
-    #     dict = {1: vote.post.option_text_1,
-    #             2: vote.post.option_text_2,
-    #             3: vote.post.option_pic_1,
-    #             4: vote.post.option_pic_2}
-    #     my_vote = dict[vote.vote]
-    #     my_votes.append((vote, my_vote))
 
 
-    return render_template("user_profile.html", post_dict=post_dict, my_votes=my_votes)
+    return render_template("user_profile.html", posts=posts, my_votes=my_votes)
 
 #######################################################################################################
 #functions that handles votes
@@ -147,22 +143,48 @@ def post_question():
     """This is the render the page that users can edit their questions/posts """
     return render_template("post_question.html")
 
+
+def allowed_file(filename):
+    """a helper function to see verify the file type uploaded"""
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1] in ALLOWED_EXTENSIONS
+
 @app.route('/home/post/process', methods=['POST'])
 def process_question():
     """Process the questions that user added, and updated the database"""
     description = request.form.get('description')
-    option1 = request.form.get('option1')
-    option2 = request.form.get('option2')
+    text_option1 = request.form.get('option1')
+    text_option2 = request.form.get('option2')
+    fileupload1 = request.files.get('fileupload1')
+    fileupload2 = request.files.get('fileupload2')
     author_id = session['loggedin']
+
+    print 'file upload 1', fileupload1
+    print 'file upload 2', fileupload2
 
     new_post = Post(author_id=author_id, description=description)
     db.session.add(new_post)
     db.session.commit()
-    new_choice1 = Choice(text_choice=option1, post_id=new_post.post_id)
-    new_choice2 = Choice(text_choice=option2, post_id=new_post.post_id)
+    new_choice1 = Choice(text_choice=text_option1, post_id=new_post.post_id)
+    new_choice2 = Choice(text_choice=text_option2, post_id=new_post.post_id)
     db.session.add(new_choice1)
     db.session.add(new_choice2)
     db.session.commit()
+
+
+    filelist = [fileupload1, fileupload2]
+    for file in filelist:
+        # if file and
+        filename = secure_filename(file.filename)
+        new_choice_img = Choice(file_name=filename, post_id=new_post.post_id)
+        db.session.add(new_choice_img)
+        db.session.commit()
+
+        k = Key(bucket)
+        k.key = hashlib.sha512(str(new_choice_img.choice_id)).hexdigest()
+        k.set_contents_from_file(file)
+        k.set_canned_acl('public-read')
+
 
     flash('Your question has been posted')
 

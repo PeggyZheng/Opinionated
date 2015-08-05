@@ -7,13 +7,13 @@
 <a href="/home/post">I want to post a question</a>
 
 <ul class="posts">
-    {% for post in dict %}
+    {% for post in posts %}
 
     <li class="posts">
         <div>
             <a href="/home/post/{{ post.post_id }}">{{ post.description }}</a>
         </div>
-        {% for choice in dict[post] %}
+        {% for choice in post.choices %}
         <div>
             {% if choice.text_choice %}
             {{ choice.text_choice }}

@@ -1,20 +1,35 @@
 
 {% extends 'base.html' %}
 {% block content %}
-<form action='/home/post/process', method='post'>
+<form action='/home/post/process' method='post' enctype="multipart/form-data">
     <label>Short Description of your questions
         <textarea rows="4" cols="50" name="description"></textarea>
     </label>
     <div>
-        <label>Option 1
-            <textarea rows="4" cols="20" name="option1"></textarea>
-        </label>
+        <div class="text choice">
+            <label>Option 1
+                <textarea rows="4" cols="20" name="option1"></textarea>
+            </label>
+        </div>
+        <div class="image choice">
+            <label>Upload image
+                <input type="file" name="fileupload1">
+            </label>
+        </div>
+    </div>
     </div>
 
     <div>
-        <label>Option 2
-            <textarea rows="4" cols="20" name="option2"></textarea>
-        </label>
+        <div class="text choice">
+            <label>Option 2
+                <textarea rows="4" cols="20" name="option2"></textarea>
+            </label>
+        </div>
+        <div class="image choice">
+            <label>Upload image
+                <input type="file" name="fileupload2">
+            </label>
+        </div>
     </div>
     <br>
     <input type="submit">
