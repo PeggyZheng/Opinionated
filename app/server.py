@@ -24,7 +24,6 @@ app.secret_key = "ABC"
 app.jinja_env.undefined = StrictUndefined
 
 # setup for s3
-print os.environ['']
 conn = S3Connection(os.environ["AWS_ACCESS_KEY"], os.environ["AWS_SECRET_KEY"])
 bucket = conn.get_bucket(os.environ['AWS_BUCKET'])
 
@@ -71,9 +70,13 @@ def logout_user():
 def show_all_posts():
     """the homepage of the site where all the posts will be shown in a table"""
     dict = {}
+    hash_files = {}
     posts = Post.query.all()
+    for post in posts:
+       for choice in post.choices:
+           hash_files[choice] = hashlib.sha512(str(choice.choice_id)).hexdigest()
 
-    return render_template('post_list.html', posts=posts)
+    return render_template('post_list.html', posts=posts, hash_files=hash_files)
 
 
 @app.route('/home/post/<int:post_id>')
