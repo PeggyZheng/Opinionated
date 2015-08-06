@@ -55,20 +55,17 @@
 </form>
 
 <ul class="comments">
-    <!--{% if comments %}-->
+    {% if comments %}
+        {% for comment in comments %}
+        <li>
+            <a href="/home/user/{{ comment.user_id }}">{{ comment.user.user_name }}</a>:
+            {{ comment.content }}
+        </li>
+        {% endfor %}
 
-        <!--{% for comment in comments %}-->
-        <!--<li>-->
-            <!--<a href="/home/user/{{ comment.user_id }}">{{ comment.user.user_name }}</a>:-->
-            <!--{{ comment.content }}-->
-        <!--</li>-->
-        <!--{% endfor %}-->
-
-    <div id="comment-list"></div>
-
-    <!--{% else %}-->
-        <!--<p>Oops, looks like no one has commented yet</p>-->
-    <!--{% endif %}-->
+    {% else %}
+        <p>Oops, looks like no one has commented yet</p>
+    {% endif %}
 
 </ul>
 
@@ -79,8 +76,7 @@
         evt.preventDefault();
         var formInputs = {comment: $("#comment-content").val()};
         $.post('/home/post/{{post.post_id}}/comment/refresh', formInputs, function (result) {
-            console.log(result.user_id)
-            $('#comment-list').append('<p><a href="/home/user/'+ result.user_id + '">'+ result.user_id + '</a>:'+ result.content + '</p>')
+            $('.comments').append('<li><a href="/home/user/'+ result.user_id + '">'+ result.user_name + '</a>:'+ result.content + '</li>')
         })
     }
 $('#comment-submit').on('submit', handleComments);

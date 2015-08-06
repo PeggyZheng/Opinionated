@@ -227,13 +227,14 @@ def process_question():
 def process_comments(post_id):
     """process the comments the users entered """
     user_id = session.get('loggedin', None)
+    user_name = User.query.get(user_id).user_name
     if user_id:
         content = request.form.get('comment')
         post_id = post_id
         new_comment = Comment(content=content, user_id=user_id, post_id=post_id)
         db.session.add(new_comment)
         db.session.commit()
-        return jsonify(user_id=user_id, content=content)
+        return jsonify(user_id=user_id, user_name=user_name, content=content)
 
     else:
         flash("You need to login first")
