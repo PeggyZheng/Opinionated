@@ -9,6 +9,7 @@ from boto.s3.connection import S3Connection
 from boto.s3.key import Key
 import hashlib
 import os
+from flask import jsonify
 
 # define allowed file type for uploading
 ALLOWED_EXTENSIONS = set(['txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'])
@@ -224,12 +225,12 @@ def process_comments(post_id):
     """process the comments the users entered """
     user_id = session.get('loggedin', None)
     if user_id:
-        content = request.form.get('new_comment')
+        content = request.form.get('comment')
         post_id = post_id
         new_comment = Comment(content=content, user_id=user_id, post_id=post_id)
         db.session.add(new_comment)
         db.session.commit()
-        return redirect(url_for('show_post_detail', post_id=post_id))
+        return jsonify(user_id=user_id, content=content)
 
     else:
         flash("You need to login first")

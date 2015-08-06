@@ -74,48 +74,43 @@
 </ul>
 
 <h3>Comments</h3>
-<form action="/home/post/{{post.post_id}}/comment/refresh" method="post">
+<form action="/home/post/{{post.post_id}}/comment/refresh" method="post" id="comment-submit">
     <textarea rows="4" cols="100" name="new_comment" id="comment-content"></textarea>
     <br>
-    <input id="comment-submit" type="submit">
+    <input id="comment-submit-button" type="submit">
 </form>
 
 <ul class="comments">
-    {% if comments %}
+    <!--{% if comments %}-->
 
-        {% for comment in comments %}
-        <li>
-            <a href="/home/user/{{ comment.user_id }}">{{ comment.user.user_name }}</a>:
-            {{ comment.content }}
-        </li>
-        {% endfor %}
+        <!--{% for comment in comments %}-->
+        <!--<li>-->
+            <!--<a href="/home/user/{{ comment.user_id }}">{{ comment.user.user_name }}</a>:-->
+            <!--{{ comment.content }}-->
+        <!--</li>-->
+        <!--{% endfor %}-->
 
-    <p>test for jquey</p>
-    <div #show-comment></div>
+    <div id="comment-list"></div>
 
-    {% else %}
-        <p>Oops, looks like no one has commented yet</p>
-    {% endif %}
+    <!--{% else %}-->
+        <!--<p>Oops, looks like no one has commented yet</p>-->
+    <!--{% endif %}-->
 
 </ul>
 
 
+<script src="https://code.jquery.com/jquery.js"></script>
+<script>
+    function handleComments(evt) {
+        evt.preventDefault();
+        var formInputs = {comment: $("#comment-content").val()};
+        $.post('/home/post/{{post.post_id}}/comment/refresh', formInputs, function (result) {
 
+            $('#comment-list').prepend('<a href="/home/user/'+result.user_id'>'+ result.user_id + '</a>:'+ result.content)
+        })
+    }
+$('#comment-submit').on('submit', handleComments);
 
-<!--<script src="https://code.jquery.com/jquery.js"></script>-->
-<!--<script>-->
-    <!--function handleComments(evt) {-->
-        <!-- -->
-    <!--}-->
-        <!--var formInputs = {comment: $("#comment-content").val()};-->
-        <!--$.post('/home/post/{{post.post_id}}/comment/refresh', formInputs, function (result) {-->
-            <!--$('#your-vote').text('You vote has been updated');-->
-
-    <!--}-->
-
-
-
-
-<!--</script>-->
+</script>
 
 {% endblock %}
