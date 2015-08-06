@@ -9,8 +9,8 @@
         <div>
             <a href="/home/user/{{ post.author.user_id }}">{{ post.author.user_name }}</a>
         </div>
-        {{ post.description }} ({{ total_votes }} people have voted on this)
-    <form action="/home/post/{{ post.post_id }}/refresh" method="post">
+        {{ post.description }} (<span id="total-vote">{{ total_votes }}</span> people have voted on this)
+    <form action="/home/post/{{ post.post_id }}/refresh" method="post" id="vote-form">
 
             {% for choice in choices %}
 
@@ -32,9 +32,9 @@
                 {% endif %}
 
                 <div>
-                    number of votes: {{ vote_dict[choice] }}
+                    number of votes: <span id="vote-count-{{ choice.choice_id }}">{{ vote_dict[choice.choice_id] }}</span>
                 {% if total_votes != 0 %}
-                    percentage: {{ vote_dict[choice]/ total_votes }}
+                    percentage: <span id="vote-count-percent-{{choice.choice_id}}">{{ vote_dict[choice.choice_id]/ total_votes }}</span>
                 {% else %}
                    <p>No one has voted yet</p>
                 {% endif %}
@@ -48,7 +48,7 @@
 </ul>
 
 <h3>Comments</h3>
-<form action="/home/post/{{post.post_id}}/comment/refresh" method="post" id="comment-submit">
+<form action="/home/post/{{post.post_id}}/comment/refresh" method="post" id="comment-form">
     <textarea rows="4" cols="100" name="new_comment" id="comment-content"></textarea>
     <br>
     <input id="comment-submit-button" type="submit">
@@ -79,7 +79,32 @@
             $('.comments').append('<li><a href="/home/user/'+ result.user_id + '">'+ result.user_name + '</a>:'+ result.content + '</li>')
         })
     }
-$('#comment-submit').on('submit', handleComments);
+$('#comment-form').on('submit', handleComments);
+
+    function handleVote(evt) {
+        evt.preventDefault();
+        var formInputs = {vote: $('input[type="radio"][name="vote"]:checked').val()};
+        console.log(formInputs)
+        $.post('/home/post/{{post.post_id}}/refresh', formInputs, function (result) {
+
+            result = JSON.parse(result);
+
+            var vote_count = result[0];
+            var vote_count_percent = result[1];
+            var total_vote = result[2];
+
+            for (var choice_id in vote_count) {
+                $('#vote-count-'+choice_id).html(vote_count[choice_id].toString());
+            }
+            for (var choice_id in vote_count_percent) {
+                $('#vote-count-percent-'+choice_id).html(vote_count_percent[choice_id].toString());
+            }
+            $('#total-vote').html(total_vote.toString());
+        })
+    }
+$('#vote-form').on('submit', handleVote);
+
+
 
 </script>
 

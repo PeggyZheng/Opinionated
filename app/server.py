@@ -10,6 +10,8 @@ from boto.s3.key import Key
 import hashlib
 import os
 from flask import jsonify
+import json
+
 
 # define allowed file type for uploading
 ALLOWED_EXTENSIONS = set(['txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'])
@@ -91,8 +93,8 @@ def show_post_detail(post_id):
     vote_dict, total_votes = count_votes(post.post_id)
     comments = Comment.query.filter_by(post_id=post_id).all()
     # text_choices, img_choices = check_choice_type(post_id)
-    return render_template('post_details.html', post=post, choices=choices, vote_dict=vote_dict, comments=comments, total_votes=total_votes,
-                           hash_files=hash_files)
+    return render_template('post_details.html', post=post, choices=choices, vote_dict=vote_dict,
+                           comments=comments, total_votes=total_votes, hash_files=hash_files)
 
 #
 # def check_choice_type(post_id):
@@ -117,7 +119,7 @@ def count_votes(post_id):
     vote_dict = {}
     for choice in choices:
         votes = len(Vote.query.filter_by(vote=choice.choice_id).all())
-        vote_dict[choice] = votes
+        vote_dict[choice.choice_id] = votes
     total_votes = sum(vote_dict.values())
     return vote_dict, total_votes
 
@@ -144,7 +146,7 @@ def user_profile(user_id):
 #######################################################################################################
 #functions that handles votes
 
-@app.route('/home/post/<int:post_id>/refresh', methods=['POST', 'GET'])
+@app.route('/home/post/<int:post_id>/refresh', methods=['POST'])
 def process_vote(post_id):
     """this is the function that process users' votes, so it updates the database and refresh the post-details
     page to show the updated votes and vote allocation"""
@@ -155,9 +157,13 @@ def process_vote(post_id):
     db.session.add(new_vote)
     db.session.commit()
 
-    return redirect(url_for('show_post_detail', post_id=post_id))
+    vote_dict, total_votes = count_votes(post_id)
 
+    total_votes_percent = {}
+    for vote in vote_dict:
+        total_votes_percent[vote] = float(vote_dict[vote])/total_votes
 
+    return json.dumps([vote_dict, total_votes_percent, total_votes])
 
 #######################################################################################################
 #functions that handles posting a question
