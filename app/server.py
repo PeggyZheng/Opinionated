@@ -90,24 +90,24 @@ def show_post_detail(post_id):
         hash_files[choice] = hashlib.sha512(str(choice.choice_id)).hexdigest()
     vote_dict, total_votes = count_votes(post.post_id)
     comments = Comment.query.filter_by(post_id=post_id).all()
-    text_choices, img_choices = check_choice_type(post_id)
-    return render_template('post_details.html', post=post, vote_dict=vote_dict, comments=comments, total_votes=total_votes,
-                           hash_files=hash_files, text_choices=text_choices, img_choices=img_choices)
+    # text_choices, img_choices = check_choice_type(post_id)
+    return render_template('post_details.html', post=post, choices=choices, vote_dict=vote_dict, comments=comments, total_votes=total_votes,
+                           hash_files=hash_files)
 
-
-def check_choice_type(post_id):
-    """a helper function that checks the choice type so we can pass it in to template for different displaying
-    config"""
-    post = Post.query.get(post_id)
-    choices = Choice.query.filter_by(post_id=post.post_id).all()
-    text_choices = []
-    img_choices = []
-    for choice in choices:
-        if choice.text_choice:
-            text_choices.append(choice)
-        elif choice.file_name:
-            img_choices.append(choice)
-    return text_choices, img_choices
+#
+# def check_choice_type(post_id):
+#     """a helper function that checks the choice type so we can pass it in to template for different displaying
+#     config"""
+#     post = Post.query.get(post_id)
+#     choices = Choice.query.filter_by(post_id=post.post_id).all()
+#     text_choices = []
+#     img_choices = []
+#     for choice in choices:
+#         if choice.text_choice:
+#             text_choices.append(choice)
+#         elif choice.file_name:
+#             img_choices.append(choice)
+#     return text_choices, img_choices
 
 def count_votes(post_id):
     """this is a helper function that counts the vote on a particular questions and returns
@@ -172,7 +172,7 @@ def post_question():
 def allowed_file(filename):
     """a helper function to see verify the file type uploaded"""
     return '.' in filename and \
-           filename.rsplit('.', 1)[1] in ALLOWED_EXTENSIONS
+           filename.lower().rsplit('.', 1)[1] in ALLOWED_EXTENSIONS
 
 @app.route('/home/post/process', methods=['POST'])
 def process_question():
@@ -190,32 +190,35 @@ def process_question():
     new_post = Post(author_id=author_id, description=description)
     db.session.add(new_post)
     db.session.commit()
-    new_choice1 = Choice(text_choice=text_option1, post_id=new_post.post_id)
-    new_choice2 = Choice(text_choice=text_option2, post_id=new_post.post_id)
-    db.session.add(new_choice1)
-    db.session.add(new_choice2)
-    db.session.commit()
 
 
-    filelist = [fileupload1, fileupload2]
-    for file in filelist:
-        if file and allowed_file(file.filename):
-            filename = secure_filename(file.filename)
-            new_choice_img = Choice(file_name=filename, post_id=new_post.post_id)
-            db.session.add(new_choice_img)
-            db.session.commit()
+    # upload images to amazon
+    choice_list = [(text_option1, fileupload1),(text_option2, fileupload2)]
+    for text_choice, img_choice in choice_list:
+        print 'img_choice', img_choice.filename
+        if img_choice:
+            if allowed_file(img_choice.filename):
+                filename = secure_filename(img_choice.filename)
+                new_choice = Choice(text_choice=text_choice, file_name=filename, post_id=new_post.post_id)
+                db.session.add(new_choice)
+                db.session.commit()
 
-            k = Key(bucket)
-            k.key = hashlib.sha512(str(new_choice_img.choice_id)).hexdigest()
-            k.set_contents_from_file(file)
-            k.set_canned_acl('public-read')
+
+                k = Key(bucket)
+                k.key = hashlib.sha512(str(new_choice.choice_id)).hexdigest()
+                k.set_contents_from_file(img_choice)
+                k.set_canned_acl('public-read')
+            else:
+                flash('the file type you uploaded is not valid')
         else:
-            flash('the file type you uploaded is not valid')
-
+            new_choice = Choice(text_choice=text_choice, post_id=new_post.post_id)
+            db.session.add(new_choice)
+            db.session.commit()
 
     flash('Your question has been posted')
 
     return redirect(url_for('user_profile', user_id=author_id))
+
 
 #######################################################################################################
 #the functions that handles comments
