@@ -36,7 +36,7 @@
     <div id="tags">
         <label>Enter your tags here</label>
         <br>
-        <input class="form-control tm-input tm-input-info typeahead" type="text" placeholder="Tags">
+        <input class="form-control tm-input tm-input-info typeahead" type="text" placeholder="Tags" name="tags">
     </div>
     <br>
     <br>
@@ -66,7 +66,8 @@
         AjaxPushParameters: null,
         delimiters:[9, 13, 44], //tab, enter, comma
         backspace: [8], //backspace removes the rightmost tag
-        onlyTagList: true,
+        hiddenTagListName: 'hidden_tags',
+        onlyTagList: false,
         tagList: new_list
 
     });

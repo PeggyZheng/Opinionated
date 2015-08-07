@@ -180,6 +180,9 @@ class TagPost(db.Model):
     tag_id = db.Column(db.Integer,db.ForeignKey('tags.tag_id'), nullable=False)
 
 
+
+
+
 ##############################################################################
 # Helper functions
 

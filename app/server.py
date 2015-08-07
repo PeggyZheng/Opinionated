@@ -177,9 +177,7 @@ def post_question():
     tags_list = []
     for tag in tags:
         tag_name = tag.tag_name
-        print type(tag_name)
         tag_name = str(tag_name)
-        print type(tag_name)
         tags_list.append(tag_name)
 
     return render_template("post_question.html", tags_list=tags_list)
@@ -199,14 +197,15 @@ def process_question():
     fileupload1 = request.files.get('fileupload1')
     fileupload2 = request.files.get('fileupload2')
     author_id = session['loggedin']
-    tags = request.form.get('tags')
+    tags = request.form.get('hidden_tags')
+
 
     new_post = Post(author_id=author_id, description=description)
-
     db.session.add(new_post)
     db.session.commit()
+    post_id = new_post.post_id
 
-
+    process_tags(tags, post_id)
     # upload images to amazon
     choice_list = [(text_option1, fileupload1),(text_option2, fileupload2)]
     for text_choice, img_choice in choice_list:
@@ -242,6 +241,27 @@ def process_question():
 #    for search_result in search_results:
 #        search_dict[search_result.tag_id] = search_result.tag_name
 #    return jsonify(search_dict)
+
+
+def process_tags(tag_list, post_id):
+    """the helper function to process the tags"""
+    tag_list = tag_list.split(',')
+    for tag in tag_list:
+        tag_to_check = Tag.query.filter_by(tag_name=tag).first()
+        if tag_to_check:
+            tag_id = tag_to_check.tag_id
+            new_tagpost = TagPost(tag_id=tag_id, post_id=post_id)
+            db.session.add(new_tagpost)
+            db.session.commit()
+        else:
+            new_tag = Tag(tag_name=tag)
+            db.session.add(new_tag)
+            db.session.commit()
+            tag_id = new_tag.tag_id
+            new_tagpost = TagPost(tag_id=tag_id, post_id=post_id)
+            db.session.add(new_tagpost)
+            db.session.commit()
+
 
 
 #######################################################################################################
