@@ -3,7 +3,7 @@
 from jinja2 import StrictUndefined
 from flask_debugtoolbar import DebugToolbarExtension
 from flask import Flask, render_template, redirect, request, flash, session, url_for
-from models import User, Comment, Post, Vote, Choice, connect_to_db, db
+from models import User, Comment, Post, Vote, Choice, Tag, TagPost, connect_to_db, db
 from werkzeug.utils import secure_filename
 from boto.s3.connection import S3Connection
 from boto.s3.key import Key
@@ -47,10 +47,11 @@ def login_user():
     user = User.query.filter_by(email=email).first()
     verify_password = user.verify_password(password)
 
-    if user and verify_password:
-        flash("Logged in")
-        session['loggedin'] = user.user_id
-        return redirect(url_for('show_all_posts'))
+    if user:
+        if verify_password:
+            flash("Logged in")
+            session['loggedin'] = user.user_id
+            return redirect(url_for('show_all_posts'))
     else:
         flash("Your email or password is wrong, please re-enter")
         return redirect(url_for('login'))
@@ -172,7 +173,16 @@ def process_vote(post_id):
 @app.route('/home/post')
 def post_question():
     """This is the render the page that users can edit their questions/posts """
-    return render_template("post_question.html")
+    tags = Tag.query.all()
+    tags_list = []
+    for tag in tags:
+        tag_name = tag.tag_name
+        print type(tag_name)
+        tag_name = str(tag_name)
+        print type(tag_name)
+        tags_list.append(tag_name)
+
+    return render_template("post_question.html", tags_list=tags_list)
 
 
 def allowed_file(filename):
@@ -189,11 +199,10 @@ def process_question():
     fileupload1 = request.files.get('fileupload1')
     fileupload2 = request.files.get('fileupload2')
     author_id = session['loggedin']
-
-    print 'file upload 1', fileupload1
-    print 'file upload 2', fileupload2
+    tags = request.form.get('tags')
 
     new_post = Post(author_id=author_id, description=description)
+
     db.session.add(new_post)
     db.session.commit()
 
@@ -225,6 +234,15 @@ def process_question():
 
     return redirect(url_for('user_profile', user_id=author_id))
 
+# @app.route('/home/post/tag', methods=['POST'])
+# def process_tag():
+#    tag = request.form.get('tags')
+#    search_results = Tag.query.filter(Tag.tag_name.like(str(tag)+'%')).all()
+#    search_dict = {}
+#    for search_result in search_results:
+#        search_dict[search_result.tag_id] = search_result.tag_name
+#    return jsonify(search_dict)
+
 
 #######################################################################################################
 #the functions that handles comments
@@ -245,9 +263,6 @@ def process_comments(post_id):
     else:
         flash("You need to login first")
         return redirect(url_for('login'))
-
-
-
 
 
 

@@ -17,9 +17,9 @@ import hashlib
 
 db = SQLAlchemy()
 
-# setup for s3
-conn = S3Connection(os.environ["AWS_ACCESS_KEY"], os.environ["AWS_SECRET_KEY"])
-bucket = conn.get_bucket(os.environ['AWS_BUCKET'])
+# # setup for s3
+# conn = S3Connection(os.environ["AWS_ACCESS_KEY"], os.environ["AWS_SECRET_KEY"])
+# bucket = conn.get_bucket(os.environ['AWS_BUCKET'])
 
 ##############################################################################
 # Model definitions
@@ -158,6 +158,26 @@ class Choice(db.Model):
     #     for choice in choice_list:
     #         hash_files[choice] = hashlib.sha512(str(choice.choice_id)).hexdigest()
 
+class Tag(db.Model):
+    """ Tags table """
+
+    __tablename__ = "tags"
+
+    tag_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    tag_name = db.Column(db.String(100), nullable=False)
+
+    posts = db.relationship("Post", secondary="tagsposts", backref=db.backref("tags", order_by=tag_id))
+
+
+    def __repr__(self):
+        return "<Tag tag_id=%s tag_name=%s>" % (self.tag_id, self.tag_name)
+
+class TagPost(db.Model):
+    """Association table for Tages and Posts"""
+    __tablename__ = "tagsposts"
+    tagpost_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    post_id = db.Column(db.Integer,db.ForeignKey('posts.post_id'), nullable=False)
+    tag_id = db.Column(db.Integer,db.ForeignKey('tags.tag_id'), nullable=False)
 
 
 ##############################################################################
