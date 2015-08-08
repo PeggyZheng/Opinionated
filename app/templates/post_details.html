@@ -15,6 +15,8 @@
         {% for tag in tag_list %}
         <a href="/home/tag/{{ tag }}">{{ tag }}</a>
         {% endfor %}
+
+
     <form action="/home/post/{{ post.post_id }}/refresh" method="post" id="vote-form">
 
             {% for choice in choices %}
@@ -51,6 +53,13 @@
     </form>
     </li>
 </ul>
+
+    <div>
+        <button type="button" id="previous-post" onclick="previousPost({{ post.post_id }})">scroll to previous post</button><span id="previous-msg"></span>
+    </div>
+    <div>
+        <button type="button" id="next-post" onclick="nextPost({{ post.post_id }}, {{ total_posts }})">scroll to next post</button><span id="next-msg"></span>
+    </div>
 
 <h3>Comments</h3>
 <form action="/home/post/{{post.post_id}}/comment/refresh" method="post" id="comment-form">
@@ -111,6 +120,30 @@ $('#comment-form').on('submit', handleComments);
         })
     }
 $('#vote-form').on('submit', handleVote);
+
+
+  function previousPost (post_id) {
+      if (post_id > 1) {
+          var previous = post_id - 1;
+          location.href = previous.toString();
+      } else {
+          $('#previous-post').attr('disabled', true);
+          $('#previous-msg').html('This is the first post');
+      }
+
+  }
+
+  function nextPost (post_id, total_posts) {
+      if (post_id < total_posts) {
+          var next = post_id + 1;
+          location.href = next.toString();
+      } else {
+          $('#next-post').attr('disabled', true);
+          $('#next-msg').html('This is the last post');
+      }
+
+  }
+
 
 
 

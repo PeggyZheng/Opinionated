@@ -99,8 +99,12 @@ def show_post_detail(post_id):
     for tag in tags:
         tag_list.append(tag.tag_name)
 
+    total_posts = len(Post.query.all())
+    print total_posts
+
     return render_template('post_details.html', post=post, choices=choices, vote_dict=vote_dict,
-                           comments=comments, total_votes=total_votes, hash_files=hash_files, tag_list=tag_list)
+                           comments=comments, total_votes=total_votes, hash_files=hash_files, tag_list=tag_list,
+                           total_posts=total_posts)
 
 #
 # def check_choice_type(post_id):
