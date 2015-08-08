@@ -172,6 +172,18 @@ class Tag(db.Model):
     def __repr__(self):
         return "<Tag tag_id=%s tag_name=%s>" % (self.tag_id, self.tag_name)
 
+    # def get_all_tag_names(self):
+    #     tags = Tag.query.all()
+    #     tags_list = []
+    #     for tag in tags:
+    #         tag_name = tag.tag_name
+    #         tag_name = str(tag_name)
+    #         tags_list.append(tag_name)
+    #     return tags_list
+
+    # def get_tags_by_post_id(self, post_id):
+
+
 class TagPost(db.Model):
     """Association table for Tages and Posts"""
     __tablename__ = "tagsposts"

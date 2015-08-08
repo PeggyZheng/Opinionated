@@ -69,17 +69,18 @@ def logout_user():
 #######################################################################################################
 #functions that render posts pages
 
-@app.route('/home')
+@app.route('/home', methods=['GET', 'POST'])
 def show_all_posts():
     """the homepage of the site where all the posts will be shown in a table"""
-    dict = {}
-    hash_files = {}
-    posts = Post.query.all()
-    for post in posts:
-       for choice in post.choices:
-           hash_files[choice] = hashlib.sha512(str(choice.choice_id)).hexdigest()
 
-    return render_template('post_list.html', posts=posts, hash_files=hash_files)
+    posts =  Post.query.all()
+    hash_files = {}
+    for post in posts:
+        for choice in post.choices:
+            hash_files[choice] = hashlib.sha512(str(choice.choice_id)).hexdigest()
+    tags_list = generate_tag_list()
+
+    return render_template('post_list.html', posts=posts, hash_files=hash_files, tags_list=tags_list)
 
 
 @app.route('/home/post/<int:post_id>')
@@ -93,9 +94,13 @@ def show_post_detail(post_id):
         hash_files[choice] = hashlib.sha512(str(choice.choice_id)).hexdigest()
     vote_dict, total_votes = count_votes(post.post_id)
     comments = Comment.query.filter_by(post_id=post_id).all()
-    # text_choices, img_choices = check_choice_type(post_id)
+    tags = Tag.query.filter(Tag.posts.any(post_id=post_id)).all()
+    tag_list = []
+    for tag in tags:
+        tag_list.append(tag.tag_name)
+
     return render_template('post_details.html', post=post, choices=choices, vote_dict=vote_dict,
-                           comments=comments, total_votes=total_votes, hash_files=hash_files)
+                           comments=comments, total_votes=total_votes, hash_files=hash_files, tag_list=tag_list)
 
 #
 # def check_choice_type(post_id):
@@ -233,15 +238,6 @@ def process_question():
 
     return redirect(url_for('user_profile', user_id=author_id))
 
-# @app.route('/home/post/tag', methods=['POST'])
-# def process_tag():
-#    tag = request.form.get('tags')
-#    search_results = Tag.query.filter(Tag.tag_name.like(str(tag)+'%')).all()
-#    search_dict = {}
-#    for search_result in search_results:
-#        search_dict[search_result.tag_id] = search_result.tag_name
-#    return jsonify(search_dict)
-
 
 def process_tags(tag_list, post_id):
     """the helper function to process the tags"""
@@ -283,6 +279,42 @@ def process_comments(post_id):
     else:
         flash("You need to login first")
         return redirect(url_for('login'))
+
+#######################################################################################################
+#the functions that handle post search based on tags
+
+def generate_tag_list():
+    """the helper function that generates a list with all tag names"""
+    tags = Tag.query.all()
+    tags_list = []
+    for tag in tags:
+        tag_name = tag.tag_name
+        tag_name = str(tag_name)
+        tags_list.append(tag_name)
+    return tags_list
+#
+@app.route('/home/search', methods=['GET', 'POST'])
+def search_post_by_tag():
+    search = request.form.get('postsearch')
+    print search
+    print type(search)
+    search = str(search)
+    return redirect(url_for('post_by_tag', tag_name=search))
+
+
+@app.route('/home/tag/<tag_name>')
+def post_by_tag(tag_name):
+    post_list = []
+    all_tagged_posts = Post.query.filter(Post.tags.any(tag_name=tag_name)).all()
+    for post in all_tagged_posts:
+        if post not in post_list:
+            post_list.append(post)
+    tags_list = generate_tag_list()
+    if post_list:
+        return render_template('post_list_by_tag.html', post_list=post_list, tags_list=tags_list)
+    else:
+        flash('your search returns no relevant posts')
+        return redirect(url_for('show_all_posts'))
 
 
 

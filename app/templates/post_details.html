@@ -10,6 +10,11 @@
             <a href="/home/user/{{ post.author.user_id }}">{{ post.author.user_name }}</a>
         </div>
         {{ post.description }} (<span id="total-vote">{{ total_votes }}</span> people have voted on this)
+        <br>
+        tags:
+        {% for tag in tag_list %}
+        {{ tag }}
+        {% endfor %}
     <form action="/home/post/{{ post.post_id }}/refresh" method="post" id="vote-form">
 
             {% for choice in choices %}

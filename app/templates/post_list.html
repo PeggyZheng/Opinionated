@@ -5,6 +5,15 @@
 <a href="/home/user/{{ session['loggedin'] }}">My page</a>
 
 <a href="/home/post">I want to post a question</a>
+<div>
+    <form action="/home/search" method="post">
+  Search Posts:
+  <input type="search" name="postsearch" id="tags" class="form-control tm-input tm-input-info typeahead">
+  <input type = "submit" value="Search">
+
+</form>
+</div>
+
 
 <ul class="posts">
     {% for post in posts %}
@@ -31,5 +40,80 @@
 
     {% endfor %}
 </ul>
+
+<script src="https://code.jquery.com/jquery.js"></script>
+<!-- jQuery/AJAX -->
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+<!--Tag Manager -->
+<script src="../static/tag/tagmanager.js"></script>
+<!-- Bloodhound & Typeahead -->
+<script src="../static/typeahead/bloodhound.js"></script>
+<script src="../static/typeahead/typeahead.bundle.js"></script>
+<script src="../static/typeahead/typeahead.jquery.js"></script>
+
+<script>
+
+    var new_list = {{ tags_list|safe }};
+    console.log(new_list);
+
+//    jQuery(".tm-input").tagsManager({
+//        CapitalizeFirstLetter: true,
+//        AjaxPush: null,
+//        AjaxPushallTags: null,
+//        AjaxPushParameters: null,
+//        delimiters:[9, 13, 44], //tab, enter, comma
+//        backspace: [8], //backspace removes the rightmost tag
+//        hiddenTagListName: 'hidden_tags_search',
+//        onlyTagList: false,
+//        tagList: new_list
+//
+//    });
+
+    var substringMatcher = function(strs) {
+        return function findMatches(q, cb) {
+      if (q === '') {
+          cb(new_list);
+      }
+      else {
+          var matches, substringRegex;
+
+    // an array that will be populated with substring matches
+    matches = [];
+
+    // regex used to determine if a string contains the substring `q`
+    substrRegex = new RegExp(q, 'i');
+
+    // iterate through the pool of strings and for any string that
+    // contains the substring `q`, add it to the `matches` array
+    $.each(strs, function(i, str) {
+      if (substrRegex.test(str)) {
+        matches.push(str);
+      }
+    });
+
+    cb(matches);
+  }
+ };
+};
+
+function defTags(q, sync) {
+    if (q === '') {
+        sync(new_list);
+    }
+    else {
+        substringMatcher(new_list);
+    }
+}
+
+$('#tags').typeahead({
+  hint: true,
+  highlight: true,
+  minLength: 1
+},
+{
+  source: substringMatcher(new_list)
+});
+
+</script>
 
 {% endblock %}

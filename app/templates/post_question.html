@@ -60,7 +60,7 @@
     console.log(new_list);
 
     jQuery(".tm-input").tagsManager({
-        CapitalizeFirstLetter: true,
+        CapitalizeFirstLetter: false,
         AjaxPush: null,
         AjaxPushallTags: null,
         AjaxPushParameters: null,
@@ -95,7 +95,7 @@ var substringMatcher = function(strs) {
     });
 
     cb(matches);
-  };
+  }
  };
 };
 
@@ -114,7 +114,6 @@ $('#tags .typeahead').typeahead({
   minLength: 1
 },
 {
-  name: 'states',
   source: substringMatcher(new_list)
 });
 
