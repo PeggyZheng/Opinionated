@@ -13,7 +13,7 @@
         <br>
         tags:
         {% for tag in tag_list %}
-        {{ tag }}
+        <a href="/home/tag/{{ tag }}">{{ tag }}</a>
         {% endfor %}
     <form action="/home/post/{{ post.post_id }}/refresh" method="post" id="vote-form">
 
