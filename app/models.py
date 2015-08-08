@@ -107,6 +107,32 @@ class Post(db.Model):
         """Return the post id and description when printed"""
         return "<Post post_id=%s, description=%s>" % (self.post_id, self.description)
 
+    @classmethod
+    def get_all_posts_id(cls, post_list=None):
+        """returns a list of all posts with post id"""
+        if not post_list:
+            posts = cls.query.all()
+        else:
+            posts = post_list
+        post_id_list = []
+        for post in posts:
+            post_id_list.append(post.post_id)
+        return post_id_list
+
+    @classmethod
+    def get_all_posts_by_tag(cls, tag):
+        posts = cls.query.filter(cls.tags.any(tag_name=tag)).all()
+        if posts:
+            post_id_list = []
+            for post in posts:
+                post_id_list.append(post.post_id)
+            return post_id_list
+        else:
+            raise Exception("no post with such tag %s" % tag)
+
+
+
+
 
 class Vote(db.Model):
     """Users' vote on a specific question/post"""
@@ -158,6 +184,11 @@ class Choice(db.Model):
     #     for choice in choice_list:
     #         hash_files[choice] = hashlib.sha512(str(choice.choice_id)).hexdigest()
 
+    @classmethod
+    def get_all_choice_by_post(cls, post_id):
+        choices = cls.query.filter(cls.post_id==post_id).all()
+
+
 class Tag(db.Model):
     """ Tags table """
 
@@ -172,16 +203,21 @@ class Tag(db.Model):
     def __repr__(self):
         return "<Tag tag_id=%s tag_name=%s>" % (self.tag_id, self.tag_name)
 
-    # def get_all_tag_names(self):
-    #     tags = Tag.query.all()
-    #     tags_list = []
-    #     for tag in tags:
-    #         tag_name = tag.tag_name
-    #         tag_name = str(tag_name)
-    #         tags_list.append(tag_name)
-    #     return tags_list
+    @classmethod
+    def get_all_tag_names(cls):
+        """returns a list of all tag names"""
+        tags = cls.query.all()
+        tags_list = []
+        for tag in tags:
+            tag_name = tag.tag_name
+            tag_name = str(tag_name)
+            tags_list.append(tag_name)
+        return tags_list
 
-    # def get_tags_by_post_id(self, post_id):
+    @classmethod
+    def get_tags_by_post_id(cls, post_id):
+        tags = cls.query.filter(cls.posts.any(post_id=post_id)).all()
+        return tags
 
 
 class TagPost(db.Model):

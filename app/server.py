@@ -73,14 +73,16 @@ def logout_user():
 def show_all_posts():
     """the homepage of the site where all the posts will be shown in a table"""
 
-    posts =  Post.query.all()
+    post_list =  Post.query.all()
     hash_files = {}
-    for post in posts:
+    for post in post_list:
         for choice in post.choices:
             hash_files[choice] = hashlib.sha512(str(choice.choice_id)).hexdigest()
     tags_list = generate_tag_list()
+    post_id_list = Post.get_all_posts_id()
+    session["post_list"] = post_id_list
 
-    return render_template('post_list.html', posts=posts, hash_files=hash_files, tags_list=tags_list)
+    return render_template('post_list.html', post_list=post_list, hash_files=hash_files, tags_list=tags_list)
 
 
 @app.route('/home/post/<int:post_id>')
@@ -98,28 +100,14 @@ def show_post_detail(post_id):
     tag_list = []
     for tag in tags:
         tag_list.append(tag.tag_name)
-
-    total_posts = len(Post.query.all())
-    print total_posts
+    post_list = session.get("post_list", None)
+    print post_list
 
     return render_template('post_details.html', post=post, choices=choices, vote_dict=vote_dict,
                            comments=comments, total_votes=total_votes, hash_files=hash_files, tag_list=tag_list,
-                           total_posts=total_posts)
+                           post_list=post_list)
 
-#
-# def check_choice_type(post_id):
-#     """a helper function that checks the choice type so we can pass it in to template for different displaying
-#     config"""
-#     post = Post.query.get(post_id)
-#     choices = Choice.query.filter_by(post_id=post.post_id).all()
-#     text_choices = []
-#     img_choices = []
-#     for choice in choices:
-#         if choice.text_choice:
-#             text_choices.append(choice)
-#         elif choice.file_name:
-#             img_choices.append(choice)
-#     return text_choices, img_choices
+
 
 def count_votes(post_id):
     """this is a helper function that counts the vote on a particular questions and returns
@@ -299,6 +287,7 @@ def generate_tag_list():
 #
 @app.route('/home/search', methods=['GET', 'POST'])
 def search_post_by_tag():
+    """the function that fetch the search user enters and pass it to the corresponding post list page"""
     search = request.form.get('postsearch')
     print search
     print type(search)
@@ -308,6 +297,7 @@ def search_post_by_tag():
 
 @app.route('/home/tag/<tag_name>')
 def post_by_tag(tag_name):
+    """the function that shows the relevant post list based on the tags the user select"""
     post_list = []
     all_tagged_posts = Post.query.filter(Post.tags.any(tag_name=tag_name)).all()
     for post in all_tagged_posts:
@@ -315,33 +305,14 @@ def post_by_tag(tag_name):
             post_list.append(post)
     tags_list = generate_tag_list()
     if post_list:
+        post_id_list = Post.get_all_posts_id(post_list)
+        session["post_list"] = post_id_list
         return render_template('post_list_by_tag.html', post_list=post_list, tags_list=tags_list)
     else:
         flash('your search returns no relevant posts')
         return redirect(url_for('show_all_posts'))
 
 
-
-# @app.route('/movies/<int:movie_id>', methods=['POST'])
-# def update_movie_rating(movie_id):
-#     """update the ratings for a particular movie and particular users and update the db"""
-#     score = int(request.form.get('score'))
-#     if session.get('loggedin', None):
-#         user_id = session['loggedin']
-#         has_rated = Rating.query.filter_by(user_id=user_id, movie_id=movie_id).first()
-#         if has_rated:
-#             has_rated.score = score
-#         else:
-#             movie_rating = Rating(movie_id=movie_id, user_id=user_id, score=score)
-#             db.session.add(movie_rating)
-#
-#         db.session.commit()
-#         flash('Your rating has been added/updated')
-#
-#         return redirect(url_for('show_movie_details', movie_id=movie_id))
-#     else:
-#         flash('You need to login first')
-#         return redirect(url_for('index'))
 
 
 
