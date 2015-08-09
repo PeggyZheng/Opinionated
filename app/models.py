@@ -204,9 +204,8 @@ class Choice(db.Model):
             hash_files[choice] = hashlib.sha512(str(choice.choice_id)).hexdigest()
 
     @classmethod
-    def get_all_choice_by_post(cls, post_id):
-        choices = cls.query.filter(cls.post_id==post_id).all()
-        return choices
+    def get_choices_by_post_id(cls, post_id):
+        return cls.query.filter_by(post_id=post_id).all()
 
 
 class Tag(db.Model):

@@ -91,7 +91,7 @@ def show_post_detail(post_id):
     """show the details of the post (post description, choices available), users' votes on it and comments;
     User can also vote on the questions"""
     post = Post.get_post_by_id(post_id)
-    choices = Choice.query.filter_by(post_id=post.post_id).all()
+    choices = Choice.get_choices_by_post_id(post_id)
     hash_files = {}
     for choice in choices:
         hash_files[choice] = hashlib.sha512(str(choice.choice_id)).hexdigest()
@@ -113,7 +113,7 @@ def count_votes(post_id):
     """this is a helper function that counts the vote on a particular questions and returns
     the result in integer(actual number of votes) and percentage(allocation)"""
     post = Post.get_post_by_id(post_id)
-    choices = Choice.query.filter_by(post_id=post_id).all()
+    choices = Choice.get_choices_by_post_id(post_id)
     vote_dict = {}
     for choice in choices:
         votes = len(Vote.query.filter_by(vote=choice.choice_id).all())
@@ -134,7 +134,7 @@ def user_profile(user_id):
     my_votes = Vote.query.filter_by(user_id=user_id).all()
     hash_files = {}
     for post in posts:
-        choices = Choice.query.filter_by(post_id=post.post_id).all()
+        choices = Choice.get_choices_by_post_id(post.post_id)
         for choice in choices:
             hash_files[choice] = hashlib.sha512(str(choice.choice_id)).hexdigest()
     post_id_list = [post.post_id for post in posts]
