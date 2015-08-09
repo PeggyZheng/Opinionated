@@ -172,17 +172,18 @@ class Choice(db.Model):
         """Return the post id and description when printed"""
         return "<Choice text_choice=%s, file_name=%s, post_id=%s>" % \
                (self.text_choice, self.file_name, self.post_id)
-    #
-    # def store_img(self, file):
-    #     k = Key(bucket)
-    #     k.key = hashlib.sha512(str(self.choice_id)).hexdigest()
-    #     k.set_contents_from_file(file)
-    #     k.set_canned_acl('public-read')
-    #
-    # def retrieve_img(self, choice_list):
-    #     hash_files = {}
-    #     for choice in choice_list:
-    #         hash_files[choice] = hashlib.sha512(str(choice.choice_id)).hexdigest()
+
+    @classmethod
+    def store_img(cls, file):
+        k = Key(bucket)
+        k.key = hashlib.sha512(str(self.choice_id)).hexdigest()
+        k.set_contents_from_file(file)
+        k.set_canned_acl('public-read')
+
+    def retrieve_img(self, choice_list):
+        hash_files = {}
+        for choice in choice_list:
+            hash_files[choice] = hashlib.sha512(str(choice.choice_id)).hexdigest()
 
     @classmethod
     def get_all_choice_by_post(cls, post_id):

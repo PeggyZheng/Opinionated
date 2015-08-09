@@ -1,5 +1,4 @@
 env
 secrets.sh
-app/__init__.pyv
-app/models.pyc
-app/server.pyc
+*.pyc
+*.db
