@@ -138,6 +138,8 @@ def user_profile(user_id):
         choices = Choice.query.filter_by(post_id=post.post_id).all()
         for choice in choices:
             hash_files[choice] = hashlib.sha512(str(choice.choice_id)).hexdigest()
+    post_id_list = Post.get_all_posts_id(posts)
+    session["post_list"] = post_id_list
 
     return render_template("user_profile.html", posts=posts, my_votes=my_votes, hash_files=hash_files)
 

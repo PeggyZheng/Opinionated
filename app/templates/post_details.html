@@ -137,7 +137,7 @@ $('#vote-form').on('submit', handleVote);
 
   function nextPost (post_id, post_list) {
       var idx = post_list.indexOf(post_id);
-      if (post_id < post_list.length - 1) {
+      if (idx < post_list.length - 1) {
           var next = post_list[idx + 1];
           location.href = next.toString();
       } else {
