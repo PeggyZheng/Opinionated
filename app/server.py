@@ -31,13 +31,14 @@ bucket = conn.get_bucket(os.environ['AWS_BUCKET'])
 
 
 #######################################################################################################
-#functions that handles login and logout
+# functions that handles login and logout
 
 @app.route("/")
 def login():
     """Homepage with login"""
 
     return render_template("login.html")
+
 
 @app.route('/login', methods=['POST'])
 def login_user():
@@ -57,7 +58,6 @@ def login_user():
         return redirect(url_for('login'))
 
 
-
 @app.route('/logout')
 def logout_user():
     """Log out the user; remove the user from the session and flash a notification message"""
@@ -66,20 +66,21 @@ def logout_user():
     flash("You have logged out")
     return redirect(url_for('login'))
 
+
 #######################################################################################################
-#functions that render posts pages
+# functions that render posts pages
 
 @app.route('/home', methods=['GET', 'POST'])
 def show_all_posts():
     """the homepage of the site where all the posts will be shown in a table"""
 
-    post_list =  Post.query.all()
+    post_list = Post.get_all_posts()
     hash_files = {}
     for post in post_list:
         for choice in post.choices:
             hash_files[choice] = hashlib.sha512(str(choice.choice_id)).hexdigest()
     tags_list = generate_tag_list()
-    post_id_list = Post.get_all_posts_id()
+    post_id_list = [post.post_id for post in post_list]
     session["post_list"] = post_id_list
 
     return render_template('post_list.html', post_list=post_list, hash_files=hash_files, tags_list=tags_list)
@@ -89,7 +90,7 @@ def show_all_posts():
 def show_post_detail(post_id):
     """show the details of the post (post description, choices available), users' votes on it and comments;
     User can also vote on the questions"""
-    post = Post.query.get(post_id)
+    post = Post.get_post_by_id(post_id)
     choices = Choice.query.filter_by(post_id=post.post_id).all()
     hash_files = {}
     for choice in choices:
@@ -108,11 +109,10 @@ def show_post_detail(post_id):
                            post_list=post_list)
 
 
-
 def count_votes(post_id):
     """this is a helper function that counts the vote on a particular questions and returns
     the result in integer(actual number of votes) and percentage(allocation)"""
-    post = Post.query.get(post_id)
+    post = Post.get_post_by_id(post_id)
     choices = Choice.query.filter_by(post_id=post_id).all()
     vote_dict = {}
     for choice in choices:
@@ -122,29 +122,29 @@ def count_votes(post_id):
     return vote_dict, total_votes
 
 
-
 #######################################################################################################
-#functions that render users profile
+# functions that render users profile
 
 
 @app.route('/home/user/<int:user_id>')
 def user_profile(user_id):
     """this is the page that will show users' all posts, and all things they have voted on"""
     # post_dict = {}
-    posts = Post.query.filter_by(author_id=user_id).all()
+    posts = Post.get_posts_by_author_id(user_id)
     my_votes = Vote.query.filter_by(user_id=user_id).all()
     hash_files = {}
     for post in posts:
         choices = Choice.query.filter_by(post_id=post.post_id).all()
         for choice in choices:
             hash_files[choice] = hashlib.sha512(str(choice.choice_id)).hexdigest()
-    post_id_list = Post.get_all_posts_id(posts)
+    post_id_list = [post.post_id for post in posts]
     session["post_list"] = post_id_list
 
     return render_template("user_profile.html", posts=posts, my_votes=my_votes, hash_files=hash_files)
 
+
 #######################################################################################################
-#functions that handles votes
+# functions that handles votes
 
 @app.route('/home/post/<int:post_id>/refresh', methods=['POST'])
 def process_vote(post_id):
@@ -161,12 +161,13 @@ def process_vote(post_id):
 
     total_votes_percent = {}
     for vote in vote_dict:
-        total_votes_percent[vote] = float(vote_dict[vote])/total_votes
+        total_votes_percent[vote] = float(vote_dict[vote]) / total_votes
 
     return json.dumps([vote_dict, total_votes_percent, total_votes])
 
+
 #######################################################################################################
-#functions that handles posting a question
+# functions that handles posting a question
 
 
 @app.route('/home/post')
@@ -187,6 +188,7 @@ def allowed_file(filename):
     return '.' in filename and \
            filename.lower().rsplit('.', 1)[1] in ALLOWED_EXTENSIONS
 
+
 @app.route('/home/post/process', methods=['POST'])
 def process_question():
     """Process the questions that user added, and updated the database"""
@@ -198,7 +200,6 @@ def process_question():
     author_id = session['loggedin']
     tags = request.form.get('hidden_tags')
 
-
     new_post = Post(author_id=author_id, description=description)
     db.session.add(new_post)
     db.session.commit()
@@ -206,7 +207,7 @@ def process_question():
 
     process_tags(tags, post_id)
     # upload images to amazon
-    choice_list = [(text_option1, fileupload1),(text_option2, fileupload2)]
+    choice_list = [(text_option1, fileupload1), (text_option2, fileupload2)]
     for text_choice, img_choice in choice_list:
         print 'img_choice', img_choice.filename
         if img_choice:
@@ -215,7 +216,6 @@ def process_question():
                 new_choice = Choice(text_choice=text_choice, file_name=filename, post_id=new_post.post_id)
                 db.session.add(new_choice)
                 db.session.commit()
-
 
                 k = Key(bucket)
                 k.key = hashlib.sha512(str(new_choice.choice_id)).hexdigest()
@@ -253,9 +253,8 @@ def process_tags(tag_list, post_id):
             db.session.commit()
 
 
-
 #######################################################################################################
-#the functions that handles comments
+# the functions that handles comments
 
 @app.route('/home/post/<int:post_id>/comment/refresh', methods=['POST'])
 def process_comments(post_id):
@@ -274,8 +273,9 @@ def process_comments(post_id):
         flash("You need to login first")
         return redirect(url_for('login'))
 
+
 #######################################################################################################
-#the functions that handle post search based on tags
+# the functions that handle post search based on tags
 
 def generate_tag_list():
     """the helper function that generates a list with all tag names"""
@@ -286,6 +286,8 @@ def generate_tag_list():
         tag_name = str(tag_name)
         tags_list.append(tag_name)
     return tags_list
+
+
 #
 @app.route('/home/search', methods=['GET', 'POST'])
 def search_post_by_tag():
@@ -300,22 +302,19 @@ def search_post_by_tag():
 @app.route('/home/tag/<tag_name>')
 def post_by_tag(tag_name):
     """the function that shows the relevant post list based on the tags the user select"""
-    post_list = []
-    all_tagged_posts = Post.query.filter(Post.tags.any(tag_name=tag_name)).all()
-    for post in all_tagged_posts:
-        if post not in post_list:
-            post_list.append(post)
+    post_list = Post.get_posts_by_tag(tag_name)
+    # TODO: Do I need to account for duplicates here?
+    #for post in all_tagged_posts:
+    #    if post not in post_list:
+    #        post_list.append(post)
     tags_list = generate_tag_list()
     if post_list:
-        post_id_list = Post.get_all_posts_id(post_list)
+        post_id_list = [post.post_id for post in post_list]
         session["post_list"] = post_id_list
         return render_template('post_list_by_tag.html', post_list=post_list, tags_list=tags_list)
     else:
         flash('your search returns no relevant posts')
         return redirect(url_for('show_all_posts'))
-
-
-
 
 
 if __name__ == "__main__":

@@ -17,9 +17,9 @@ import hashlib
 
 db = SQLAlchemy()
 
-# # setup for s3
-# conn = S3Connection(os.environ["AWS_ACCESS_KEY"], os.environ["AWS_SECRET_KEY"])
-# bucket = conn.get_bucket(os.environ['AWS_BUCKET'])
+# setup for s3
+conn = S3Connection(os.environ["AWS_ACCESS_KEY"], os.environ["AWS_SECRET_KEY"])
+bucket = conn.get_bucket(os.environ['AWS_BUCKET'])
 
 ##############################################################################
 # Model definitions
@@ -48,6 +48,8 @@ class User(db.Model):
 
     @property
     def password(self):
+        """the password is necessary field when instantiate a user, however it is not an actual column in the db
+        only the password hash will be saved"""
         raise AttributeError('The password is not a readable attribute')
 
     @password.setter
@@ -60,6 +62,12 @@ class User(db.Model):
         """verify the password by comparing the entered password to the hash;
         returns True or False"""
         return check_password_hash(self.password_hash, password)
+
+    @classmethod
+    def get_all_users(cls):
+        return User.query.all()
+
+
 
 
 class Comment(db.Model):
@@ -107,54 +115,64 @@ class Post(db.Model):
         """Return the post id and description when printed"""
         return "<Post post_id=%s, description=%s>" % (self.post_id, self.description)
 
-    @classmethod
-    def get_all_posts_id(cls, post_list=None):
-        """returns a list of all posts with post id"""
-        if not post_list:
-            posts = cls.query.all()
-        else:
-            posts = post_list
-        post_id_list = []
-        for post in posts:
-            post_id_list.append(post.post_id)
-        return post_id_list
 
     @classmethod
-    def get_all_posts_by_tag(cls, tag):
-        posts = cls.query.filter(cls.tags.any(tag_name=tag)).all()
-        if posts:
-            post_id_list = []
-            for post in posts:
-                post_id_list.append(post.post_id)
-            return post_id_list
-        else:
-            raise Exception("no post with such tag %s" % tag)
+    def get_all_posts(cls):
+        return cls.query.all()
 
 
+    @classmethod
+    def get_post_by_id(cls, post_id):
+        return cls.query.filter_by(post_id=post_id).first()
 
+    @classmethod
+    def get_posts_by_author_id(cls, author_id):
+        return cls.query.filter_by(author_id=author_id).all()
+
+
+    @classmethod
+    def get_posts_by_tag(cls, tag):
+        return cls.query.filter(cls.tags.any(tag_name=tag)).all()
 
 
 class Vote(db.Model):
-    """Users' vote on a specific question/post"""
+    """
+    Users' vote on a specific question/post;
+    a vote is mapping to a choice and a user
+    """
 
     __tablename__ = 'votes'
 
     vote_id = db.Column(db.Integer, autoincrement=True, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.user_id'), nullable=False)
-    # post_id = db.Column(db.Integer, db.ForeignKey('posts.post_id'), nullable=False)
     vote = db.Column(db.Integer, db.ForeignKey('choices.choice_id'), nullable=False)
     timestamp = db.Column(db.TIMESTAMP, default=datetime.utcnow())
 
     user = db.relationship("User", backref=db.backref("votes", order_by=timestamp))
-    # post = db.relationship("Post", backref=db.backref("votes", order_by=timestamp))
-
-    choice = db.relationship("Choice", backref=db.backref("vote", order_by=timestamp))
+    choice = db.relationship("Choice", backref=db.backref("votes", order_by=timestamp))
 
 
 
     def __repr__(self):
         """Return the post id and description when printed"""
         return "<Vote vote_id=%s, vote=%s>" % (self.vote_id, self.vote)
+
+    @classmethod
+    def count_votes(cls, post_id):
+        choices = cls.query.filter_by(post_id=post_id).all()
+        vote_dict = {}
+        for choice in choices:
+            votes = len(cls.query.filter_by(vote=choice.choice_id).all())
+            vote_dict[choice.choice_id] = votes
+        total_votes = sum(vote_dict.values())
+        return vote_dict, total_votes
+
+    @classmethod
+    def count_vote_percentage(cls, vote_dict, total_votes):
+        vote_percentage_dict = {}
+        for vote in vote_dict:
+            vote_percentage_dict[vote] = float(vote_dict[vote])/total_votes
+        return vote_percentage_dict
 
 class Choice(db.Model):
     """ Files (images, videos, audio etc) associated with specific post """
@@ -173,8 +191,8 @@ class Choice(db.Model):
         return "<Choice text_choice=%s, file_name=%s, post_id=%s>" % \
                (self.text_choice, self.file_name, self.post_id)
 
-    @classmethod
-    def store_img(cls, file):
+
+    def store_img(self, file):
         k = Key(bucket)
         k.key = hashlib.sha512(str(self.choice_id)).hexdigest()
         k.set_contents_from_file(file)
@@ -188,6 +206,7 @@ class Choice(db.Model):
     @classmethod
     def get_all_choice_by_post(cls, post_id):
         choices = cls.query.filter(cls.post_id==post_id).all()
+        return choices
 
 
 class Tag(db.Model):
@@ -205,20 +224,13 @@ class Tag(db.Model):
         return "<Tag tag_id=%s tag_name=%s>" % (self.tag_id, self.tag_name)
 
     @classmethod
-    def get_all_tag_names(cls):
-        """returns a list of all tag names"""
-        tags = cls.query.all()
-        tags_list = []
-        for tag in tags:
-            tag_name = tag.tag_name
-            tag_name = str(tag_name)
-            tags_list.append(tag_name)
-        return tags_list
-
-    @classmethod
-    def get_tags_by_post_id(cls, post_id):
-        tags = cls.query.filter(cls.posts.any(post_id=post_id)).all()
-        return tags
+    def get_tag_names_by_post_id(cls, post_id=None):
+        """returns a list of tag names given a post_id, otherwise returns all tag names"""
+        if post_id:
+            tags = cls.query.filter(cls.posts.any(post_id=post_id)).all()
+        else:
+            tags = cls.query.all()
+        return [str(tag.tag_name) for tag in tags]
 
 
 class TagPost(db.Model):
