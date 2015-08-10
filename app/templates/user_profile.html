@@ -13,8 +13,8 @@
         </div>
         {% for choice in post.choices %}
         <div>
-            {% if choice.text_choice %}
-             {{ choice.text_choice }}
+            {% if choice.choice_text %}
+             {{ choice.choice_text }}
             {% endif %}
         </div>
 
@@ -42,8 +42,8 @@
             <a href="/home/post/{{ vote.choice.post_id }}">{{ vote.choice.post.description }}</a>
         </div>
         <div>
-            {% if vote.choice.text_choice %}
-            I voted on {{ vote.choice.text_choice }}
+            {% if vote.choice.choice_text %}
+            I voted on {{ vote.choice.choice_text }}
             {% else %}
             I voted on {{ vote.choice.file_name }}
             {% endif %}

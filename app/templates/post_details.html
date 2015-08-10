@@ -21,21 +21,21 @@
 
             {% for choice in choices %}
 
-                {% if choice.text_choice and choice.file_name %}
-                     <input type="radio" name="vote" value="{{ choice.choice_id }}" class="choice">
-                     <div>{{ choice.text_choice }}</div>
+                {% if choice.choice_text and choice.file_name %}
+                     <input type="radio" name="choice_id" value="{{ choice.choice_id }}" class="choice">
+                     <div>{{ choice.choice_text }}</div>
                      <div>
                          <img src="https://s3-us-west-2.amazonaws.com/opinionated/{{hash_files[choice]}}" alt="{{ choice.file_name }}" width="300px" height="auto">
                      </div>
 
                 {% elif choice.file_name %}
-                     <input type="radio" name="vote" value="{{ choice.choice_id }}" class="choice">
+                     <input type="radio" name="choice_id" value="{{ choice.choice_id }}" class="choice">
                      <div>
                          <img src="https://s3-us-west-2.amazonaws.com/opinionated/{{hash_files[choice]}}" alt="{{ choice.file_name }}" width="300px" height="auto">
                      </div>
                 {% else  %}
-                     <input type="radio" name="vote" value="{{ choice.choice_id }}" class="choice">
-                     <div>{{ choice.text_choice }}</div>
+                     <input type="radio" name="choice_id" value="{{ choice.choice_id }}" class="choice">
+                     <div>{{ choice.choice_text }}</div>
                 {% endif %}
 
                 <div>
@@ -98,7 +98,7 @@ $('#comment-form').on('submit', handleComments);
 
     function handleVote(evt) {
         evt.preventDefault();
-        var formInputs = {vote: $('input[type="radio"][name="vote"]:checked').val()};
+        var formInputs = {choice_id: $('input[type="radio"][name="choice_id"]:checked').val()};
 
         $.post('/home/post/{{post.post_id}}/refresh', formInputs, function (result) {
 

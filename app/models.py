@@ -134,6 +134,15 @@ class Post(db.Model):
     def get_posts_by_tag(cls, tag):
         return cls.query.filter(cls.tags.any(tag_name=tag)).all()
 
+    def count_votes(self):
+        choices = Choice.get_choices_by_post_id(self.post_id)
+        vote_dict = {} # vote count dictionary that maps choice to number of votes
+        for choice in choices:
+            vote_dict[choice.choice_id] = len(choice.get_votes())
+        total_votes = sum(vote_dict.values())
+        return vote_dict, total_votes
+
+
 
 class Vote(db.Model):
     """
@@ -145,7 +154,7 @@ class Vote(db.Model):
 
     vote_id = db.Column(db.Integer, autoincrement=True, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.user_id'), nullable=False)
-    vote = db.Column(db.Integer, db.ForeignKey('choices.choice_id'), nullable=False)
+    choice_id = db.Column(db.Integer, db.ForeignKey('choices.choice_id'), nullable=False)
     timestamp = db.Column(db.TIMESTAMP, default=datetime.utcnow())
 
     user = db.relationship("User", backref=db.backref("votes", order_by=timestamp))
@@ -155,24 +164,15 @@ class Vote(db.Model):
 
     def __repr__(self):
         """Return the post id and description when printed"""
-        return "<Vote vote_id=%s, vote=%s>" % (self.vote_id, self.vote)
+        return "<Vote vote_id=%s, choice_id=%s>" % (self.vote_id, self.choice_id)
+
+
+
+
 
     @classmethod
-    def count_votes(cls, post_id):
-        choices = cls.query.filter_by(post_id=post_id).all()
-        vote_dict = {}
-        for choice in choices:
-            votes = len(cls.query.filter_by(vote=choice.choice_id).all())
-            vote_dict[choice.choice_id] = votes
-        total_votes = sum(vote_dict.values())
-        return vote_dict, total_votes
-
-    @classmethod
-    def count_vote_percentage(cls, vote_dict, total_votes):
-        vote_percentage_dict = {}
-        for vote in vote_dict:
-            vote_percentage_dict[vote] = float(vote_dict[vote])/total_votes
-        return vote_percentage_dict
+    def get_votes_by_user_id(cls, user_id):
+        return cls.query.filter_by(user_id=user_id).all()
 
 class Choice(db.Model):
     """ Files (images, videos, audio etc) associated with specific post """
@@ -180,16 +180,16 @@ class Choice(db.Model):
     __tablename__ = "choices"
 
     choice_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    text_choice = db.Column(db.Text)
-    file_name = db.Column(db.String(250))
+    choice_text = db.Column(db.Text)
+    file_name = db.Column(db.String(250)) # this is in fact the image url
     post_id = db.Column(db.Integer, db.ForeignKey('posts.post_id'), nullable=False)
 
     post = db.relationship("Post", backref=db.backref("choices", order_by=choice_id))
 
     def __repr__(self):
         """Return the post id and description when printed"""
-        return "<Choice text_choice=%s, file_name=%s, post_id=%s>" % \
-               (self.text_choice, self.file_name, self.post_id)
+        return "<Choice choice_text=%s, file_name=%s, post_id=%s>" % \
+               (self.choice_text, self.file_name, self.post_id)
 
 
     def store_img(self, file):
@@ -206,6 +206,11 @@ class Choice(db.Model):
     @classmethod
     def get_choices_by_post_id(cls, post_id):
         return cls.query.filter_by(post_id=post_id).all()
+
+
+    def get_votes(self):
+        return Vote.query.filter_by(choice_id=self.choice_id).all()
+
 
 
 class Tag(db.Model):

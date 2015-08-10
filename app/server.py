@@ -95,7 +95,7 @@ def show_post_detail(post_id):
     hash_files = {}
     for choice in choices:
         hash_files[choice] = hashlib.sha512(str(choice.choice_id)).hexdigest()
-    vote_dict, total_votes = count_votes(post.post_id)
+    vote_dict, total_votes = post.count_votes()
     comments = Comment.query.filter_by(post_id=post_id).all()
     tags = Tag.query.filter(Tag.posts.any(post_id=post_id)).all()
     tag_list = []
@@ -109,17 +109,7 @@ def show_post_detail(post_id):
                            post_list=post_list)
 
 
-def count_votes(post_id):
-    """this is a helper function that counts the vote on a particular questions and returns
-    the result in integer(actual number of votes) and percentage(allocation)"""
-    post = Post.get_post_by_id(post_id)
-    choices = Choice.get_choices_by_post_id(post_id)
-    vote_dict = {}
-    for choice in choices:
-        votes = len(Vote.query.filter_by(vote=choice.choice_id).all())
-        vote_dict[choice.choice_id] = votes
-    total_votes = sum(vote_dict.values())
-    return vote_dict, total_votes
+
 
 
 #######################################################################################################
@@ -131,7 +121,7 @@ def user_profile(user_id):
     """this is the page that will show users' all posts, and all things they have voted on"""
     # post_dict = {}
     posts = Post.get_posts_by_author_id(user_id)
-    my_votes = Vote.query.filter_by(user_id=user_id).all()
+    my_votes = Vote.get_votes_by_user_id(user_id)
     hash_files = {}
     for post in posts:
         choices = Choice.get_choices_by_post_id(post.post_id)
@@ -150,14 +140,14 @@ def user_profile(user_id):
 def process_vote(post_id):
     """this is the function that process users' votes, so it updates the database and refresh the post-details
     page to show the updated votes and vote allocation"""
-    vote = request.form.get('vote')
+    choice_id = request.form.get("choice_id")
     user_id = session['loggedin']
-    int_vote = int(vote)
-    new_vote = Vote(user_id=user_id, vote=int_vote)
+    new_vote = Vote(user_id=user_id, choice_id=int(choice_id))
     db.session.add(new_vote)
     db.session.commit()
 
-    vote_dict, total_votes = count_votes(post_id)
+    post = Post.get_post_by_id(post_id)
+    vote_dict, total_votes = post.count_votes()
 
     total_votes_percent = {}
     for vote in vote_dict:
@@ -208,12 +198,12 @@ def process_question():
     process_tags(tags, post_id)
     # upload images to amazon
     choice_list = [(text_option1, fileupload1), (text_option2, fileupload2)]
-    for text_choice, img_choice in choice_list:
+    for choice_text, img_choice in choice_list:
         print 'img_choice', img_choice.filename
         if img_choice:
             if allowed_file(img_choice.filename):
                 filename = secure_filename(img_choice.filename)
-                new_choice = Choice(text_choice=text_choice, file_name=filename, post_id=new_post.post_id)
+                new_choice = Choice(choice_text=choice_text, file_name=filename, post_id=new_post.post_id)
                 db.session.add(new_choice)
                 db.session.commit()
 
@@ -224,7 +214,7 @@ def process_question():
             else:
                 flash('the file type you uploaded is not valid')
         else:
-            new_choice = Choice(text_choice=text_choice, post_id=new_post.post_id)
+            new_choice = Choice(choice_text=choice_text, post_id=new_post.post_id)
             db.session.add(new_choice)
             db.session.commit()
 
