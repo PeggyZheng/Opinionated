@@ -45,7 +45,7 @@ def login_user():
     """login page for user"""
     email = request.form.get('email')
     password = request.form.get('password')
-    user = User.query.filter_by(email=email).first()
+    user = User.get_user_by_email(email)
     verify_password = user.verify_password(password)
 
     if user:
@@ -250,7 +250,7 @@ def process_tags(tag_list, post_id):
 def process_comments(post_id):
     """process the comments the users entered """
     user_id = session.get('loggedin', None)
-    user_name = User.query.get(user_id).user_name
+    user_name = User.get_user_by_id(user_id).user_name
     if user_id:
         content = request.form.get('comment')
         post_id = post_id
@@ -300,8 +300,13 @@ def post_by_tag(tag_name):
     tags_list = generate_tag_list()
     if post_list:
         post_id_list = [post.post_id for post in post_list]
+        hash_files = {}
+        for post in post_list:
+            choices = Choice.get_choices_by_post_id(post.post_id)
+            for choice in choices:
+                hash_files[choice] = hashlib.sha512(str(choice.choice_id)).hexdigest()
         session["post_list"] = post_id_list
-        return render_template('post_list_by_tag.html', post_list=post_list, tags_list=tags_list)
+        return render_template('post_list_by_tag.html', post_list=post_list, tags_list=tags_list, hash_files=hash_files)
     else:
         flash('your search returns no relevant posts')
         return redirect(url_for('show_all_posts'))

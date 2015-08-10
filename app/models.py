@@ -65,9 +65,15 @@ class User(db.Model):
 
     @classmethod
     def get_all_users(cls):
-        return User.query.all()
+        return cls.query.all()
 
+    @classmethod
+    def get_user_by_id(cls, user_id):
+        return cls.query.get(user_id)
 
+    @classmethod
+    def get_user_by_email(cls, email):
+        return cls.query.filter_by(email=email).first()
 
 
 class Comment(db.Model):
