@@ -13,8 +13,6 @@ from flask import jsonify
 import json
 
 
-# define allowed file type for uploading
-ALLOWED_EXTENSIONS = set(['txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'])
 
 app = Flask(__name__)
 
@@ -79,7 +77,7 @@ def show_all_posts():
     for post in post_list:
         for choice in post.choices:
             hash_files[choice] = hashlib.sha512(str(choice.choice_id)).hexdigest()
-    tags_list = generate_tag_list()
+    tags_list = [str(tag.tag_name) for tag in Tag.get_all_tags()]
     post_id_list = [post.post_id for post in post_list]
     session["post_list"] = post_id_list
 
@@ -100,7 +98,8 @@ def show_post_detail(post_id):
     tags = Tag.get_tags_by_post_id(post_id)
     tag_list = [tag.tag_name for tag in tags]
     post_list = session.get("post_list", None)
-    print post_list
+    print vote_dict
+    print total_votes
 
     return render_template('post_details.html', post=post, choices=choices, vote_dict=vote_dict,
                            comments=comments, total_votes=total_votes, hash_files=hash_files, tag_list=tag_list,
@@ -140,9 +139,7 @@ def process_vote(post_id):
     page to show the updated votes and vote allocation"""
     choice_id = request.form.get("choice_id")
     user_id = session['loggedin']
-    new_vote = Vote(user_id=user_id, choice_id=int(choice_id))
-    db.session.add(new_vote)
-    db.session.commit()
+    Vote.create(user_id=user_id, choice_id=choice_id)
 
     post = Post.get_post_by_id(post_id)
     vote_dict, total_votes = post.count_votes()
@@ -161,15 +158,11 @@ def process_vote(post_id):
 @app.route('/home/post')
 def post_question():
     """This is the render the page that users can edit their questions/posts """
-    tags = Tag.get_all_tags()
-    tags_list = [str(tag.tag_name) for tag in tags]
+    tags_list = [str(tag.tag_name) for tag in Tag.get_all_tags()]
     return render_template("post_question.html", tags_list=tags_list)
 
 
-def allowed_file(filename):
-    """a helper function to see verify the file type uploaded"""
-    return '.' in filename and \
-           filename.lower().rsplit('.', 1)[1] in ALLOWED_EXTENSIONS
+
 
 
 @app.route('/home/post/process', methods=['POST'])
@@ -183,57 +176,11 @@ def process_question():
     author_id = session['loggedin']
     tags = request.form.get('hidden_tags')
 
-    new_post = Post(author_id=author_id, description=description)
-    db.session.add(new_post)
-    db.session.commit()
-    post_id = new_post.post_id
+    choice_data = [(text_option1, fileupload1), (text_option2, fileupload2)]
 
-    process_tags(tags, post_id)
-    # upload images to amazon
-    choice_list = [(text_option1, fileupload1), (text_option2, fileupload2)]
-    for choice_text, img_choice in choice_list:
-        print 'img_choice', img_choice.filename
-        if img_choice:
-            if allowed_file(img_choice.filename):
-                filename = secure_filename(img_choice.filename)
-                new_choice = Choice(choice_text=choice_text, file_name=filename, post_id=new_post.post_id)
-                db.session.add(new_choice)
-                db.session.commit()
-
-                k = Key(bucket)
-                k.key = hashlib.sha512(str(new_choice.choice_id)).hexdigest()
-                k.set_contents_from_file(img_choice)
-                k.set_canned_acl('public-read')
-            else:
-                flash('the file type you uploaded is not valid')
-        else:
-            new_choice = Choice(choice_text=choice_text, post_id=new_post.post_id)
-            db.session.add(new_choice)
-            db.session.commit()
-
-    flash('Your question has been posted')
+    Post.create(author_id=author_id, description=description, tag_list=tags, choice_data=choice_data)
 
     return redirect(url_for('user_profile', user_id=author_id))
-
-
-def process_tags(tag_list, post_id):
-    """the helper function to process the tags"""
-    tag_list = tag_list.split(',')
-    for tag_name in tag_list:
-        tag_to_check = Tag.get_tag_by_name(tag_name)
-        if tag_to_check:
-            tag_id = tag_to_check.tag_id
-            new_tagpost = TagPost(tag_id=tag_id, post_id=post_id)
-            db.session.add(new_tagpost)
-            db.session.commit()
-        else:
-            new_tag = Tag(tag_name=tag_name)
-            db.session.add(new_tag)
-            db.session.commit()
-            tag_id = new_tag.tag_id
-            new_tagpost = TagPost(tag_id=tag_id, post_id=post_id)
-            db.session.add(new_tagpost)
-            db.session.commit()
 
 
 #######################################################################################################
@@ -246,10 +193,7 @@ def process_comments(post_id):
     user_name = User.get_user_by_id(user_id).user_name
     if user_id:
         content = request.form.get('comment')
-        post_id = post_id
-        new_comment = Comment(content=content, user_id=user_id, post_id=post_id)
-        db.session.add(new_comment)
-        db.session.commit()
+        Comment.create(content=content, user_id=user_id, post_id=post_id)
         return jsonify(user_id=user_id, user_name=user_name, content=content)
 
     else:
@@ -258,18 +202,6 @@ def process_comments(post_id):
 
 
 #######################################################################################################
-# the functions that handle post search based on tags
-
-def generate_tag_list():
-    """the helper function that generates a list with all tag names"""
-    tags = Tag.get_all_tags()
-    tags_list = []
-    for tag in tags:
-        tag_name = tag.tag_name
-        tag_name = str(tag_name)
-        tags_list.append(tag_name)
-    return tags_list
-
 
 #
 @app.route('/home/search', methods=['GET', 'POST'])
@@ -286,11 +218,8 @@ def search_post_by_tag():
 def post_by_tag(tag_name):
     """the function that shows the relevant post list based on the tags the user select"""
     post_list = Post.get_posts_by_tag(tag_name)
-    # TODO: Do I need to account for duplicates here?
-    #for post in all_tagged_posts:
-    #    if post not in post_list:
-    #        post_list.append(post)
-    tags_list = generate_tag_list()
+    tags_list = [str(tag.tag_name) for tag in Tag.get_all_tags()]
+
     if post_list:
         post_id_list = [post.post_id for post in post_list]
         hash_files = {}

@@ -42,7 +42,7 @@
                     number of votes: <span id="vote-count-{{ choice.choice_id }}">{{ vote_dict[choice.choice_id] }}</span>
                     <span id="vote-count-percent-{{choice.choice_id}}"></span>
                     {% if total_votes > 0 %}
-                    percentage: <span>{{ vote_dict[choice.choice_id]/ total_votes }}</span>
+                    <span id="vote-count-percent">Percentage: {{ vote_dict[choice.choice_id]/ total_votes }}</span>
                     {% else %}
                     <p class="no-vote">No one has vote yet</p>
                     {% endif %}
@@ -115,8 +115,9 @@ $('#comment-form').on('submit', handleComments);
                 $('.no-vote').empty()
             }
             for (var choice_id in vote_count_percent) {
-                $('#vote-count-percent-'+choice_id).html("percentage:"+vote_count_percent[choice_id].toString());
-            }
+
+                  $('#vote-count-percent-'+choice_id).html("percentage:"+vote_count_percent[choice_id].toString());
+                }
             $('#total-vote').html(total_vote.toString());
         })
     }

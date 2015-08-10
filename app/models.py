@@ -1,7 +1,7 @@
 """Models and database functions for Opinionated project."""
 
 from flask_sqlalchemy import SQLAlchemy
-from flask import Flask
+from flask import Flask, flash
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
 from boto.s3.connection import S3Connection
@@ -20,6 +20,13 @@ db = SQLAlchemy()
 # setup for s3
 conn = S3Connection(os.environ["AWS_ACCESS_KEY"], os.environ["AWS_SECRET_KEY"])
 bucket = conn.get_bucket(os.environ['AWS_BUCKET'])
+
+# define allowed file type for uploading
+ALLOWED_EXTENSIONS = set(['txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'])
+
+def allowed_file(filename):
+    """a helper function to see verify the file type uploaded"""
+    return '.' in filename and filename.lower().rsplit('.', 1)[1] in ALLOWED_EXTENSIONS
 
 ##############################################################################
 # Model definitions
@@ -64,6 +71,13 @@ class User(db.Model):
         return check_password_hash(self.password_hash, password)
 
     @classmethod
+    def create(cls, email, password, user_name, location=None, about_me=None):
+        new_user = cls(email=email, password=password, user_name=user_name, location=location, about_me=about_me)
+        db.session.add(new_user)
+        db.session.commit()
+        return new_user
+
+    @classmethod
     def get_all_users(cls):
         return cls.query.all()
 
@@ -98,6 +112,13 @@ class Comment(db.Model):
         return "<Comment id=%s content=%s>" % (self.comment_id, self.content)
 
     @classmethod
+    def create(cls, content, user_id, post_id):
+        new_comment = cls(content=content, user_id=user_id, post_id=post_id)
+        db.session.add(new_comment)
+        db.session.commit()
+        return new_comment
+
+    @classmethod
     def get_comments_by_post_id(cls, post_id):
         return cls.query.filter_by(post_id=post_id).all()
 
@@ -124,6 +145,47 @@ class Post(db.Model):
     def __repr__(self):
         """Return the post id and description when printed"""
         return "<Post post_id=%s, description=%s>" % (self.post_id, self.description)
+
+
+
+    @classmethod
+    def create(cls, author_id, description, tag_list, choice_data):
+        # create the post first
+        new_post = cls(author_id=author_id, description=description)
+        db.session.add(new_post)
+        db.session.commit()
+
+        # if specified tags, create tags
+        if tag_list:
+            tag_list = tag_list.split(',')
+            for tag_name in tag_list:
+                tag_to_check = Tag.get_tag_by_name(tag_name)
+                if tag_to_check:
+                    tag_id = tag_to_check.tag_id
+                else:
+                    new_tag = Tag.create(tag_name=tag_name)
+                    tag_id = new_tag.tag_id
+                TagPost.create(tag_id=tag_id, post_id=new_post.post_id)
+
+        # create choices
+        for choice_text, img_choice in choice_data:
+            print 'img_choice', img_choice.filename
+            if img_choice:
+                if allowed_file(img_choice.filename):
+                    new_choice = Choice.create(choice_text=choice_text, post_id=new_post.post_id, file_name="TODO")
+
+                    k = Key(bucket)
+                    k.key = hashlib.sha512(str(new_choice.choice_id)).hexdigest()
+                    #Todo: update the filename with the hashed version
+                    k.set_contents_from_file(img_choice)
+                    k.set_canned_acl('public-read')
+                else:
+                    flash('the file type you uploaded is not valid')
+            else:
+                Choice.create(choice_text=choice_text, post_id=new_post.post_id)
+
+        flash('Your question has been posted')
+
 
 
     @classmethod
@@ -176,7 +238,12 @@ class Vote(db.Model):
         """Return the post id and description when printed"""
         return "<Vote vote_id=%s, choice_id=%s>" % (self.vote_id, self.choice_id)
 
-
+    @classmethod
+    def create(cls, user_id, choice_id):
+        new_vote = cls(user_id=user_id, choice_id=choice_id)
+        db.session.add(new_vote)
+        db.session.commit()
+        return new_vote
 
 
 
@@ -200,6 +267,13 @@ class Choice(db.Model):
         """Return the post id and description when printed"""
         return "<Choice choice_text=%s, file_name=%s, post_id=%s>" % \
                (self.choice_text, self.file_name, self.post_id)
+
+    @classmethod
+    def create(cls, choice_text, post_id, file_name=None):
+        new_choice = cls(choice_text=choice_text, post_id=post_id, file_name=file_name)
+        db.session.add(new_choice)
+        db.session.commit()
+        return new_choice
 
 
     def store_img(self, file):
@@ -238,6 +312,13 @@ class Tag(db.Model):
         return "<Tag tag_id=%s tag_name=%s>" % (self.tag_id, self.tag_name)
 
     @classmethod
+    def create(cls, tag_name):
+        new_tag = cls(tag_name=tag_name)
+        db.session.add(new_tag)
+        db.session.commit()
+        return new_tag
+
+    @classmethod
     def get_tags_by_post_id(cls, post_id):
         """returns a list of tag names given a post_id, otherwise returns all tag names"""
         return cls.query.filter(cls.posts.any(post_id=post_id)).all()
@@ -259,6 +340,12 @@ class TagPost(db.Model):
     post_id = db.Column(db.Integer,db.ForeignKey('posts.post_id'), nullable=False)
     tag_id = db.Column(db.Integer,db.ForeignKey('tags.tag_id'), nullable=False)
 
+    @classmethod
+    def create(cls, post_id, tag_id):
+        new_tagpost = cls(post_id=post_id, tag_id=tag_id)
+        db.session.add(new_tagpost)
+        db.session.commit()
+        return new_tagpost
 
 
 
