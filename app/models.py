@@ -124,6 +124,7 @@ class Post(db.Model):
     post_id = db.Column(db.Integer, autoincrement=True, primary_key=True)
     author_id = db.Column(db.Integer, db.ForeignKey('users.user_id'), nullable=False)
     description = db.Column(db.Text)
+    file_name = db.Column(db.String(250))  # user can also upload a file in question body
     timestamp = db.Column(db.TIMESTAMP, index=True, default=datetime.utcnow())
 
     author = db.relationship("User", backref=db.backref("posts", order_by=timestamp))
@@ -133,11 +134,21 @@ class Post(db.Model):
         return "<Post post_id=%s, description=%s>" % (self.post_id, self.description)
 
     @classmethod
-    def create(cls, author_id, description, tag_list, choice_data):
+    def create(cls, author_id, description, file_name, tag_list, choice_data):
         # create the post first
+        # upload image to aws s3
+
         new_post = cls(author_id=author_id, description=description)
         db.session.add(new_post)
         db.session.commit()
+
+        if file_name:
+            k1 = Key(bucket)
+            k1.key = hashlib.sha512(str(new_post.post_id)).hexdigest()
+            k1.set_contents_from_file(file_name)
+            k1.set_canned_acl('public-read')
+            new_post.file_name = k1.key
+            db.session.commit()
 
         # if specified tags, create tags
         if tag_list:

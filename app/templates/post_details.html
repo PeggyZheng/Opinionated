@@ -11,6 +11,13 @@
         </div>
         {{ post.description }} (<span id="total-vote">{{ total_votes }}</span> people have voted on this)
         <br>
+        <div class="container">
+            {% if post.file_name %}
+            <img src="https://s3-us-west-2.amazonaws.com/opinionated/{{post.file_name}}" alt="{{ post.description }}"\
+                    width="300px" height="auto">
+            {% endif %}
+        </div>
+
         tags:
         {% for tag in tag_names %}
         <a href="/home/tag/{{ tag }}">{{ tag }}</a>

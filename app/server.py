@@ -29,7 +29,10 @@ bucket = conn.get_bucket(os.environ['AWS_BUCKET'])
 @app.route("/")
 def login():
     """Homepage with login"""
-    return render_template("login.html")
+    if session.get('loggedin', None):
+        return redirect(url_for('show_all_posts'))
+    else:
+        return render_template("login.html")
 
 
 @app.route('/login', methods=['POST'])
@@ -141,6 +144,7 @@ def post_question():
 def process_question():
     """Process the questions that user added, and updated the database"""
     description = request.form.get('description')
+    file_name = request.files.get('fileupload_question')
     text_option1 = request.form.get('option1')
     text_option2 = request.form.get('option2')
     fileupload1 = request.files.get('fileupload1')
@@ -150,7 +154,7 @@ def process_question():
 
     choice_data = [(text_option1, fileupload1), (text_option2, fileupload2)]
 
-    Post.create(author_id=author_id, description=description, tag_list=tags, choice_data=choice_data)
+    Post.create(author_id=author_id, description=description, tag_list=tags, choice_data=choice_data, file_name=file_name)
 
     return redirect(url_for('user_profile', user_id=author_id))
 
