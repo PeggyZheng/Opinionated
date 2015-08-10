@@ -9,8 +9,6 @@ import os
 from flask import jsonify
 import json
 
-
-
 app = Flask(__name__)
 
 # Required to use Flask sessions and the debug toolbar
@@ -31,7 +29,6 @@ bucket = conn.get_bucket(os.environ['AWS_BUCKET'])
 @app.route("/")
 def login():
     """Homepage with login"""
-
     return render_template("login.html")
 
 
@@ -40,6 +37,7 @@ def login_user():
     """login page for user"""
     email = request.form.get('email')
     password = request.form.get('password')
+
     user = User.get_user_by_email(email)
     verify_password = user.verify_password(password)
 
@@ -57,7 +55,6 @@ def login_user():
 def logout_user():
     """Log out the user; remove the user from the session and flash a notification message"""
     session.pop('loggedin', None)
-
     flash("You have logged out")
     return redirect(url_for('login'))
 
@@ -68,14 +65,10 @@ def logout_user():
 @app.route('/home', methods=['GET', 'POST'])
 def show_all_posts():
     """the homepage of the site where all the posts will be shown in a table"""
-
     posts = Post.get_all_posts()
-    # hash_files = {}
-    # for post in posts:
-    #     for choice in post.choices:
-    #         hash_files[choice] = hashlib.sha512(str(choice.choice_id)).hexdigest()
-    tag_names = [str(tag.tag_name) for tag in Tag.get_all_tags()]
     session["post_ids"] = [post.post_id for post in posts]
+
+    tag_names = [str(tag.tag_name) for tag in Tag.get_all_tags()]
 
     return render_template('post_list.html', posts=posts, tag_names=tag_names)
 
@@ -86,22 +79,14 @@ def show_post_detail(post_id):
     User can also vote on the questions"""
     post = Post.get_post_by_id(post_id)
     choices = Choice.get_choices_by_post_id(post_id)
-    # hash_files = {}
-    # for choice in choices:
-    #     hash_files[choice] = hashlib.sha512(str(choice.choice_id)).hexdigest()
     vote_dict, total_votes = post.count_votes()
     comments = Comment.get_comments_by_post_id(post_id)
     tag_names = [tag.tag_name for tag in Tag.get_tags_by_post_id(post_id)]
     post_ids = session.get("post_ids", None)
-    print vote_dict
-    print total_votes
 
     return render_template('post_details.html', post=post, choices=choices, vote_dict=vote_dict,
                            comments=comments, total_votes=total_votes, tag_names=tag_names,
                            post_ids=post_ids)
-
-
-
 
 
 #######################################################################################################
@@ -113,14 +98,9 @@ def user_profile(user_id):
     """this is the page that will show users' all posts, and all things they have voted on"""
     # post_dict = {}
     posts = Post.get_posts_by_author_id(user_id)
-    votes = Vote.get_votes_by_user_id(user_id)
-    # hash_files = {}
-    # for post in posts:
-    #     choices = Choice.get_choices_by_post_id(post.post_id)
-    #     for choice in choices:
-    #         hash_files[choice] = hashlib.sha512(str(choice.choice_id)).hexdigest()
     session["post_ids"] = [post.post_id for post in posts]
 
+    votes = Vote.get_votes_by_user_id(user_id)
     return render_template("user_profile.html", posts=posts, votes=votes)
 
 
@@ -133,6 +113,7 @@ def process_vote(post_id):
     page to show the updated votes and vote allocation"""
     choice_id = request.form.get("choice_id")
     user_id = session['loggedin']
+
     Vote.create(user_id=user_id, choice_id=choice_id)
 
     post = Post.get_post_by_id(post_id)
@@ -154,9 +135,6 @@ def post_question():
     """This is the render the page that users can edit their questions/posts """
     tag_names = [str(tag.tag_name) for tag in Tag.get_all_tags()]
     return render_template("post_question.html", tag_names=tag_names)
-
-
-
 
 
 @app.route('/home/post/process', methods=['POST'])
@@ -183,13 +161,12 @@ def process_question():
 @app.route('/home/post/<int:post_id>/comment/refresh', methods=['POST'])
 def process_comments(post_id):
     """process the comments the users entered """
+    content = request.form.get('comment')
     user_id = session.get('loggedin', None)
     user_name = User.get_user_by_id(user_id).user_name
     if user_id:
-        content = request.form.get('comment')
         Comment.create(content=content, user_id=user_id, post_id=post_id)
         return jsonify(user_id=user_id, user_name=user_name, content=content)
-
     else:
         flash("You need to login first")
         return redirect(url_for('login'))
@@ -197,7 +174,6 @@ def process_comments(post_id):
 
 #######################################################################################################
 
-#
 @app.route('/home/search', methods=['GET', 'POST'])
 def search_post_by_tag():
     """the function that fetch the search user enters and pass it to the corresponding post list page"""
@@ -209,15 +185,10 @@ def search_post_by_tag():
 def post_by_tag(tag_name):
     """the function that shows the relevant post list based on the tags the user select"""
     posts = Post.get_posts_by_tag(tag_name)
-    tag_names= [str(tag.tag_name) for tag in Tag.get_all_tags()]
+    tag_names = [str(tag.tag_name) for tag in Tag.get_all_tags()]
 
     if posts:
         post_ids = [post.post_id for post in posts]
-        # hash_files = {}
-        # for post in posts:
-        #     choices = Choice.get_choices_by_post_id(post.post_id)
-        #     for choice in choices:
-        #         hash_files[choice] = hashlib.sha512(str(choice.choice_id)).hexdigest()
         session["post_ids"] = post_ids
         return render_template('post_list_by_tag.html', posts=posts, tag_names=tag_names)
     else:

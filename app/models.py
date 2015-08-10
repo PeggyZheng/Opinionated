@@ -1,7 +1,7 @@
 """Models and database functions for Opinionated project."""
 
 from flask_sqlalchemy import SQLAlchemy
-from flask import Flask, flash
+from flask import flash
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
 from boto.s3.connection import S3Connection
@@ -24,9 +24,11 @@ bucket = conn.get_bucket(os.environ['AWS_BUCKET'])
 # define allowed file type for uploading
 ALLOWED_EXTENSIONS = set(['txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'])
 
+
 def allowed_file(filename):
     """a helper function to see verify the file type uploaded"""
     return '.' in filename and filename.lower().rsplit('.', 1)[1] in ALLOWED_EXTENSIONS
+
 
 ##############################################################################
 # Model definitions
@@ -42,16 +44,10 @@ class User(db.Model):
     password_hash = db.Column(db.String(128))
     location = db.Column(db.String(64))
     about_me = db.Column(db.String(64))
-    # member_since = db.Column(db.DateTime(), default=datetime.utcnow())
-    # last_seen = db.Column(db.DateTime(), default=datetime.utcnow())
 
     def __repr__(self):
         """Provide helpful representation when printed"""
         return "<User user_id=%s email=%s>" % (self.user_id, self.email)
-
-    # def ping(self):
-    #     self.last_seen = datetime.utcnow()
-    #     db.session.add(self)
 
     @property
     def password(self):
@@ -61,9 +57,8 @@ class User(db.Model):
 
     @password.setter
     def password(self, password):
-         """generate the password hash when user set the password"""
-         self.password_hash = generate_password_hash(password)
-
+        """generate the password hash when user set the password"""
+        self.password_hash = generate_password_hash(password)
 
     def verify_password(self, password):
         """verify the password by comparing the entered password to the hash;
@@ -101,11 +96,9 @@ class Comment(db.Model):
     post_id = db.Column(db.Integer, db.ForeignKey('posts.post_id'), nullable=False)
     timestamp = db.Column(db.TIMESTAMP, index=True, default=datetime.utcnow())
 
-    user = db.relationship("User",
-                       backref=db.backref("comments", order_by=timestamp))
+    user = db.relationship("User", backref=db.backref("comments", order_by=timestamp))
 
-    post = db.relationship("Post",
-                            backref=db.backref("comments", order_by=timestamp))
+    post = db.relationship("Post", backref=db.backref("comments", order_by=timestamp))
 
     def __repr__(self):
         """Provide helpful representation when prints"""
@@ -123,7 +116,6 @@ class Comment(db.Model):
         return cls.query.filter_by(post_id=post_id).all()
 
 
-
 class Post(db.Model):
     """Question posted by users that people voted on"""
 
@@ -132,17 +124,13 @@ class Post(db.Model):
     post_id = db.Column(db.Integer, autoincrement=True, primary_key=True)
     author_id = db.Column(db.Integer, db.ForeignKey('users.user_id'), nullable=False)
     description = db.Column(db.Text)
-    timestamp = db.Column(db.TIMESTAMP, index=True, default=datetime.utcnow() )
+    timestamp = db.Column(db.TIMESTAMP, index=True, default=datetime.utcnow())
 
     author = db.relationship("User", backref=db.backref("posts", order_by=timestamp))
-
-
 
     def __repr__(self):
         """Return the post id and description when printed"""
         return "<Post post_id=%s, description=%s>" % (self.post_id, self.description)
-
-
 
     @classmethod
     def create(cls, author_id, description, tag_list, choice_data):
@@ -153,30 +141,29 @@ class Post(db.Model):
 
         # if specified tags, create tags
         if tag_list:
-            tag_list = tag_list.split(',')
-            for tag_name in tag_list:
-                tag_to_check = Tag.get_tag_by_name(tag_name)
-                if tag_to_check:
-                    tag_id = tag_to_check.tag_id
-                else:
-                    new_tag = Tag.create(tag_name=tag_name)
-                    tag_id = new_tag.tag_id
-                TagPost.create(tag_id=tag_id, post_id=new_post.post_id)
+            tag_names = tag_list.split(',')
+            for tag_name in tag_names:
+                tag = Tag.get_tag_by_name(tag_name)
+                if not tag:  # create a new tag if tag doesn't already exist
+                    tag = Tag.create(tag_name=tag_name)
+                TagPost.create(tag_id=tag.tag_id, post_id=new_post.post_id)
 
         # create choices
-        for choice_text, img_choice in choice_data:
-            print 'img_choice', img_choice.filename
-            if img_choice:
-                if allowed_file(img_choice.filename):
-                    new_choice = Choice.create(choice_text=choice_text, post_id=new_post.post_id, file_name="TODO")
+        for choice_text, choice_file in choice_data:
+            if choice_file:
+                if allowed_file(choice_file.filename):
+                    new_choice = Choice.create(choice_text=choice_text, post_id=new_post.post_id)
 
+                    # upload image to aws s3
                     k = Key(bucket)
                     k.key = hashlib.sha512(str(new_choice.choice_id)).hexdigest()
-                    # update the filename with the hashed version and commit
+                    k.set_contents_from_file(choice_file)
+                    k.set_canned_acl('public-read')
+
+                    # stored the hashed file id as url
                     new_choice.file_name = k.key
                     db.session.commit()
-                    k.set_contents_from_file(img_choice)
-                    k.set_canned_acl('public-read')
+
                 else:
                     flash('the file type you uploaded is not valid')
             else:
@@ -184,12 +171,9 @@ class Post(db.Model):
 
         flash('Your question has been posted')
 
-
-
     @classmethod
     def get_all_posts(cls):
         return cls.query.all()
-
 
     @classmethod
     def get_post_by_id(cls, post_id):
@@ -199,19 +183,17 @@ class Post(db.Model):
     def get_posts_by_author_id(cls, author_id):
         return cls.query.filter_by(author_id=author_id).all()
 
-
     @classmethod
     def get_posts_by_tag(cls, tag):
         return cls.query.filter(cls.tags.any(tag_name=tag)).all()
 
     def count_votes(self):
         choices = Choice.get_choices_by_post_id(self.post_id)
-        vote_dict = {} # vote count dictionary that maps choice to number of votes
+        vote_dict = {}  # vote count dictionary that maps choice to number of votes
         for choice in choices:
             vote_dict[choice.choice_id] = len(choice.get_votes())
         total_votes = sum(vote_dict.values())
         return vote_dict, total_votes
-
 
 
 class Vote(db.Model):
@@ -230,8 +212,6 @@ class Vote(db.Model):
     user = db.relationship("User", backref=db.backref("votes", order_by=timestamp))
     choice = db.relationship("Choice", backref=db.backref("votes", order_by=timestamp))
 
-
-
     def __repr__(self):
         """Return the post id and description when printed"""
         return "<Vote vote_id=%s, choice_id=%s>" % (self.vote_id, self.choice_id)
@@ -243,11 +223,10 @@ class Vote(db.Model):
         db.session.commit()
         return new_vote
 
-
-
     @classmethod
     def get_votes_by_user_id(cls, user_id):
         return cls.query.filter_by(user_id=user_id).all()
+
 
 class Choice(db.Model):
     """ Files (images, videos, audio etc) associated with specific post """
@@ -256,7 +235,7 @@ class Choice(db.Model):
 
     choice_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     choice_text = db.Column(db.Text)
-    file_name = db.Column(db.String(250)) # this is in fact the image url
+    file_name = db.Column(db.String(250))  # this is in fact the image url
     post_id = db.Column(db.Integer, db.ForeignKey('posts.post_id'), nullable=False)
 
     post = db.relationship("Post", backref=db.backref("choices", order_by=choice_id))
@@ -273,15 +252,12 @@ class Choice(db.Model):
         db.session.commit()
         return new_choice
 
-
     @classmethod
     def get_choices_by_post_id(cls, post_id):
         return cls.query.filter_by(post_id=post_id).all()
 
-
     def get_votes(self):
         return Vote.query.filter_by(choice_id=self.choice_id).all()
-
 
 
 class Tag(db.Model):
@@ -290,10 +266,10 @@ class Tag(db.Model):
     __tablename__ = "tags"
 
     tag_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    tag_name = db.Column(db.String(100), nullable=False) # TODO: Turn the data type into db.text, otherwise it needs cast
+    tag_name = db.Column(db.String(100),
+                         nullable=False)  # TODO: Turn the data type into db.text, otherwise it needs cast
 
     posts = db.relationship("Post", secondary="tagsposts", backref=db.backref("tags", order_by=tag_id))
-
 
     def __repr__(self):
         return "<Tag tag_id=%s tag_name=%s>" % (self.tag_id, self.tag_name)
@@ -310,13 +286,12 @@ class Tag(db.Model):
         """returns a list of tag names given a post_id, otherwise returns all tag names"""
         return cls.query.filter(cls.posts.any(post_id=post_id)).all()
 
-
     @classmethod
     def get_all_tags(cls):
         return cls.query.all()
 
     @classmethod
-    def get_tag_by_name(cls,tag_name):
+    def get_tag_by_name(cls, tag_name):
         return cls.query.filter_by(tag_name=tag_name).first()
 
 
@@ -324,8 +299,8 @@ class TagPost(db.Model):
     """Association table for Tages and Posts"""
     __tablename__ = "tagsposts"
     tagpost_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    post_id = db.Column(db.Integer,db.ForeignKey('posts.post_id'), nullable=False)
-    tag_id = db.Column(db.Integer,db.ForeignKey('tags.tag_id'), nullable=False)
+    post_id = db.Column(db.Integer, db.ForeignKey('posts.post_id'), nullable=False)
+    tag_id = db.Column(db.Integer, db.ForeignKey('tags.tag_id'), nullable=False)
 
     @classmethod
     def create(cls, post_id, tag_id):
@@ -333,8 +308,6 @@ class TagPost(db.Model):
         db.session.add(new_tagpost)
         db.session.commit()
         return new_tagpost
-
-
 
 
 ##############################################################################
@@ -354,5 +327,6 @@ if __name__ == "__main__":
     # you in a state of being able to work with the database directly.
 
     from server import app
+
     connect_to_db(app)
     print "Connected to DB."
