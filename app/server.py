@@ -96,7 +96,7 @@ def show_post_detail(post_id):
     for choice in choices:
         hash_files[choice] = hashlib.sha512(str(choice.choice_id)).hexdigest()
     vote_dict, total_votes = post.count_votes()
-    comments = Comment.query.filter_by(post_id=post_id).all()
+    comments = Comment.get_comments_by_post_id(post_id)
     tags = Tag.query.filter(Tag.posts.any(post_id=post_id)).all()
     tag_list = []
     for tag in tags:

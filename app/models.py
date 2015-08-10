@@ -97,6 +97,10 @@ class Comment(db.Model):
         """Provide helpful representation when prints"""
         return "<Comment id=%s content=%s>" % (self.comment_id, self.content)
 
+    @classmethod
+    def get_comments_by_post_id(cls, post_id):
+        return cls.query.filter_by(post_id=post_id).all()
+
 
 
 class Post(db.Model):

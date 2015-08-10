@@ -78,7 +78,7 @@
         {% endfor %}
 
     {% else %}
-        <p class="no-comment">Oops, looks like no one has commented yet</p>
+        <p id="no-comment">Oops, looks like no one has commented yet</p>
     {% endif %}
 
 </ul>
@@ -92,6 +92,7 @@
         $.post('/home/post/{{post.post_id}}/comment/refresh', formInputs, function (result) {
             $('.comments').append('<li><a href="/home/user/'+ result.user_id + '">'+ result.user_name + '</a>:'+ result.content + '</li>')
             $('#no-comment').empty();
+            $('#comment-content').val('');
         })
     }
 $('#comment-form').on('submit', handleComments);
