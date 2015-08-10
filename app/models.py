@@ -229,7 +229,7 @@ class Tag(db.Model):
     __tablename__ = "tags"
 
     tag_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    tag_name = db.Column(db.String(100), nullable=False)
+    tag_name = db.Column(db.String(100), nullable=False) # TODO: Turn the data type into db.text, otherwise it needs cast
 
     posts = db.relationship("Post", secondary="tagsposts", backref=db.backref("tags", order_by=tag_id))
 
@@ -238,13 +238,18 @@ class Tag(db.Model):
         return "<Tag tag_id=%s tag_name=%s>" % (self.tag_id, self.tag_name)
 
     @classmethod
-    def get_tag_names_by_post_id(cls, post_id=None):
+    def get_tags_by_post_id(cls, post_id):
         """returns a list of tag names given a post_id, otherwise returns all tag names"""
-        if post_id:
-            tags = cls.query.filter(cls.posts.any(post_id=post_id)).all()
-        else:
-            tags = cls.query.all()
-        return [str(tag.tag_name) for tag in tags]
+        return cls.query.filter(cls.posts.any(post_id=post_id)).all()
+
+
+    @classmethod
+    def get_all_tags(cls):
+        return cls.query.all()
+
+    @classmethod
+    def get_tag_by_name(cls,tag_name):
+        return cls.query.filter_by(tag_name=tag_name).first()
 
 
 class TagPost(db.Model):

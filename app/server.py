@@ -97,10 +97,8 @@ def show_post_detail(post_id):
         hash_files[choice] = hashlib.sha512(str(choice.choice_id)).hexdigest()
     vote_dict, total_votes = post.count_votes()
     comments = Comment.get_comments_by_post_id(post_id)
-    tags = Tag.query.filter(Tag.posts.any(post_id=post_id)).all()
-    tag_list = []
-    for tag in tags:
-        tag_list.append(tag.tag_name)
+    tags = Tag.get_tags_by_post_id(post_id)
+    tag_list = [tag.tag_name for tag in tags]
     post_list = session.get("post_list", None)
     print post_list
 
@@ -163,13 +161,8 @@ def process_vote(post_id):
 @app.route('/home/post')
 def post_question():
     """This is the render the page that users can edit their questions/posts """
-    tags = Tag.query.all()
-    tags_list = []
-    for tag in tags:
-        tag_name = tag.tag_name
-        tag_name = str(tag_name)
-        tags_list.append(tag_name)
-
+    tags = Tag.get_all_tags()
+    tags_list = [str(tag.tag_name) for tag in tags]
     return render_template("post_question.html", tags_list=tags_list)
 
 
@@ -226,15 +219,15 @@ def process_question():
 def process_tags(tag_list, post_id):
     """the helper function to process the tags"""
     tag_list = tag_list.split(',')
-    for tag in tag_list:
-        tag_to_check = Tag.query.filter_by(tag_name=tag).first()
+    for tag_name in tag_list:
+        tag_to_check = Tag.get_tag_by_name(tag_name)
         if tag_to_check:
             tag_id = tag_to_check.tag_id
             new_tagpost = TagPost(tag_id=tag_id, post_id=post_id)
             db.session.add(new_tagpost)
             db.session.commit()
         else:
-            new_tag = Tag(tag_name=tag)
+            new_tag = Tag(tag_name=tag_name)
             db.session.add(new_tag)
             db.session.commit()
             tag_id = new_tag.tag_id
@@ -269,7 +262,7 @@ def process_comments(post_id):
 
 def generate_tag_list():
     """the helper function that generates a list with all tag names"""
-    tags = Tag.query.all()
+    tags = Tag.get_all_tags()
     tags_list = []
     for tag in tags:
         tag_name = tag.tag_name
