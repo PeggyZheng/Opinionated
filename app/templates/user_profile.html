@@ -21,7 +21,7 @@
         <div>
             {% if choice.file_name %}
             <div class="container">
-                 <img src="https://s3-us-west-2.amazonaws.com/opinionated/{{hash_files[choice]}}" alt="{{ choice.file_name }}" width="300px" height="auto">
+                 <img src="https://s3-us-west-2.amazonaws.com/opinionated/{{choice.file_name}}" alt="{{ choice.choice_text }}" width="300px" height="auto">
             </div>
             {% endif %}
         </div>

@@ -132,10 +132,6 @@ class Post(db.Model):
     post_id = db.Column(db.Integer, autoincrement=True, primary_key=True)
     author_id = db.Column(db.Integer, db.ForeignKey('users.user_id'), nullable=False)
     description = db.Column(db.Text)
-    # option_text_1 = db.Column(db.Text)
-    # option_text_2 = db.Column(db.Text)
-    # option_pic_1 = db.Column(db.String)
-    # option_pic_2 = db.Column(db.String)
     timestamp = db.Column(db.TIMESTAMP, index=True, default=datetime.utcnow() )
 
     author = db.relationship("User", backref=db.backref("posts", order_by=timestamp))
@@ -176,7 +172,9 @@ class Post(db.Model):
 
                     k = Key(bucket)
                     k.key = hashlib.sha512(str(new_choice.choice_id)).hexdigest()
-                    #Todo: update the filename with the hashed version
+                    # update the filename with the hashed version and commit
+                    new_choice.file_name = k.key
+                    db.session.commit()
                     k.set_contents_from_file(img_choice)
                     k.set_canned_acl('public-read')
                 else:
@@ -275,17 +273,6 @@ class Choice(db.Model):
         db.session.commit()
         return new_choice
 
-
-    def store_img(self, file):
-        k = Key(bucket)
-        k.key = hashlib.sha512(str(self.choice_id)).hexdigest()
-        k.set_contents_from_file(file)
-        k.set_canned_acl('public-read')
-
-    def retrieve_img(self, choice_list):
-        hash_files = {}
-        for choice in choice_list:
-            hash_files[choice] = hashlib.sha512(str(choice.choice_id)).hexdigest()
 
     @classmethod
     def get_choices_by_post_id(cls, post_id):

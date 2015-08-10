@@ -31,7 +31,7 @@
 
         <div class="container">
             {% if choice.file_name %}
-            <img src="https://s3-us-west-2.amazonaws.com/opinionated/{{hash_files[choice]}}" alt="{{ choice.file_name }}"\
+            <img src="https://s3-us-west-2.amazonaws.com/opinionated/{{choice.file_name}}" alt="{{ choice.choice_text}}"\
                     width="300px" height="auto">
             {% endif %}
         </div>
