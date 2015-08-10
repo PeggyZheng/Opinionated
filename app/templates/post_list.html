@@ -16,7 +16,7 @@
 
 
 <ul class="posts">
-    {% for post in post_list %}
+    {% for post in posts %}
 
     <li class="posts">
         <div>
@@ -53,8 +53,8 @@
 
 <script>
 
-    var new_list = {{ tags_list|safe }};
-    console.log(new_list);
+    var tag_names = {{ tag_names|safe }};
+    console.log(tag_names);
 
 //    jQuery(".tm-input").tagsManager({
 //        CapitalizeFirstLetter: true,
@@ -72,7 +72,7 @@
     var substringMatcher = function(strs) {
         return function findMatches(q, cb) {
       if (q === '') {
-          cb(new_list);
+          cb(tag_names);
       }
       else {
           var matches, substringRegex;
@@ -98,10 +98,10 @@
 
 function defTags(q, sync) {
     if (q === '') {
-        sync(new_list);
+        sync(tag_names);
     }
     else {
-        substringMatcher(new_list);
+        substringMatcher(tag_names);
     }
 }
 
@@ -111,7 +111,7 @@ $('#tags').typeahead({
   minLength: 1
 },
 {
-  source: substringMatcher(new_list)
+  source: substringMatcher(tag_names)
 });
 
 </script>

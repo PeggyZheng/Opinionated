@@ -72,16 +72,15 @@ def logout_user():
 def show_all_posts():
     """the homepage of the site where all the posts will be shown in a table"""
 
-    post_list = Post.get_all_posts()
+    posts = Post.get_all_posts()
     hash_files = {}
-    for post in post_list:
+    for post in posts:
         for choice in post.choices:
             hash_files[choice] = hashlib.sha512(str(choice.choice_id)).hexdigest()
-    tags_list = [str(tag.tag_name) for tag in Tag.get_all_tags()]
-    post_id_list = [post.post_id for post in post_list]
-    session["post_list"] = post_id_list
+    tag_names = [str(tag.tag_name) for tag in Tag.get_all_tags()]
+    session["post_ids"] = [post.post_id for post in posts]
 
-    return render_template('post_list.html', post_list=post_list, hash_files=hash_files, tags_list=tags_list)
+    return render_template('post_list.html', posts=posts, hash_files=hash_files, tag_names=tag_names)
 
 
 @app.route('/home/post/<int:post_id>')
@@ -95,15 +94,14 @@ def show_post_detail(post_id):
         hash_files[choice] = hashlib.sha512(str(choice.choice_id)).hexdigest()
     vote_dict, total_votes = post.count_votes()
     comments = Comment.get_comments_by_post_id(post_id)
-    tags = Tag.get_tags_by_post_id(post_id)
-    tag_list = [tag.tag_name for tag in tags]
-    post_list = session.get("post_list", None)
+    tag_names = [tag.tag_name for tag in Tag.get_tags_by_post_id(post_id)]
+    post_ids = session.get("post_ids", None)
     print vote_dict
     print total_votes
 
     return render_template('post_details.html', post=post, choices=choices, vote_dict=vote_dict,
-                           comments=comments, total_votes=total_votes, hash_files=hash_files, tag_list=tag_list,
-                           post_list=post_list)
+                           comments=comments, total_votes=total_votes, hash_files=hash_files, tag_names=tag_names,
+                           post_ids=post_ids)
 
 
 
@@ -118,16 +116,15 @@ def user_profile(user_id):
     """this is the page that will show users' all posts, and all things they have voted on"""
     # post_dict = {}
     posts = Post.get_posts_by_author_id(user_id)
-    my_votes = Vote.get_votes_by_user_id(user_id)
+    votes = Vote.get_votes_by_user_id(user_id)
     hash_files = {}
     for post in posts:
         choices = Choice.get_choices_by_post_id(post.post_id)
         for choice in choices:
             hash_files[choice] = hashlib.sha512(str(choice.choice_id)).hexdigest()
-    post_id_list = [post.post_id for post in posts]
-    session["post_list"] = post_id_list
+    session["post_ids"] = [post.post_id for post in posts]
 
-    return render_template("user_profile.html", posts=posts, my_votes=my_votes, hash_files=hash_files)
+    return render_template("user_profile.html", posts=posts, votes=votes, hash_files=hash_files)
 
 
 #######################################################################################################
@@ -158,8 +155,8 @@ def process_vote(post_id):
 @app.route('/home/post')
 def post_question():
     """This is the render the page that users can edit their questions/posts """
-    tags_list = [str(tag.tag_name) for tag in Tag.get_all_tags()]
-    return render_template("post_question.html", tags_list=tags_list)
+    tag_names = [str(tag.tag_name) for tag in Tag.get_all_tags()]
+    return render_template("post_question.html", tag_names=tag_names)
 
 
 
@@ -208,27 +205,24 @@ def process_comments(post_id):
 def search_post_by_tag():
     """the function that fetch the search user enters and pass it to the corresponding post list page"""
     search = request.form.get('postsearch')
-    print search
-    print type(search)
-    search = str(search)
-    return redirect(url_for('post_by_tag', tag_name=search))
+    return redirect(url_for('post_by_tag', tag_name=str(search)))
 
 
 @app.route('/home/tag/<tag_name>')
 def post_by_tag(tag_name):
     """the function that shows the relevant post list based on the tags the user select"""
-    post_list = Post.get_posts_by_tag(tag_name)
-    tags_list = [str(tag.tag_name) for tag in Tag.get_all_tags()]
+    posts = Post.get_posts_by_tag(tag_name)
+    tag_names= [str(tag.tag_name) for tag in Tag.get_all_tags()]
 
-    if post_list:
-        post_id_list = [post.post_id for post in post_list]
+    if posts:
+        post_ids = [post.post_id for post in posts]
         hash_files = {}
-        for post in post_list:
+        for post in posts:
             choices = Choice.get_choices_by_post_id(post.post_id)
             for choice in choices:
                 hash_files[choice] = hashlib.sha512(str(choice.choice_id)).hexdigest()
-        session["post_list"] = post_id_list
-        return render_template('post_list_by_tag.html', post_list=post_list, tags_list=tags_list, hash_files=hash_files)
+        session["post_ids"] = post_ids
+        return render_template('post_list_by_tag.html', posts=posts, tag_names=tag_names, hash_files=hash_files)
     else:
         flash('your search returns no relevant posts')
         return redirect(url_for('show_all_posts'))

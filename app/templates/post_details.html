@@ -12,7 +12,7 @@
         {{ post.description }} (<span id="total-vote">{{ total_votes }}</span> people have voted on this)
         <br>
         tags:
-        {% for tag in tag_list %}
+        {% for tag in tag_names %}
         <a href="/home/tag/{{ tag }}">{{ tag }}</a>
         {% endfor %}
 
@@ -55,10 +55,10 @@
 </ul>
 
     <div>
-        <button type="button" id="previous-post" onclick="previousPost({{ post.post_id }}, {{ post_list }})">scroll to previous post</button><span id="previous-msg"></span>
+        <button type="button" id="previous-post" onclick="previousPost({{ post.post_id }}, {{ post_ids }})">scroll to previous post</button><span id="previous-msg"></span>
     </div>
     <div>
-        <button type="button" id="next-post" onclick="nextPost({{ post.post_id }}, {{ post_list }})">scroll to next post</button><span id="next-msg"></span>
+        <button type="button" id="next-post" onclick="nextPost({{ post.post_id }}, {{ post_ids }})">scroll to next post</button><span id="next-msg"></span>
     </div>
 
 <h3>Comments</h3>
@@ -125,10 +125,10 @@ $('#vote-form').on('submit', handleVote);
 
 
 
-  function previousPost (post_id, post_list) {
-      var idx = post_list.indexOf(post_id);
+  function previousPost (post_id, post_ids) {
+      var idx = post_ids.indexOf(post_id);
       if (idx > 0) {
-          var previous = post_list[idx - 1];
+          var previous = post_ids[idx - 1];
           location.href = previous.toString();
       } else {
           $('#previous-post').attr('disabled', true);
@@ -137,10 +137,10 @@ $('#vote-form').on('submit', handleVote);
 
   }
 
-  function nextPost (post_id, post_list) {
-      var idx = post_list.indexOf(post_id);
-      if (idx < post_list.length - 1) {
-          var next = post_list[idx + 1];
+  function nextPost (post_id, post_ids) {
+      var idx = post_ids.indexOf(post_id);
+      if (idx < post_ids.length - 1) {
+          var next = post_ids[idx + 1];
           location.href = next.toString();
       } else {
           $('#next-post').attr('disabled', true);
