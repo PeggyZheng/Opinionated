@@ -2,6 +2,11 @@
 {% block content %}
 
 <a href="/home">Home</a>
+{% if post.author_id == session['loggedin'] %}
+<form action="/home/post/{{ post.post_id }}/delete" method="post">
+   <input type="submit" value="Delete post" id="delete-post">
+</form>
+{% endif %}
 
 <ul class="posts">
 
@@ -62,10 +67,14 @@
 </ul>
 
     <div>
-        <button type="button" id="previous-post" onclick="previousPost({{ post.post_id }}, {{ post_ids }})">scroll to previous post</button><span id="previous-msg"></span>
+        <button type="button" id="previous-post" onclick="previousPost({{ post.post_id }}, {{ post_ids }})">
+            scroll to previous post
+        </button><span id="previous-msg"></span>
     </div>
     <div>
-        <button type="button" id="next-post" onclick="nextPost({{ post.post_id }}, {{ post_ids }})">scroll to next post</button><span id="next-msg"></span>
+        <button type="button" id="next-post" onclick="nextPost({{ post.post_id }}, {{ post_ids }})">
+            scroll to next post
+        </button><span id="next-msg"></span>
     </div>
 
 <h3>Comments</h3>
@@ -131,6 +140,13 @@ $('#comment-form').on('submit', handleComments);
     }
 $('#vote-form').on('submit', handleVote);
 
+
+    function deletePost(evt) {
+        confirm("Are you sure you want to delete the post");
+
+    }
+
+$('#delete-post').on('click', deletePost);
 
 
   function previousPost (post_id, post_ids) {

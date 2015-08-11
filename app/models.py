@@ -182,6 +182,80 @@ class Post(db.Model):
 
         flash('Your question has been posted')
 
+    def delete_post(self, user_id):
+        tags = Tag.get_tags_by_post_id(self.post_id)
+        for tag in tags:
+            tagpost = TagPost.query.filter(TagPost.post_id==self.post_id, TagPost.tag_id==tag.tag_id).one()
+            db.session.delete(tagpost)
+
+        votes = Vote.get_votes_by_user_id(user_id)
+        for vote in votes:
+            db.session.delete(vote)
+
+        choices = Choice.get_choices_by_post_id(self.post_id)
+        for choice in choices:
+            db.session.delete(choice)
+
+
+        comments = Comment.get_comments_by_post_id(self.post_id)
+        for comment in comments:
+            db.session.delete(comment)
+
+        post = Post.get_post_by_id(self.post_id)
+        db.session.delete(post)
+
+        db.session.commit()
+
+        flash('Your post has been deleted')
+
+
+
+
+    # def update_post(self, description, file_name, tag_list, choice_data):
+    #     if description != self.description:
+    #         self.description = description
+    #         db.session.commit()
+    #
+    #     if file_name != None:
+    #         k1 = Key(bucket)
+    #         k1.key = hashlib.sha512(str(self.post_id)).hexdigest()
+    #         k1.set_contents_from_file(file_name)
+    #         k1.set_canned_acl('public-read')
+    #         self.file_name = k1.key
+    #         db.session.commit()
+    #
+    #     tags = Tag.get_tags_by_post_id(self.post_id)
+    #     tag_names = [tag.tag_name for tag in tags]
+    #     if sorted(tag_names) != sorted(tag_list):
+    #         tag_names = tag_list.split(',')
+    #         new_tags = [Tag.get_tag_by_name(tag_name) for tag_name in tag_names]
+    #         self.tags = new_tags
+    #     db.session.commit()
+    #
+    #     if choice_data:
+    #         current_choices = Choice.get_choices_by_post_id(self.post_id)
+    #         current_choice_data = [(choice.choice_text, choice.file_name) for choice in current_choices]
+    #         if current_choice_data != choice_data:
+    #             new_choice_list = []
+    #             for choice_text, choice_file in choice_data:
+    #                 if choice_file:
+    #                     if allowed_file(choice_file.filename):
+    #                         new_choice = Choice.create(choice_text=choice_text, post_id=self.post_id)
+    #
+    #                         # upload image to aws s3
+    #                         k = Key(bucket)
+    #                         k.key = hashlib.sha512(str(new_choice.choice_id)).hexdigest()
+    #                         k.set_contents_from_file(choice_file)
+    #                         k.set_canned_acl('public-read')
+    #
+    #                         # stored the hashed file id as url
+    #                         new_choice.file_name = k.key
+    #                         new_choice_list.append(new_choice)
+    #                         db.session.commit()
+    #
+    #     flash('Your post has been updated')
+
+
     @classmethod
     def get_all_posts(cls):
         return cls.query.all()
@@ -294,7 +368,6 @@ class Tag(db.Model):
 
     @classmethod
     def get_tags_by_post_id(cls, post_id):
-        """returns a list of tag names given a post_id, otherwise returns all tag names"""
         return cls.query.filter(cls.posts.any(post_id=post_id)).all()
 
     @classmethod
@@ -319,6 +392,7 @@ class TagPost(db.Model):
         db.session.add(new_tagpost)
         db.session.commit()
         return new_tagpost
+
 
 
 ##############################################################################

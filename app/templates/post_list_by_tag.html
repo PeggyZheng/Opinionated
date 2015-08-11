@@ -4,14 +4,6 @@
 <a href="/home/user/{{ session['loggedin'] }}">My page</a>
 
 <a href="/home/post">I want to post a question</a>
-<!--<div>-->
-    <!--<form action="/home/search" method="post">-->
-  <!--Search Posts:-->
-  <!--<input type="search" name="postsearch" id="tags" class="form-control tm-input tm-input-info typeahead">-->
-  <!--<input type = "submit" value="Search">-->
-
-<!--</form>-->
-<!--</div>-->
 
 
 <ul class="posts">
@@ -28,6 +20,7 @@
                     width="300px" height="auto">
             {% endif %}
         </div>
+
 
         {% for choice in post.choices %}
         <div>

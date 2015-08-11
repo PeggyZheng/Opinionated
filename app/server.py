@@ -140,7 +140,7 @@ def post_question():
     return render_template("post_question.html", tag_names=tag_names)
 
 
-@app.route('/home/post/process', methods=['POST'])
+@app.route('/home/post/process', methods=['GET', 'POST'])
 def process_question():
     """Process the questions that user added, and updated the database"""
     description = request.form.get('description')
@@ -157,6 +157,44 @@ def process_question():
     Post.create(author_id=author_id, description=description, tag_list=tags, choice_data=choice_data, file_name=file_name)
 
     return redirect(url_for('user_profile', user_id=author_id))
+
+#######################################################################################################
+# functions that handles deleting an existing post
+
+@app.route('/home/post/<int:post_id>/delete', methods=['POST'])
+def delete_post(post_id):
+    post = Post.get_post_by_id(post_id)
+    user_id = session['loggedin']
+    post.delete_post(user_id)
+    return redirect(url_for('user_profile', user_id=user_id))
+
+
+#######################################################################################################
+# functions that handles editing an existing post
+
+# @app.route('/home/post/<int:post_id>/edit')
+# def edit_post(post_id):
+#     post = Post.get_post_by_id(post_id)
+#     choices = Choice.get_choices_by_post_id(post_id)
+#     tags = Tag.get_tags_by_post_id(post_id)
+#     tag_names = [str(tag.tag_name) for tag in tags]
+#     return render_template("edit_post.html", post=post, choices=choices, tag_names=tag_names)
+#
+# @app.route('/home/post/<int:post_id>/process-edit', methods=["POST"])
+# def edit_post_process(post_id):
+#     description = request.form.get('description')
+#     file_name = request.files.get('fileupload_question')
+#     text_option1 = request.form.get('option1')
+#     text_option2 = request.form.get('option2')
+#     fileupload1 = request.files.get('fileupload1')
+#     fileupload2 = request.files.get('fileupload2')
+#     tags = request.form.get('hidden_tags')
+#     author_id = session['loggedin']
+#     choice_data = [(text_option1, fileupload1), (text_option2, fileupload2)]
+#     current_post = Post.get_post_by_id(post_id)
+#     current_post.update_post(description=description, tag_list=tags, choice_data=choice_data, file_name=file_name)
+#
+#     return redirect(url_for('user_profile', user_id=author_id))
 
 
 #######################################################################################################
@@ -199,6 +237,7 @@ def post_by_tag(tag_name):
         flash('your search returns no relevant posts')
         return redirect(url_for('show_all_posts'))
 
+#######################################################################################################
 
 if __name__ == "__main__":
     # We have to set debug=True here, since it has to be True at the point
