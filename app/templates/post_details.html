@@ -90,6 +90,11 @@
         <li>
             <a href="/home/user/{{ comment.user_id }}">{{ comment.user.user_name }}</a>:
             {{ comment.content }}
+            {% if comment.user_id == session['loggedin'] %}
+            <form action="/home/comment/{{ comment.comment_id }}/delete" method="post">
+                <input type="submit" value="Delete comment" id="delete-comment">
+            </form>
+            {% endif %}
         </li>
         {% endfor %}
 
@@ -147,6 +152,13 @@ $('#vote-form').on('submit', handleVote);
     }
 
 $('#delete-post').on('click', deletePost);
+
+       function deleteComment(evt) {
+        confirm("Are you sure you want to delete the comment");
+
+    }
+
+$('#delete-comment').on('click', deleteComment);
 
 
   function previousPost (post_id, post_ids) {

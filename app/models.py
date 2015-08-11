@@ -1,7 +1,7 @@
 """Models and database functions for Opinionated project."""
 
 from flask_sqlalchemy import SQLAlchemy
-from flask import flash
+from flask import flash, session
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
 from boto.s3.connection import S3Connection
@@ -44,6 +44,10 @@ class User(db.Model):
     password_hash = db.Column(db.String(128))
     location = db.Column(db.String(64))
     about_me = db.Column(db.String(64))
+
+    posts = db.relationship("Post", backref=db.backref("author"), cascade="all, delete, delete-orphan")
+    comments = db.relationship("Comment", backref=db.backref("user"), cascade="all, delete, delete-orphan")
+    votes = db.relationship("Vote", backref=db.backref("user"), cascade="all, delete, delete-orphan")
 
     def __repr__(self):
         """Provide helpful representation when printed"""
@@ -96,10 +100,6 @@ class Comment(db.Model):
     post_id = db.Column(db.Integer, db.ForeignKey('posts.post_id'), nullable=False)
     timestamp = db.Column(db.TIMESTAMP, index=True, default=datetime.utcnow())
 
-    user = db.relationship("User", backref=db.backref("comments", order_by=timestamp))
-
-    post = db.relationship("Post", backref=db.backref("comments", order_by=timestamp))
-
     def __repr__(self):
         """Provide helpful representation when prints"""
         return "<Comment id=%s content=%s>" % (self.comment_id, self.content)
@@ -115,6 +115,18 @@ class Comment(db.Model):
     def get_comments_by_post_id(cls, post_id):
         return cls.query.filter_by(post_id=post_id).all()
 
+    @classmethod
+    def get_comment_by_comment_id(cls, comment_id):
+        return cls.query.get(comment_id)
+
+    def delete(self):
+        comment = self
+        db.session.delete(comment)
+        db.session.commit()
+
+        flash('the comment has been deleted')
+
+
 
 class Post(db.Model):
     """Question posted by users that people voted on"""
@@ -127,7 +139,9 @@ class Post(db.Model):
     file_name = db.Column(db.String(250))  # user can also upload a file in question body
     timestamp = db.Column(db.TIMESTAMP, index=True, default=datetime.utcnow())
 
-    author = db.relationship("User", backref=db.backref("posts", order_by=timestamp))
+    comments = db.relationship("Comment", backref=db.backref("post"), cascade="all, delete, delete-orphan")
+    choices = db.relationship("Choice", backref=db.backref("post"), cascade="all, delete, delete-orphan")
+    tagposts = db.relationship("TagPost", backref=db.backref("post"), cascade="all, delete, delete-orphan")
 
     def __repr__(self):
         """Return the post id and description when printed"""
@@ -182,78 +196,14 @@ class Post(db.Model):
 
         flash('Your question has been posted')
 
-    def delete_post(self, user_id):
-        tags = Tag.get_tags_by_post_id(self.post_id)
-        for tag in tags:
-            tagpost = TagPost.query.filter(TagPost.post_id==self.post_id, TagPost.tag_id==tag.tag_id).one()
-            db.session.delete(tagpost)
-
-        votes = Vote.get_votes_by_user_id(user_id)
-        for vote in votes:
-            db.session.delete(vote)
-
-        choices = Choice.get_choices_by_post_id(self.post_id)
-        for choice in choices:
-            db.session.delete(choice)
-
-
-        comments = Comment.get_comments_by_post_id(self.post_id)
-        for comment in comments:
-            db.session.delete(comment)
-
+    # TODO: TURN THIS INTO CLASS METHOD
+    def delete(self):
         post = Post.get_post_by_id(self.post_id)
         db.session.delete(post)
-
         db.session.commit()
+        #TODO: NEED TO REMOVE THE FILES FROM AWS as well
 
         flash('Your post has been deleted')
-
-
-
-
-    # def update_post(self, description, file_name, tag_list, choice_data):
-    #     if description != self.description:
-    #         self.description = description
-    #         db.session.commit()
-    #
-    #     if file_name != None:
-    #         k1 = Key(bucket)
-    #         k1.key = hashlib.sha512(str(self.post_id)).hexdigest()
-    #         k1.set_contents_from_file(file_name)
-    #         k1.set_canned_acl('public-read')
-    #         self.file_name = k1.key
-    #         db.session.commit()
-    #
-    #     tags = Tag.get_tags_by_post_id(self.post_id)
-    #     tag_names = [tag.tag_name for tag in tags]
-    #     if sorted(tag_names) != sorted(tag_list):
-    #         tag_names = tag_list.split(',')
-    #         new_tags = [Tag.get_tag_by_name(tag_name) for tag_name in tag_names]
-    #         self.tags = new_tags
-    #     db.session.commit()
-    #
-    #     if choice_data:
-    #         current_choices = Choice.get_choices_by_post_id(self.post_id)
-    #         current_choice_data = [(choice.choice_text, choice.file_name) for choice in current_choices]
-    #         if current_choice_data != choice_data:
-    #             new_choice_list = []
-    #             for choice_text, choice_file in choice_data:
-    #                 if choice_file:
-    #                     if allowed_file(choice_file.filename):
-    #                         new_choice = Choice.create(choice_text=choice_text, post_id=self.post_id)
-    #
-    #                         # upload image to aws s3
-    #                         k = Key(bucket)
-    #                         k.key = hashlib.sha512(str(new_choice.choice_id)).hexdigest()
-    #                         k.set_contents_from_file(choice_file)
-    #                         k.set_canned_acl('public-read')
-    #
-    #                         # stored the hashed file id as url
-    #                         new_choice.file_name = k.key
-    #                         new_choice_list.append(new_choice)
-    #                         db.session.commit()
-    #
-    #     flash('Your post has been updated')
 
 
     @classmethod
@@ -294,9 +244,6 @@ class Vote(db.Model):
     choice_id = db.Column(db.Integer, db.ForeignKey('choices.choice_id'), nullable=False)
     timestamp = db.Column(db.TIMESTAMP, default=datetime.utcnow())
 
-    user = db.relationship("User", backref=db.backref("votes", order_by=timestamp))
-    choice = db.relationship("Choice", backref=db.backref("votes", order_by=timestamp))
-
     def __repr__(self):
         """Return the post id and description when printed"""
         return "<Vote vote_id=%s, choice_id=%s>" % (self.vote_id, self.choice_id)
@@ -312,6 +259,14 @@ class Vote(db.Model):
     def get_votes_by_user_id(cls, user_id):
         return cls.query.filter_by(user_id=user_id).all()
 
+    @classmethod
+    def get_votes_by_post_id(cls, post_id):
+        choices = Choice.get_choices_by_post_id(post_id)
+        list_of_votes = [choice.votes for choice in choices]
+        votes = [vote for votes in list_of_votes for vote in votes]
+
+        return votes
+
 
 class Choice(db.Model):
     """ Files (images, videos, audio etc) associated with specific post """
@@ -323,7 +278,7 @@ class Choice(db.Model):
     file_name = db.Column(db.String(250))  # this is in fact the image url
     post_id = db.Column(db.Integer, db.ForeignKey('posts.post_id'), nullable=False)
 
-    post = db.relationship("Post", backref=db.backref("choices", order_by=choice_id))
+    votes = db.relationship("Vote", backref=db.backref("choice"), cascade="all, delete, delete-orphan")
 
     def __repr__(self):
         """Return the post id and description when printed"""

@@ -99,7 +99,6 @@ def show_post_detail(post_id):
 @app.route('/home/user/<int:user_id>')
 def user_profile(user_id):
     """this is the page that will show users' all posts, and all things they have voted on"""
-    # post_dict = {}
     posts = Post.get_posts_by_author_id(user_id)
     session["post_ids"] = [post.post_id for post in posts]
 
@@ -165,36 +164,8 @@ def process_question():
 def delete_post(post_id):
     post = Post.get_post_by_id(post_id)
     user_id = session['loggedin']
-    post.delete_post(user_id)
+    post.delete()
     return redirect(url_for('user_profile', user_id=user_id))
-
-
-#######################################################################################################
-# functions that handles editing an existing post
-
-# @app.route('/home/post/<int:post_id>/edit')
-# def edit_post(post_id):
-#     post = Post.get_post_by_id(post_id)
-#     choices = Choice.get_choices_by_post_id(post_id)
-#     tags = Tag.get_tags_by_post_id(post_id)
-#     tag_names = [str(tag.tag_name) for tag in tags]
-#     return render_template("edit_post.html", post=post, choices=choices, tag_names=tag_names)
-#
-# @app.route('/home/post/<int:post_id>/process-edit', methods=["POST"])
-# def edit_post_process(post_id):
-#     description = request.form.get('description')
-#     file_name = request.files.get('fileupload_question')
-#     text_option1 = request.form.get('option1')
-#     text_option2 = request.form.get('option2')
-#     fileupload1 = request.files.get('fileupload1')
-#     fileupload2 = request.files.get('fileupload2')
-#     tags = request.form.get('hidden_tags')
-#     author_id = session['loggedin']
-#     choice_data = [(text_option1, fileupload1), (text_option2, fileupload2)]
-#     current_post = Post.get_post_by_id(post_id)
-#     current_post.update_post(description=description, tag_list=tags, choice_data=choice_data, file_name=file_name)
-#
-#     return redirect(url_for('user_profile', user_id=author_id))
 
 
 #######################################################################################################
@@ -212,6 +183,14 @@ def process_comments(post_id):
     else:
         flash("You need to login first")
         return redirect(url_for('login'))
+
+@app.route('/home/comment/<int:comment_id>/delete', methods=['POST'])
+def delete_comment(comment_id):
+    comment = Comment.get_comment_by_comment_id(comment_id)
+    post_id = Comment.post_id
+    comment.delete()
+    return redirect(url_for('show_post_detail', post_id=post_id))
+# TODO: THE COMMENT DELETING BUTTON IS NOT SHOWING UP
 
 
 #######################################################################################################
