@@ -84,16 +84,25 @@
     <input id="comment-submit-button" type="submit">
 </form>
 
+
+
 <ul class="comments">
     {% if comments %}
         {% for comment in comments %}
         <li>
             <a href="/home/user/{{ comment.user_id }}">{{ comment.user.user_name }}</a>:
             {{ comment.content }}
+            <!--<div id="ajax-delete" hidden>-->
+                <!--<form action="/home/comment/{{ comment.comment_id }}/delete" method="post">-->
+                    <!--<input type="submit" value="Delete comment" class="delete-comment">-->
+                <!--</form>-->
+            <!--</div>-->
             {% if comment.user_id == session['loggedin'] %}
-            <form action="/home/comment/{{ comment.comment_id }}/delete" method="post">
-                <input type="submit" value="Delete comment" id="delete-comment">
-            </form>
+            <div id="server-delete">
+                <form action="/home/comment/{{ comment.comment_id }}/delete" method="post">
+                    <input type="submit" value="Delete comment" class="delete-comment">
+                </form>
+            </div>
             {% endif %}
         </li>
         {% endfor %}
@@ -107,16 +116,27 @@
 
 <script src="https://code.jquery.com/jquery.js"></script>
 <script>
+
+
+
     function handleComments(evt) {
         evt.preventDefault();
         var formInputs = {comment: $("#comment-content").val()};
         $.post('/home/post/{{post.post_id}}/comment/refresh', formInputs, function (result) {
-            $('.comments').append('<li><a href="/home/user/'+ result.user_id + '">'+ result.user_name + '</a>:'+ result.content + '</li>')
+            console.log(result.has_delete_button);
+            console.log(typeof(result.has_delete_button));
+            $('.comments').append('<li><a href="/home/user/'+ result.user_id + '">'+ result.user_name + '</a>:'+ result.content + '</li>'+
+                            '<form action="/home/comment/'+result.comment_id+'/delete" method="post">' +
+                    '<input type="submit" value="Delete comment" class="delete-comment">' +
+                '</form>'
+            );
             $('#no-comment').empty();
             $('#comment-content').val('');
-        })
-    }
+            })
+        }
 $('#comment-form').on('submit', handleComments);
+
+
 
     function handleVote(evt) {
         evt.preventDefault();
@@ -146,6 +166,7 @@ $('#comment-form').on('submit', handleComments);
 $('#vote-form').on('submit', handleVote);
 
 
+
     function deletePost(evt) {
         confirm("Are you sure you want to delete the post");
 
@@ -158,7 +179,7 @@ $('#delete-post').on('click', deletePost);
 
     }
 
-$('#delete-comment').on('click', deleteComment);
+$('.delete-comment').on('click', deleteComment);
 
 
   function previousPost (post_id, post_ids) {

@@ -119,8 +119,9 @@ class Comment(db.Model):
     def get_comment_by_comment_id(cls, comment_id):
         return cls.query.get(comment_id)
 
-    def delete(self):
-        comment = self
+    @classmethod
+    def delete_by_comment_id(cls, comment_id):
+        comment = cls.get_comment_by_comment_id(comment_id)
         db.session.delete(comment)
         db.session.commit()
 
@@ -196,9 +197,16 @@ class Post(db.Model):
 
         flash('Your question has been posted')
 
+    #
+    # def check_vote_on_post_by_user_id(self, user_id):
+
+
+
+
     # TODO: TURN THIS INTO CLASS METHOD
-    def delete(self):
-        post = Post.get_post_by_id(self.post_id)
+    @classmethod
+    def delete_by_post_id(cls, post_id):
+        post = cls.get_post_by_id(post_id)
         db.session.delete(post)
         db.session.commit()
         #TODO: NEED TO REMOVE THE FILES FROM AWS as well

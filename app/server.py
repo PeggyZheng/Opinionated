@@ -162,9 +162,8 @@ def process_question():
 
 @app.route('/home/post/<int:post_id>/delete', methods=['POST'])
 def delete_post(post_id):
-    post = Post.get_post_by_id(post_id)
+    Post.delete_by_post_id(post_id)
     user_id = session['loggedin']
-    post.delete()
     return redirect(url_for('user_profile', user_id=user_id))
 
 
@@ -178,8 +177,11 @@ def process_comments(post_id):
     user_id = session.get('loggedin', None)
     user_name = User.get_user_by_id(user_id).user_name
     if user_id:
-        Comment.create(content=content, user_id=user_id, post_id=post_id)
-        return jsonify(user_id=user_id, user_name=user_name, content=content)
+        new_comment = Comment.create(content=content, user_id=user_id, post_id=post_id)
+        comment_id = new_comment.comment_id
+        has_delete_button = user_id == new_comment.user_id
+        return jsonify(user_id=user_id, user_name=user_name, content=content,
+                       has_delete_button=has_delete_button, comment_id=comment_id)
     else:
         flash("You need to login first")
         return redirect(url_for('login'))
@@ -187,8 +189,8 @@ def process_comments(post_id):
 @app.route('/home/comment/<int:comment_id>/delete', methods=['POST'])
 def delete_comment(comment_id):
     comment = Comment.get_comment_by_comment_id(comment_id)
-    post_id = Comment.post_id
-    comment.delete()
+    post_id = comment.post_id
+    Comment.delete_by_comment_id(comment_id)
     return redirect(url_for('show_post_detail', post_id=post_id))
 # TODO: THE COMMENT DELETING BUTTON IS NOT SHOWING UP
 
