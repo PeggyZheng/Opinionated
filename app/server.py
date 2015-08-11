@@ -116,11 +116,17 @@ def process_vote(post_id):
     choice_id = request.form.get("choice_id")
     user_id = session['loggedin']
 
-    Vote.create(user_id=user_id, choice_id=choice_id)
-
     post = Post.get_post_by_id(post_id)
-    vote_dict, total_votes = post.count_votes()
+    previous_vote = post.check_choice_on_post_by_user_id(user_id)
 
+    if previous_vote: # if there is a previous vote, compare to the new vote see if they pointed to the same choice, update vote
+        if previous_vote != choice_id:
+            vote_id = Vote.get_vote_by_post_and_user_id(post.post_id, user_id)
+            Vote.update_vote(vote_id, choice_id)
+    else:
+        Vote.create(user_id=user_id, choice_id=choice_id) #if it's first time vote, create a new vote
+
+    vote_dict, total_votes = post.count_votes()
     total_votes_percent = {}
     for vote in vote_dict:
         total_votes_percent[vote] = float(vote_dict[vote]) / total_votes
@@ -192,7 +198,7 @@ def delete_comment(comment_id):
     post_id = comment.post_id
     Comment.delete_by_comment_id(comment_id)
     return redirect(url_for('show_post_detail', post_id=post_id))
-# TODO: THE COMMENT DELETING BUTTON IS NOT SHOWING UP
+
 
 
 #######################################################################################################

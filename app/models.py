@@ -197,18 +197,26 @@ class Post(db.Model):
 
         flash('Your question has been posted')
 
-    #
-    # def check_vote_on_post_by_user_id(self, user_id):
 
-
-
-
-    # TODO: TURN THIS INTO CLASS METHOD
     @classmethod
     def delete_by_post_id(cls, post_id):
+        # deleting the images from aws for the choices
+        choices = Choice.get_choices_by_post_id(post_id)
+        for choice in choices:
+            k = Key(bucket)
+            k.key = hashlib.sha512(str(choice.choice_id)).hexdigest()
+            bucket.delete_key(k)
+
         post = cls.get_post_by_id(post_id)
+        #deleting the image from the post description from aws
+        k1 = Key(bucket)
+        k1.key = hashlib.sha512(str(post.post_id)).hexdigest()
+        bucket.delete_key(k1)
+
         db.session.delete(post)
         db.session.commit()
+
+
         #TODO: NEED TO REMOVE THE FILES FROM AWS as well
 
         flash('Your post has been deleted')
@@ -238,6 +246,11 @@ class Post(db.Model):
         total_votes = sum(vote_dict.values())
         return vote_dict, total_votes
 
+    def check_choice_on_post_by_user_id(self, user_id):
+        choice = db.session.query(Choice.choice_id).join(Vote).filter(Choice.post_id==self.post_id, Vote.user_id==user_id).first()
+        if choice:
+            # the vote will give you a tuple, so we need to use index to grab out the element
+            return choice[0]
 
 class Vote(db.Model):
     """
@@ -275,6 +288,23 @@ class Vote(db.Model):
 
         return votes
 
+    @classmethod
+    def get_vote_by_post_and_user_id(cls, post_id, user_id):
+        vote = db.session.query(Vote.vote_id).join(Choice).filter(Choice.post_id==post_id, Vote.user_id==user_id).first()
+        if vote:
+            return vote[0]
+
+
+    @classmethod
+    def get_vote_by_vote_id(cls, vote_id):
+        return cls.query.get(vote_id)
+
+
+    @classmethod
+    def update_vote(cls, vote_id, new_choice):
+        vote = cls.get_vote_by_vote_id(vote_id)
+        vote.choice_id = new_choice
+        db.session.commit()
 
 class Choice(db.Model):
     """ Files (images, videos, audio etc) associated with specific post """
