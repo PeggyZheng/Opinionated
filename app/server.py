@@ -1,8 +1,8 @@
 """Opinionated"""
-
+# from facebook import get_user_from_cookie, GraphAPI
 from jinja2 import StrictUndefined
 from flask_debugtoolbar import DebugToolbarExtension
-from flask import Flask, render_template, redirect, request, flash, session, url_for
+from flask import Flask, render_template, redirect, request, flash, session, url_for, g
 from models import User, Comment, Post, Vote, Choice, Tag, connect_to_db
 from boto.s3.connection import S3Connection
 import os
@@ -22,6 +22,11 @@ app.jinja_env.undefined = StrictUndefined
 conn = S3Connection(os.environ["AWS_ACCESS_KEY"], os.environ["AWS_SECRET_KEY"])
 bucket = conn.get_bucket(os.environ['AWS_BUCKET'])
 
+# Facebook details
+FB_APP_ID = os.environ["FB_APP_ID"]
+FB_APP_NAME = os.environ["FB_APP_NAME"]
+FB_APP_SECRET = os.environ["FB_APP_SECRET"]
+
 
 #######################################################################################################
 # functions that handles login and logout
@@ -29,10 +34,7 @@ bucket = conn.get_bucket(os.environ['AWS_BUCKET'])
 @app.route("/")
 def login():
     """Homepage with login"""
-    if session.get('loggedin', None):
-        return redirect(url_for('show_all_posts'))
-    else:
-        return render_template("login.html")
+    return render_template("login.html")
 
 
 @app.route('/login', methods=['POST'])
@@ -60,6 +62,23 @@ def logout_user():
     session.pop('loggedin', None)
     flash("You have logged out")
     return redirect(url_for('login'))
+
+@app.route('/signup-portal', methods=['POST'])
+def signup_portal():
+	"""Handles the signup form"""
+
+	email = request.form.get('email')
+	password = request.form.get('password')
+	user_name = request.form.get('user_name')
+
+	user = User.create(email=email, password=password, user_name=user_name)
+
+	#automatically sign in user after account creation
+	session['loggedin'] = user.user_id
+	flash('Account successfully created. Welcome to Opinionated!')
+
+	return redirect('/home')
+
 
 
 #######################################################################################################

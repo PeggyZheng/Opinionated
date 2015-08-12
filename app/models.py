@@ -10,7 +10,6 @@ import os
 import hashlib
 
 
-
 # This is the connection to the SQLite database; we're getting this through
 # the Flask-SQLAlchemy helper library. On this, we can find the `session`
 # object, where we do most of our interactions (like committing, etc.)
@@ -245,6 +244,8 @@ class Post(db.Model):
             vote_dict[choice.choice_id] = len(choice.get_votes())
         total_votes = sum(vote_dict.values())
         return vote_dict, total_votes
+
+    # todo: this method may need to be replaced by a new table between user and post to achieve better performance
 
     def check_choice_on_post_by_user_id(self, user_id):
         choice = db.session.query(Choice.choice_id).join(Vote).filter(Choice.post_id==self.post_id, Vote.user_id==user_id).first()

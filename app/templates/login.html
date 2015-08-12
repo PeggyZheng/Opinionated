@@ -10,4 +10,36 @@
 
 </form>
 
+<button type="button" id="signup">Create Account</button>
+
+<form action='signup-portal' method='post' id="signup-form" hidden>
+		<label>Email:
+			<input type='email' name='email' placeholder='username@email.com'>
+		</label>
+		<br>
+        <label>Username:
+			<input type='text' name='user_name'>
+		</label>
+		<br>
+		<label>Password:
+			<input type='password' name='password'>
+		</label>
+		<br>
+
+		<input type='submit' value='Create Account'>
+</form>
+
+<script src="https://code.jquery.com/jquery.js"></script>
+<script>
+
+    function showSignupForm(evt) {
+        $('#signup-form').removeAttr('hidden');
+//        $('#signup').attr('hidden');
+    }
+$('#signup').on('click', showSignupForm);
+
+
+</script>
+
+
 {% endblock %}
