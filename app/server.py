@@ -56,11 +56,41 @@ def login_user():
         return redirect(url_for('login'))
 
 
+@app.route('/facebook-login-portal', methods=['POST'])
+def facebook_login():
+    """Handles the login from the facebook login button)"""
+    user_id = request.form.get('fbUserId')
+    first_name = request.form.get('fbFname')
+    last_name = request.form.get('fbLname')
+    email = request.form.get('fbEmail')
+    current_access_token = request.form.get('accessToken')
+
+    user = User.get_user_by_email(email)
+
+    if user:
+        print "Hi, you're already a user."
+        session["loggedin"] = user.user_id
+        session["current_access_token"] = current_access_token
+
+        flash("Login successful!")
+
+        return redirect('/home')
+    else:
+        new_user = User.create(email=email, user_name=first_name+" "+last_name, password=current_access_token)
+        session["loggedin"] = new_user.user_id
+        session["current_access_token"] = current_access_token
+
+        flash("Thanks for logging in to Opinionated")
+        return redirect("/home")
+
+
 @app.route('/logout')
 def logout_user():
     """Log out the user; remove the user from the session and flash a notification message"""
     session.pop('loggedin', None)
     flash("You have logged out")
+    session.pop("current_access_token", None)
+    flash ("You have logged out of Facebook")
     return redirect(url_for('login'))
 
 @app.route('/signup-portal', methods=['POST'])

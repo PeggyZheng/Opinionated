@@ -1,7 +1,18 @@
 
 {% extends 'base.html' %}
 {% block content %}
-<form action='/login', method='post'>
+<div id='fb-root'></div>
+
+	<fb:login-button size='large'
+		 		 autologoutlink = 'true'
+		 		 scope="public_profile,email"
+		 		 onlogin="checkLoginState();">
+	</fb:login-button>
+
+
+	<div id="status"></div>
+
+<form action='/login' method='post'>
     <label>Email<input type="text" name="email"> </label>
     <br>
     <label>Password<input type="password" name="password"> </label>
@@ -26,10 +37,12 @@
 		</label>
 		<br>
 
-		<input type='submit' value='Create Account'>
+		<input type='submit' value='Sign up'>
 </form>
 
 <script src="https://code.jquery.com/jquery.js"></script>
+<script src="../static/fblogin.js"></script>
+
 <script>
 
     function showSignupForm(evt) {
