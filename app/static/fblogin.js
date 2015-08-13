@@ -3,93 +3,103 @@
 function collectUserDetails(accessToken) {
     //make a FB api call and return an object of user details.
     FB.api('/me',
-        {fields: ['last_name', 'first_name', 'email', 'id']},
+        {fields: ['name', 'birthday', 'age_range', 'email', 'gender', 'location']},
         function (response) {
 
             var userDetails = {
-                fname: response.first_name,
-                lname: response.last_name,
+                name: response.name,
+                birthday: response.birthday,
+                age_range_min: response.age_range['min'],
                 email: response.email,
-                fbUserId: response.id
+                gender: response.gender,
+                location: response.location //a string that is comma seperated with city and state
             };
-            collectUserFriends(accessToken, userDetails);
+
+            console.log(userDetails);
+
+            $.post('/facebook-login-portal', userDetails, function(result){
+                location.href="/home";
+            });
+
         });
 
 }
 
-function collectUserFriends(accessToken, userDetails) {
-    FB.api('/me/friends',
-      function (response) {
-        // if (response && !response.error) {
-        //   friendsids = []
-        //   for (var i = 0; i < response.data.length; i++) {
-        //     friendsids.push(response.id)
-        //   }
-          console.log("In the get my friends function");
-          console.log(response.data);
-          var this_response = response;
-          submitInfoToServer(accessToken, userDetails, this_response);
-        })
-
-      
-      }
-
-
-function submitInfoToServer(accessToken, userDetails, this_response) {
-      //takes the access token, and a userdetails list as input, submits a form to the server.
-      //userDetails is an object with fname, lname, email and fbUserId
-
-      console.log('SUBMIT INFO TO SERVER');
-      console.log('response from friends call');
-      console.log(this_response.data);
-
-      //create form elements
-      var form = document.createElement('form');
-      var userIdElement = document.createElement('input');
-      var userFnameElement = document.createElement('input');
-      var userLnameElement = document.createElement('input');
-      var userEmailElement = document.createElement('input');
-      var userFriendsElement = document.createElement('input');
-      var currentAccessToken = document.createElement('input');
-
-      //put everything all together
-
-      var fbUserId = userDetails.fbUserId;
-      var fname = userDetails.fname;
-      var lname = userDetails.lname;
-      var email = userDetails.email;
-      var accessToken = accessToken;
-      var userfriends = userDetails.friends;
-
-      form.method = "POST";
-      form.action = "/facebook-login-portal";
-
-
-      //set element values
-      userIdElement.value = fbUserId;
-      userFnameElement.value = fname;
-      userLnameElement.value = lname;
-      userEmailElement.value = email;
-      currentAccessToken.value = accessToken;
-
-      //set element names
-      userIdElement.name = 'fbUserId';
-      userFnameElement.name = 'fbFname';
-      userLnameElement.name = 'fbLname';
-      userEmailElement.name = 'fbEmail';
-      currentAccessToken.name = 'accessToken';
-
-      form.appendChild(userIdElement);
-      form.appendChild(userFnameElement);
-      form.appendChild(userLnameElement);
-      form.appendChild(userEmailElement);
-      form.appendChild(currentAccessToken);
-
-      document.body.appendChild(form);
-      debugger;
-      alert('STOP');
-      form.submit();
-  }
+//function collectUserFriends(accessToken, userDetails) {
+//    FB.api('/me/friends',
+//      function (response) {
+//        // if (response && !response.error) {
+//        //   friendsids = []
+//        //   for (var i = 0; i < response.data.length; i++) {
+//        //     friendsids.push(response.id)
+//        //   }
+//          console.log("In the get my friends function");
+//          console.log(response.data);
+//          var this_response = response;
+//          submitInfoToServer(accessToken, userDetails, this_response);
+//        })
+//
+//
+//      }
+//
+//
+//function submitInfoToServer(accessToken, userDetails, this_response) {
+//      //takes the access token, and a userdetails list as input, submits a form to the server.
+//      //userDetails is an object with fname, lname, email and fbUserId
+//
+//      console.log('SUBMIT INFO TO SERVER');
+//      console.log('response from friends call');
+//      console.log(this_response.data);
+//
+//      //create form elements
+//      var form = document.createElement('form');
+//      var userIdElement = document.createElement('input');
+//      var userNameElement = document.createElement('input');
+//      var userBirthdayElement = document.createElement('input');
+//      var userEmailElement = document.createElement('input');
+//      var userGenderElement = document.createElement('input');
+//      var currentAccessToken = document.createElement('input');
+//
+//      //put everything all together
+//
+//      var name = userDetails.name;
+//      var birthday = userDetails.birthday;
+//      var email = userDetails.email;
+//      var gender = userDetails.gender;
+//      var accessToken = accessToken;
+//      var userfriends = userDetails.friends;
+//
+//      form.method = "POST";
+//      form.action = "/facebook-login-portal";
+//
+//
+//      //set element values
+//      userNameElement.value = name;
+//      userBirthdayElement.value = birthday;
+//      userEmailElement.value = email;
+//      userGenderElement.value = gender;
+//      currentAccessToken.value = accessToken;
+//
+//      //set element names
+//      userIdElement.name = 'fbUserId';
+//      userBirthdayElement.name = 'fbBirthday';
+//      userNameElement.name = 'fbName';
+//      userEmailElement.name = 'fbEmail';
+//      userGenderElement.name = 'fbGender';
+//      currentAccessToken.name = 'accessToken';
+//
+//      form.appendChild(userIdElement);
+//      form.appendChild(userNameElement);
+//      form.appendChild(userBirthdayElement);
+//      form.appendChild(userEmailElement);
+//      form.appendChild(userGenderElement);
+//      form.appendChild(currentAccessToken);
+//
+//      document.body.appendChild(form);
+//      debugger;
+//      alert('STOP');
+//      form.submit();
+//  }
 
 function statusChangeCallback(response) {
     console.log('statusChangeCallback');

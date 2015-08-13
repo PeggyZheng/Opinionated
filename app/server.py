@@ -59,10 +59,12 @@ def login_user():
 @app.route('/facebook-login-portal', methods=['POST'])
 def facebook_login():
     """Handles the login from the facebook login button)"""
-    user_id = request.form.get('fbUserId')
-    first_name = request.form.get('fbFname')
-    last_name = request.form.get('fbLname')
-    email = request.form.get('fbEmail')
+    name = request.form.get('name')
+    email = request.form.get('email')
+    birthday = request.form.get('birthday')
+    gender = request.form.get('gender')
+    age_range = request.form.get('age_range_min')
+    location = request.form.get('location')
     current_access_token = request.form.get('accessToken')
 
     user = User.get_user_by_email(email)
@@ -71,17 +73,16 @@ def facebook_login():
         print "Hi, you're already a user."
         session["loggedin"] = user.user_id
         session["current_access_token"] = current_access_token
-
         flash("Login successful!")
+        # return redirect('/home') # the return is not needed because this is a json post, do redirect in json
 
-        return redirect('/home')
     else:
-        new_user = User.create(email=email, user_name=first_name+" "+last_name, password=current_access_token)
+        # todo: need to generate random password for facebook user, password cannot be None
+        new_user = User.create(email=email, user_name=name, age_range=int(age_range), gender=gender, birthday=birthday,location=location, password="aaa")
         session["loggedin"] = new_user.user_id
         session["current_access_token"] = current_access_token
-
         flash("Thanks for logging in to Opinionated")
-        return redirect("/home")
+        # return redirect("/home")
 
 
 @app.route('/logout')

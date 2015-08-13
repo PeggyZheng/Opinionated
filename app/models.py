@@ -43,6 +43,9 @@ class User(db.Model):
     password_hash = db.Column(db.String(128))
     location = db.Column(db.String(64))
     about_me = db.Column(db.String(64))
+    age_range = db.Column(db.Integer)
+    gender = db.Column(db.String)
+    birthday = db.Column(db.DATETIME)
 
     posts = db.relationship("Post", backref=db.backref("author"), cascade="all, delete, delete-orphan")
     comments = db.relationship("Comment", backref=db.backref("user"), cascade="all, delete, delete-orphan")
@@ -69,8 +72,10 @@ class User(db.Model):
         return check_password_hash(self.password_hash, password)
 
     @classmethod
-    def create(cls, email, password, user_name, location=None, about_me=None):
-        new_user = cls(email=email, password=password, user_name=user_name, location=location, about_me=about_me)
+    def create(cls, email, password, user_name, age_range, birthday, gender, location=None, about_me=None):
+        new_user = cls(email=email, password=password, user_name=user_name, location=location, about_me=about_me,
+                       age_range=age_range, birthday=birthday, gender=gender)
+
         db.session.add(new_user)
         db.session.commit()
         return new_user
