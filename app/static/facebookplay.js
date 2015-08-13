@@ -11,16 +11,20 @@ window.fbAsyncInit = function() {
     // place code here that I want to run as soon as the page is loaded
 
     //share something on facebook
-    // FB.ui(
-    //    {
-    //     method: 'share_open_graph',
-    //     action_type: 'og.likes',
-    //     action_properties: JSON.stringify({
-    //       object:'https://developers.facebook.com/docs/',
-    //     })
-    //   }, function(response){
-    //     console.log(response);
-    //   });
+     FB.ui(
+        {
+         method: 'share_open_graph',
+         action_type: 'og.likes',
+         action_properties: JSON.stringify({
+           object:'https://developers.facebook.com/docs/'
+         })
+       }, function(response){
+         console.log(response);
+           if (response && !response.error_code) {
+               alert('Posting completed.');
+           } else {
+               alert('Error while posting.');}
+       });
 
 };  //close the fbAsyncInit function
 

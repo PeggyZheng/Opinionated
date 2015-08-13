@@ -74,7 +74,7 @@ def facebook_login():
         session["loggedin"] = user.user_id
         session["current_access_token"] = current_access_token
         flash("Login successful!")
-        # return redirect('/home') # the return is not needed because this is a json post, do redirect in json
+        return redirect('/home') # the return is not needed because this is a json post, do redirect in json
 
     else:
         # todo: need to generate random password for facebook user, password cannot be None
@@ -82,7 +82,7 @@ def facebook_login():
         session["loggedin"] = new_user.user_id
         session["current_access_token"] = current_access_token
         flash("Thanks for logging in to Opinionated")
-        # return redirect("/home")
+        return redirect("/home")
 
 
 @app.route('/logout')
