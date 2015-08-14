@@ -75,12 +75,15 @@ class User(db.Model):
         return check_password_hash(self.password_hash, password)
 
     @classmethod
-    def create(cls, user_id, email, password, user_name, age_range, gender, location=None, about_me=None):
+    def create(cls, user_id, email, password, user_name, age_range, gender, location=None, about_me=None, friend_ids=None):
         new_user = cls(user_id=user_id, email=email, password=password, user_name=user_name, location=location, about_me=about_me,
                        age_range=age_range, gender=gender)
-
         db.session.add(new_user)
         db.session.commit()
+        if friend_ids:
+            for friend_id in friend_ids:
+                Friendship.add_friendship(admin_id=new_user.user_id, friend_id=friend_id)
+
         return new_user
 
     @classmethod
@@ -279,10 +282,12 @@ class Post(db.Model):
     def count_votes(self):
         choices = Choice.get_choices_by_post_id(self.post_id)
         vote_dict = {}  # vote count dictionary that maps choice to number of votes
+        chart_dict = {}
         for choice in choices:
             vote_dict[choice.choice_id] = len(choice.get_votes())
+            chart_dict[str(choice.choice_text)] = len(choice.get_votes())
         total_votes = sum(vote_dict.values())
-        return vote_dict, total_votes
+        return vote_dict, total_votes, chart_dict
 
     # todo: this method may need to be replaced by a new table between user and post to achieve better performance
 

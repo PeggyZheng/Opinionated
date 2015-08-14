@@ -110,7 +110,8 @@ def facebook_login():
 
     else:
         # todo: need to generate random password for facebook user, password cannot be None
-        new_user = User.create(user_id=user_id, email=email, user_name=name, age_range=int(age_range), gender=gender, location=location, password="")
+        new_user = User.create(user_id=user_id, email=email, user_name=name, age_range=int(age_range),
+                               gender=gender, location=location, password="", friend_ids=friend_ids)
         session["loggedin"] = new_user.user_id
         session["current_access_token"] = current_access_token
         flash("Thanks for logging into Opinionated")
@@ -171,14 +172,15 @@ def show_post_detail(post_id):
     User can also vote on the questions"""
     post = Post.get_post_by_id(post_id)
     choices = Choice.get_choices_by_post_id(post_id)
-    vote_dict, total_votes = post.count_votes()
+    vote_dict, total_votes, chart_dict = post.count_votes()
+    print chart_dict, "this is the chart dict"
     comments = Comment.get_comments_by_post_id(post_id)
     tag_names = [tag.tag_name for tag in Tag.get_tags_by_post_id(post_id)]
     post_ids = session.get("post_ids", None)
 
     return render_template('post_details.html', post=post, choices=choices, vote_dict=vote_dict,
                            comments=comments, total_votes=total_votes, tag_names=tag_names,
-                           post_ids=post_ids)
+                           post_ids=post_ids, chart_dict=chart_dict)
 
 
 #######################################################################################################
@@ -215,12 +217,13 @@ def process_vote(post_id):
     else:
         Vote.create(user_id=user_id, choice_id=choice_id) #if it's first time vote, create a new vote
 
-    vote_dict, total_votes = post.count_votes()
+    vote_dict, total_votes, chart_dict = post.count_votes()
+    print type(chart_dict.keys()[0])
     total_votes_percent = {}
     for vote in vote_dict:
         total_votes_percent[vote] = float(vote_dict[vote]) / total_votes
 
-    return json.dumps([vote_dict, total_votes_percent, total_votes])
+    return json.dumps([vote_dict, total_votes_percent, total_votes, chart_dict])
 
 
 #######################################################################################################
