@@ -7,7 +7,9 @@ from models import User, Comment, Post, Vote, Choice, Tag, connect_to_db
 from boto.s3.connection import S3Connection
 import os
 from flask import jsonify
+import facebook
 import json
+
 
 app = Flask(__name__)
 
@@ -34,6 +36,8 @@ FB_APP_SECRET = os.environ["FB_APP_SECRET"]
 @app.route("/")
 def login():
     """Homepage with login"""
+    # Get all of the authenticated user's friends
+
     return render_template("login.html")
 
 
@@ -59,15 +63,25 @@ def login_user():
 @app.route('/facebook-login-portal', methods=['POST'])
 def facebook_login():
     """Handles the login from the facebook login button)"""
-    name = request.form.get('name')
-    email = request.form.get('email')
-    birthday = request.form.get('birthday')
-    gender = request.form.get('gender')
-    age_range = request.form.get('age_range_min')
-    location = request.form.get('location')
-    current_access_token = request.form.get('accessToken')
+    user_id = str(request.form.get('user_id'))
+    print user_id
+    print type(user_id)
+    graph = facebook.GraphAPI(access_token='CAACAkvEoW7wBAAd6jgjlbE7M77ByBM0ZA1ZCaDhbkT00v2WVZB7QCLxgQ640BX3HAdE41id9CPbV8e9YZAl6tuq5haJE0YYA0Dak2assDULwAd4qgOjMo609Agn1za0QahzqUOnnv4ZCMU1puBZBETz3zKkuH8soLbMFqZAAixLBJFZAS1ZBm6PQCeovEWocQnWpiMrtGEO5paAZDZD')
+    friends = graph.get_connections(id=user_id, connection_name='friends')
+    user_details= graph.get_object(id=user_id, fields='name, email, gender, age_range, birthday, location')
+    print user_details
 
-    user = User.get_user_by_email(email)
+    user_id = int(user_id)
+    name = user_details.get('name')
+    email = user_details.get('email')
+    gender = user_details.get('gender')
+    age_range = user_details.get('age_range').get('min')
+    location = user_details.get('location').get('name')
+    current_access_token = request.form.get('accessToken')
+    friends = friends
+
+
+    user = User.get_user_by_id(user_id)
 
     if user:
         print "Hi, you're already a user."
@@ -78,7 +92,7 @@ def facebook_login():
 
     else:
         # todo: need to generate random password for facebook user, password cannot be None
-        new_user = User.create(email=email, user_name=name, age_range=int(age_range), gender=gender, birthday=birthday,location=location, password="aaa")
+        new_user = User.create(user_id=user_id, email=email, user_name=name, age_range=int(age_range), gender=gender, location=location, password="")
         session["loggedin"] = new_user.user_id
         session["current_access_token"] = current_access_token
         flash("Thanks for logging in to Opinionated")
@@ -94,21 +108,21 @@ def logout_user():
     flash ("You have logged out of Facebook")
     return redirect(url_for('login'))
 
-@app.route('/signup-portal', methods=['POST'])
-def signup_portal():
-	"""Handles the signup form"""
-
-	email = request.form.get('email')
-	password = request.form.get('password')
-	user_name = request.form.get('user_name')
-
-	user = User.create(email=email, password=password, user_name=user_name)
-
-	#automatically sign in user after account creation
-	session['loggedin'] = user.user_id
-	flash('Account successfully created. Welcome to Opinionated!')
-
-	return redirect('/home')
+# @app.route('/signup-portal', methods=['POST'])
+# def signup_portal():
+# 	"""Handles the signup form"""
+#
+# 	email = request.form.get('email')
+# 	password = request.form.get('password')
+# 	user_name = request.form.get('user_name')
+#
+# 	user = User.create(email=email, password=password, user_name=user_name)
+#
+# 	#automatically sign in user after account creation
+# 	session['loggedin'] = user.user_id
+# 	flash('Account successfully created. Welcome to Opinionated!')
+#
+# 	return redirect('/home')
 
 
 

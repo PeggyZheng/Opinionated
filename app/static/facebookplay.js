@@ -5,7 +5,7 @@ window.fbAsyncInit = function() {
     FB.init({
         appId      : '141368599534524',
         xfbml      : true,
-        cookie     : true,
+        cookie     : false,
         version    : 'v2.4'
     });
     // place code here that I want to run as soon as the page is loaded

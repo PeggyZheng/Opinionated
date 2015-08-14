@@ -3,44 +3,49 @@
 function collectUserDetails(accessToken) {
     //make a FB api call and return an object of user details.
     FB.api('/me',
-        {fields: ['name', 'birthday', 'age_range', 'email', 'gender', 'location']},
+        // {fields: 'id'},
         function (response) {
 
             var userDetails = {
-                name: response.name,
-                birthday: response.birthday,
-                age_range_min: response.age_range['min'],
-                email: response.email,
-                gender: response.gender,
-                location: response.location //a string that is comma seperated with city and state
+                user_id: response.id
+                //name: response.name,
+                //birthday: response.birthday,
+                //age_range_min: response.age_range['min'],
+                //email: response.email,
+                //gender: response.gender,
+                //location: response.location, //a string that is comma separated with city and state
+                //friends: response.friends
             };
 
             console.log(userDetails);
-
             $.post('/facebook-login-portal', userDetails, function(result){
-                location.href="/home";
-            });
+                location.href="/home";})
 
         });
-
 }
 
+
 //function collectUserFriends(accessToken, userDetails) {
-//    FB.api('/me/friends',
+//    FB.api('/me/friends', 'GET', {},
 //      function (response) {
-//        // if (response && !response.error) {
-//        //   friendsids = []
-//        //   for (var i = 0; i < response.data.length; i++) {
-//        //     friendsids.push(response.id)
-//        //   }
-//          console.log("In the get my friends function");
-//          console.log(response.data);
-//          var this_response = response;
-//          submitInfoToServer(accessToken, userDetails, this_response);
-//        })
-//
-//
-//      }
+//          console.log(response);
+//        if (response && !response.error) {
+//          var friends = response.data; //data is a list of objects.
+//            console.log('the friends of this user are:');
+//            console.log(friends);
+//          var friendsList = [];
+//          for (var i = 0; i < friends.length; i++ ) {
+//            friendsList.push(friends[i].id);
+//          }//endfor
+//        }//endif
+//        friendsList = JSON.stringify(friendsList);
+//        console.log('Friends list: ');
+//        console.log(friendsList);
+//          $.post('/facebook-login-portal', [userDetails, friendsList], function(result){
+//                location.href="/home";
+//      });
+//  })
+//}
 //
 //
 //function submitInfoToServer(accessToken, userDetails, this_response) {
@@ -134,7 +139,7 @@ function checkLoginState() {
 window.fbAsyncInit = function() {
   FB.init({
     appId      : '141368599534524', //Opinionated appId
-    cookie     : true,  // enable cookies to allow the server to access the session
+    cookie     : false,  // enable cookies to allow the server to access the session
     xfbml      : true,  // parse social plugins on this page
     version    : 'v2.2' // use version 2.2
   });

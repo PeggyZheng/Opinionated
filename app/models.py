@@ -37,7 +37,7 @@ class User(db.Model):
 
     __tablename__ = 'users'
 
-    user_id = db.Column(db.Integer, autoincrement=True, primary_key=True)
+    user_id = db.Column(db.Integer, primary_key=True)
     user_name = db.Column(db.String(64))
     email = db.Column(db.String(64), nullable=False)
     password_hash = db.Column(db.String(128))
@@ -45,7 +45,6 @@ class User(db.Model):
     about_me = db.Column(db.String(64))
     age_range = db.Column(db.Integer)
     gender = db.Column(db.String)
-    birthday = db.Column(db.DATETIME)
 
     posts = db.relationship("Post", backref=db.backref("author"), cascade="all, delete, delete-orphan")
     comments = db.relationship("Comment", backref=db.backref("user"), cascade="all, delete, delete-orphan")
@@ -72,9 +71,9 @@ class User(db.Model):
         return check_password_hash(self.password_hash, password)
 
     @classmethod
-    def create(cls, email, password, user_name, age_range, birthday, gender, location=None, about_me=None):
-        new_user = cls(email=email, password=password, user_name=user_name, location=location, about_me=about_me,
-                       age_range=age_range, birthday=birthday, gender=gender)
+    def create(cls, user_id, email, password, user_name, age_range, gender, location=None, about_me=None):
+        new_user = cls(user_id=user_id, email=email, password=password, user_name=user_name, location=location, about_me=about_me,
+                       age_range=age_range, gender=gender)
 
         db.session.add(new_user)
         db.session.commit()
@@ -91,6 +90,32 @@ class User(db.Model):
     @classmethod
     def get_user_by_email(cls, email):
         return cls.query.filter_by(email=email).first()
+
+
+class Friendship(db.Model):
+	"""Keep track of relationship between users"""
+
+	__tablename__ = 'friendships'
+
+	friendship_id = db.Column(db.Integer, autoincrement=True, primary_key=True)
+	admin_id = db.Column(db.Integer, db.ForeignKey('users.user_id'), nullable=False)
+	friend_id = db.Column(db.Integer, db.ForeignKey('users.user_id'), nullable=False)
+
+	user = db.relationship("User",
+							primaryjoin="User.user_id == Friendship.admin_id",
+						    backref=db.backref("friendships", order_by=friendship_id))
+
+	def __repr__(self):
+		"""A helpful representation of the relationship"""
+
+		return "Friendship between admin_id: %s and friend_id: %s>" % (self.admin_id, self.friend_id)
+
+	@classmethod
+	def add_friendship(cls, admin_id, friend_id):
+		"""Insert a new friendship into the friendships table"""
+		friendship = cls(admin_id=admin_id, friend_id=friend_id)
+		db.session.add(friendship)
+		db.session.commit()
 
 
 class Comment(db.Model):
