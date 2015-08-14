@@ -1,7 +1,7 @@
 """Models and database functions for Opinionated project."""
 
 from flask_sqlalchemy import SQLAlchemy
-from flask import flash, session
+from flask import flash
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
 from boto.s3.connection import S3Connection
@@ -37,7 +37,7 @@ class User(db.Model):
 
     __tablename__ = 'users'
 
-    user_id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.BigInteger, primary_key=True)
     user_name = db.Column(db.String(64))
     email = db.Column(db.String(64), nullable=False)
     password_hash = db.Column(db.String(128))
@@ -45,6 +45,10 @@ class User(db.Model):
     about_me = db.Column(db.String(64))
     age_range = db.Column(db.Integer)
     gender = db.Column(db.String)
+    fb_user_id = db
+
+    # todo: need to decide if only allows for facebook login, if so, we could take out the password part
+    # todo: change the datatype of user_id column to big integer
 
     posts = db.relationship("Post", backref=db.backref("author"), cascade="all, delete, delete-orphan")
     comments = db.relationship("Comment", backref=db.backref("user"), cascade="all, delete, delete-orphan")
@@ -91,31 +95,36 @@ class User(db.Model):
     def get_user_by_email(cls, email):
         return cls.query.filter_by(email=email).first()
 
+    def get_all_friends(self):
+        return [friend.friend_id for friend in self.friendships]
+
 
 class Friendship(db.Model):
-	"""Keep track of relationship between users"""
+    """Keep track of relationship between users"""
 
-	__tablename__ = 'friendships'
+    __tablename__ = 'friendships'
 
-	friendship_id = db.Column(db.Integer, autoincrement=True, primary_key=True)
-	admin_id = db.Column(db.Integer, db.ForeignKey('users.user_id'), nullable=False)
-	friend_id = db.Column(db.Integer, db.ForeignKey('users.user_id'), nullable=False)
+    friendship_id = db.Column(db.Integer, autoincrement=True, primary_key=True)
+    admin_id = db.Column(db.Integer, db.ForeignKey('users.user_id'), nullable=False)
+    friend_id = db.Column(db.Integer, db.ForeignKey('users.user_id'), nullable=False)
 
-	user = db.relationship("User",
-							primaryjoin="User.user_id == Friendship.admin_id",
-						    backref=db.backref("friendships", order_by=friendship_id))
+    user = db.relationship("User",
+                           primaryjoin="User.user_id == Friendship.admin_id",
+                           backref=db.backref("friendships", order_by=friendship_id))
 
-	def __repr__(self):
-		"""A helpful representation of the relationship"""
+    def __repr__(self):
+        """A helpful representation of the relationship"""
 
-		return "Friendship between admin_id: %s and friend_id: %s>" % (self.admin_id, self.friend_id)
+        return "Friendship between admin_id: %s and friend_id: %s>" % (self.admin_id, self.friend_id)
 
-	@classmethod
-	def add_friendship(cls, admin_id, friend_id):
-		"""Insert a new friendship into the friendships table"""
-		friendship = cls(admin_id=admin_id, friend_id=friend_id)
-		db.session.add(friendship)
-		db.session.commit()
+    @classmethod
+    def add_friendship(cls, admin_id, friend_id):
+        """Insert a new friendship into the friendships table"""
+        friendship = cls(admin_id=admin_id, friend_id=friend_id)
+        db.session.add(friendship)
+        db.session.commit()
+
+
 
 
 class Comment(db.Model):

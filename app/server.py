@@ -3,7 +3,7 @@
 from jinja2 import StrictUndefined
 from flask_debugtoolbar import DebugToolbarExtension
 from flask import Flask, render_template, redirect, request, flash, session, url_for, g
-from models import User, Comment, Post, Vote, Choice, Tag, connect_to_db
+from models import User, Comment, Post, Vote, Choice, Tag, Friendship, connect_to_db
 from boto.s3.connection import S3Connection
 import os
 from flask import jsonify
@@ -64,9 +64,11 @@ def login_user():
 def facebook_login():
     """Handles the login from the facebook login button)"""
     user_id = str(request.form.get('user_id'))
+    current_access_token = request.form.get('accessToken')
+    print current_access_token
     print user_id
     print type(user_id)
-    graph = facebook.GraphAPI(access_token='CAACAkvEoW7wBAAd6jgjlbE7M77ByBM0ZA1ZCaDhbkT00v2WVZB7QCLxgQ640BX3HAdE41id9CPbV8e9YZAl6tuq5haJE0YYA0Dak2assDULwAd4qgOjMo609Agn1za0QahzqUOnnv4ZCMU1puBZBETz3zKkuH8soLbMFqZAAixLBJFZAS1ZBm6PQCeovEWocQnWpiMrtGEO5paAZDZD')
+    graph = facebook.GraphAPI(access_token=current_access_token)
     friends = graph.get_connections(id=user_id, connection_name='friends')
     user_details= graph.get_object(id=user_id, fields='name, email, gender, age_range, birthday, location')
     print user_details
@@ -76,28 +78,51 @@ def facebook_login():
     email = user_details.get('email')
     gender = user_details.get('gender')
     age_range = user_details.get('age_range').get('min')
-    location = user_details.get('location').get('name')
-    current_access_token = request.form.get('accessToken')
-    friends = friends
+    if user_details.get('age_range', None):
+        age_range = user_details.get('age_range').get('min')
 
+    # age_range = user_details.get('age_range').get('min')
+    location = user_details.get('location', None)
+    if user_details.get('location', None):
+        location = user_details.get('location').get('name')
+    current_access_token = request.form.get('accessToken')
+    friend_ids = parsing_friends_data(friends)
+    print friend_ids
 
     user = User.get_user_by_id(user_id)
 
     if user:
+        """the user has previously logged in to Opinionated"""
         print "Hi, you're already a user."
         session["loggedin"] = user.user_id
         session["current_access_token"] = current_access_token
         flash("Login successful!")
+        # compare against the existing friend list of this user and update it if needed
+        if friend_ids:
+            for friend_id in friend_ids:
+                all_existing_friends = user.get_all_friends()
+                if friend_id not in all_existing_friends:
+                    Friendship.add_friendship(admin_id=user.user_id, friend_id=friend_id)
+
+        flash('Thanks for logging into Opinionated')
         return redirect('/home') # the return is not needed because this is a json post, do redirect in json
+
 
     else:
         # todo: need to generate random password for facebook user, password cannot be None
         new_user = User.create(user_id=user_id, email=email, user_name=name, age_range=int(age_range), gender=gender, location=location, password="")
         session["loggedin"] = new_user.user_id
         session["current_access_token"] = current_access_token
-        flash("Thanks for logging in to Opinionated")
+        flash("Thanks for logging into Opinionated")
         return redirect("/home")
 
+def parsing_friends_data(friends):
+    """parsing the data received from graph api call to return only the ids of the friends"""
+    friend_data = friends.get('data', None)
+    if friend_data:
+        return [friend['id'] for friend in friend_data]
+    else:
+        return []
 
 @app.route('/logout')
 def logout_user():

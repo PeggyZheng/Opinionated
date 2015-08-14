@@ -7,7 +7,8 @@ function collectUserDetails(accessToken) {
         function (response) {
 
             var userDetails = {
-                user_id: response.id
+                user_id: response.id,
+                accessToken: accessToken
                 //name: response.name,
                 //birthday: response.birthday,
                 //age_range_min: response.age_range['min'],
@@ -115,6 +116,7 @@ function statusChangeCallback(response) {
     	//User is connected to both MLM and FB.
     	//Collect the access token.
     	var accessToken = response.authResponse.accessToken;
+        console.log(accessToken);
 
     	collectUserDetails(accessToken);
 

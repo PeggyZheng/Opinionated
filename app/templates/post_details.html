@@ -2,11 +2,16 @@
 {% block content %}
 
 <a href="/home">Home</a>
+{% if session.get('loggedin', None) %}
 {% if post.author_id == session['loggedin'] %}
 <form action="/home/post/{{ post.post_id }}/delete" method="post">
    <input type="submit" value="Delete post" id="delete-post">
 </form>
 {% endif %}
+{% endif %}
+
+
+
 
  <!-- Your share button code -->
     <div class="fb-share-button"
@@ -103,12 +108,14 @@
                     <!--<input type="submit" value="Delete comment" class="delete-comment">-->
                 <!--</form>-->
             <!--</div>-->
+            {% if session.get('loggedin', None) %}
             {% if comment.user_id == session['loggedin'] %}
             <div id="server-delete">
                 <form action="/home/comment/{{ comment.comment_id }}/delete" method="post">
                     <input type="submit" value="Delete comment" class="delete-comment">
                 </form>
             </div>
+            {% endif %}
             {% endif %}
         </li>
         {% endfor %}
