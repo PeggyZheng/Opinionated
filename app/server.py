@@ -204,26 +204,29 @@ def user_profile(user_id):
 def process_vote(post_id):
     """this is the function that process users' votes, so it updates the database and refresh the post-details
     page to show the updated votes and vote allocation"""
-    choice_id = request.form.get("choice_id")
-    user_id = session['loggedin']
+    if session.get('loggedin', None):
+        choice_id = request.form.get("choice_id")
+        user_id = session['loggedin']
 
-    post = Post.get_post_by_id(post_id)
-    previous_vote = post.check_choice_on_post_by_user_id(user_id)
+        post = Post.get_post_by_id(post_id)
+        previous_vote = post.check_choice_on_post_by_user_id(user_id)
 
-    if previous_vote: # if there is a previous vote, compare to the new vote see if they pointed to the same choice, update vote
-        if previous_vote != choice_id:
-            vote_id = Vote.get_vote_by_post_and_user_id(post.post_id, user_id)
-            Vote.update_vote(vote_id, choice_id)
+        if previous_vote: # if there is a previous vote, compare to the new vote see if they pointed to the same choice, update vote
+            if previous_vote != choice_id:
+                vote_id = Vote.get_vote_by_post_and_user_id(post.post_id, user_id)
+                Vote.update_vote(vote_id, choice_id)
+        else:
+            Vote.create(user_id=user_id, choice_id=choice_id) #if it's first time vote, create a new vote
+
+        vote_dict, total_votes, chart_dict = post.count_votes()
+        print type(chart_dict.keys()[0])
+        total_votes_percent = {}
+        for vote in vote_dict:
+            total_votes_percent[vote] = float(vote_dict[vote]) / total_votes
+
+        return json.dumps([vote_dict, total_votes_percent, total_votes, chart_dict])
     else:
-        Vote.create(user_id=user_id, choice_id=choice_id) #if it's first time vote, create a new vote
-
-    vote_dict, total_votes, chart_dict = post.count_votes()
-    print type(chart_dict.keys()[0])
-    total_votes_percent = {}
-    for vote in vote_dict:
-        total_votes_percent[vote] = float(vote_dict[vote]) / total_votes
-
-    return json.dumps([vote_dict, total_votes_percent, total_votes, chart_dict])
+          return json.dumps("undefined")
 
 
 #######################################################################################################

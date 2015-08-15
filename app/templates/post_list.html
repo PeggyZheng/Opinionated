@@ -1,9 +1,9 @@
 
 {% extends 'base.html' %}
 {% block content %}
-
+{% if session.get('loggedin') %}
 <a href="/home/user/{{ session['loggedin'] }}">My page</a>
-
+{% endif %}
 <a href="/home/post">I want to post a question</a>
 <div>
     <form action="/home/search" method="post">

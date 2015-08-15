@@ -135,7 +135,6 @@
 <script>
 
 
-
     var chart_dict = {{ chart_dict|safe }}; // added the safe to escape the single quote of string
     function generate_chart_data(chart_dict) {
         var chart_votes = [['Choice', 'Votes']];
@@ -146,7 +145,8 @@
     }
 
 
-      function drawChart(chart_dict_remote) {
+      function drawChart(chart_dict_remote) { // the chart_dict_remote is an optional variable if not provided it will take the global variable
+          // the one from jinja, if provided when updating with ajax, it will use that
 
           var title = "{{ post.description }}";
           var chart_votes = null;
@@ -170,11 +170,12 @@
 
 
     google.load("visualization", "1", {packages:["corechart"]});
-    //google.setOnLoadCallback(function(){ drawChart()});
-
-    $(document).ready(function(){
-        drawChart();
+    google.setOnLoadCallback(function(){
+        if ({{ total_votes }} > 0) { //don't show the chart unless someone has already voted on it
+            drawChart()
+        }
     });
+
 
     function handleComments(evt) {
         evt.preventDefault();
@@ -182,6 +183,7 @@
         $.post('/home/post/{{post.post_id}}/comment/refresh', formInputs, function (result) {
             console.log(result.has_delete_button);
             console.log(typeof(result.has_delete_button));
+
             $('.comments').append('<li><a href="/home/user/'+ result.user_id + '">'+ result.user_name + '</a>:'+ result.content + '</li>'+
                             '<form action="/home/comment/'+result.comment_id+'/delete" method="post">' +
                     '<input type="submit" value="Delete comment" class="delete-comment">' +
@@ -197,40 +199,46 @@ $('#comment-form').on('submit', handleComments);
 
     function handleVote(evt) {
         evt.preventDefault();
+
         var formInputs = {choice_id: $('input[type="radio"][name="choice_id"]:checked').val()};
 
         $.post('/home/post/{{post.post_id}}/refresh', formInputs, function (result) {
+            var compare = JSON.parse(result) !== "undefined";
+            if (compare) {
+                result = JSON.parse(result);
 
-            result = JSON.parse(result);
-
-            var vote_count = result[0];
-            var vote_count_percent = result[1];
-            var total_vote = result[2];
-            var chart_dict = result[3];
+                var vote_count = result[0];
+                var vote_count_percent = result[1];
+                var total_votes = result[2];
+                var chart_dict = result[3];
 
 //            var chart_votes = [["choice", "votes"]];
 
-            for (var choice_id in vote_count) {
-                $('#vote-count-'+choice_id).html(vote_count[choice_id].toString());
-                $('.no-vote').empty();
+                for (var choice_id in vote_count) {
+                    $('#vote-count-' + choice_id).html(vote_count[choice_id].toString());
+                    $('.no-vote').empty();
 
-            }
+                }
 //            for (var choice_text in chart_dict) {
 //                chart_votes.push([choice_text, chart_dict[choice_text]]);
 //            }
 
 //                function chart_votes(chart_vote);
 
-            for (var choice_id in vote_count_percent) {
+                for (var choice_id in vote_count_percent) {
 
-                  $('#vote-count-percent-'+choice_id).html("percentage:"+vote_count_percent[choice_id].toString());
-                  $('.vote-count-percent').empty();
+                    $('#vote-count-percent-' + choice_id).html("percentage:" + vote_count_percent[choice_id].toString());
+                    $('.vote-count-percent').empty();
                 }
-            $('#total-vote').html(total_vote.toString());
-            drawChart(chart_dict);
-        })
+                $('#total-vote').html(total_votes.toString());
+                drawChart(chart_dict);
+            } else {
+                alert('Please log in to vote');
+            }
+        });
 
     }
+
 $('#vote-form').on('submit', handleVote);
 
 
