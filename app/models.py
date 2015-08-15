@@ -45,7 +45,8 @@ class User(db.Model):
     about_me = db.Column(db.String(64))
     age_range = db.Column(db.Integer)
     gender = db.Column(db.String)
-    fb_user_id = db
+    profile_pic = db.Column(db.String)
+    # fb_user_id = db
 
     # todo: need to decide if only allows for facebook login, if so, we could take out the password part
     # todo: change the datatype of user_id column to big integer
@@ -75,9 +76,9 @@ class User(db.Model):
         return check_password_hash(self.password_hash, password)
 
     @classmethod
-    def create(cls, user_id, email, password, user_name, age_range, gender, location=None, about_me=None, friend_ids=None):
+    def create(cls, user_id, email, password, user_name, age_range, gender, profile_pic, location=None, about_me=None, friend_ids=None):
         new_user = cls(user_id=user_id, email=email, password=password, user_name=user_name, location=location, about_me=about_me,
-                       age_range=age_range, gender=gender)
+                       age_range=age_range, gender=gender, profile_pic=profile_pic)
         db.session.add(new_user)
         db.session.commit()
         if friend_ids:
@@ -285,7 +286,12 @@ class Post(db.Model):
         chart_dict = {}
         for choice in choices:
             vote_dict[choice.choice_id] = len(choice.get_votes())
-            chart_dict[str(choice.choice_text)] = len(choice.get_votes())
+            if choice.choice_text:
+                chart_dict[str(choice.choice_text)] = len(choice.get_votes())
+            else:
+                index = choices.index(choice)
+                key = "choice" + str(index + 1)
+                chart_dict[key] = len(choice.get_votes())
         total_votes = sum(vote_dict.values())
         return vote_dict, total_votes, chart_dict
 

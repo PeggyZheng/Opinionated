@@ -9,13 +9,6 @@ function collectUserDetails(accessToken) {
             var userDetails = {
                 user_id: response.id,
                 accessToken: accessToken
-                //name: response.name,
-                //birthday: response.birthday,
-                //age_range_min: response.age_range['min'],
-                //email: response.email,
-                //gender: response.gender,
-                //location: response.location, //a string that is comma separated with city and state
-                //friends: response.friends
             };
 
             console.log(userDetails);
@@ -24,6 +17,32 @@ function collectUserDetails(accessToken) {
 
         });
 }
+
+//function collectUserPicture(accessToken) {
+//    //make a FB api call and return an object of user details.
+//    FB.api('/me/picture',
+//        // {fields: 'id'},
+//        function (response) {
+//
+//            var userPicture = {
+//                user_id: response.id,
+//                accessToken: accessToken
+//                //name: response.name,
+//                //birthday: response.birthday,
+//                //age_range_min: response.age_range['min'],
+//                //email: response.email,
+//                //gender: response.gender,
+//                //location: response.location, //a string that is comma separated with city and state
+//                //friends: response.friends
+//            };
+//
+//            console.log(userDetails);
+//            $.post('/facebook-login-portal', userDetails, function(result){
+//                location.href="/home";})
+//
+//        });
+//}
+
 
 
 //function collectUserFriends(accessToken, userDetails) {

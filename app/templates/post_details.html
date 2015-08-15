@@ -10,13 +10,11 @@
 {% endif %}
 {% endif %}
 
-
-
-
  <!-- Your share button code -->
     <div class="fb-share-button"
         data-href="http://014877ee.ngrok.io/home/post/{{ post.post_id }}"
         data-layout="button_count">
+        <button type="button" id="fb-share">Share the post to facebook</button>
     </div>
 
 <ul class="posts">
@@ -24,6 +22,7 @@
     <li class="posts">
         <div>
             <a href="/home/user/{{ post.author.user_id }}">{{ post.author.user_name }}</a>
+            <img src="{{ post.author.profile_pic}}">
         </div>
         {{ post.description }} (<span id="total-vote">{{ total_votes }}</span> people have voted on this)
         <br>
@@ -104,6 +103,7 @@
         {% for comment in comments %}
         <li>
             <a href="/home/user/{{ comment.user_id }}">{{ comment.user.user_name }}</a>:
+            <img src="{{comment.user.profile_pic}}">
             {{ comment.content }}
             <!--<div id="ajax-delete" hidden>-->
                 <!--<form action="/home/comment/{{ comment.comment_id }}/delete" method="post">-->
@@ -148,7 +148,7 @@
       function drawChart(chart_dict_remote) { // the chart_dict_remote is an optional variable if not provided it will take the global variable
           // the one from jinja, if provided when updating with ajax, it will use that
 
-          var title = "{{ post.description }}";
+          var title = "{{ post.description|safe }}";
           var chart_votes = null;
           if (typeof chart_dict_remote === "undefined" ){
               chart_votes = generate_chart_data(chart_dict);
@@ -195,6 +195,13 @@
         }
 $('#comment-form').on('submit', handleComments);
 
+
+    function sharePostonFB(evt){
+        $.post('/home/post/{{post.post_id}}/share',{}, function(result){
+            alert(result);
+        });
+    }
+$('#fb-share').on('click', sharePostonFB);
 
 
     function handleVote(evt) {

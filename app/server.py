@@ -69,7 +69,8 @@ def facebook_login():
     print user_id
     print type(user_id)
     graph = facebook.GraphAPI(access_token=current_access_token)
-    friends = graph.get_connections(id=user_id, connection_name='friends')
+    friends = graph.get_connections(id='me', connection_name='friends')
+    profile_pic = graph.get_connections(id='me', connection_name='picture')['url']
     user_details= graph.get_object(id=user_id, fields='name, email, gender, age_range, birthday, location')
     print user_details
 
@@ -78,6 +79,7 @@ def facebook_login():
     email = user_details.get('email')
     gender = user_details.get('gender')
     age_range = user_details.get('age_range').get('min')
+
     if user_details.get('age_range', None):
         age_range = user_details.get('age_range').get('min')
 
@@ -111,7 +113,7 @@ def facebook_login():
     else:
         # todo: need to generate random password for facebook user, password cannot be None
         new_user = User.create(user_id=user_id, email=email, user_name=name, age_range=int(age_range),
-                               gender=gender, location=location, password="", friend_ids=friend_ids)
+                               gender=gender, location=location, password="", friend_ids=friend_ids, profile_pic=profile_pic)
         session["loggedin"] = new_user.user_id
         session["current_access_token"] = current_access_token
         flash("Thanks for logging into Opinionated")
@@ -181,6 +183,27 @@ def show_post_detail(post_id):
     return render_template('post_details.html', post=post, choices=choices, vote_dict=vote_dict,
                            comments=comments, total_votes=total_votes, tag_names=tag_names,
                            post_ids=post_ids, chart_dict=chart_dict)
+
+@app.route('/home/post/<int:post_id>/share', methods=['POST'])
+def share_post_fb(post_id):
+    """share the post on fb"""
+    if session.get('loggedin'):
+        print session
+        current_access_token = session.get('current_access_token')
+        graph = facebook.GraphAPI(access_token=current_access_token)
+        attachment = {
+            'name': 'Opinionated',
+            'link': 'http://06ec8c4c.ngrok.io/home/post/%d' % post_id,
+            'caption': 'Check out this new question I just posted',
+            'description': 'This is an app that smooths out decision making process',
+            'picture':''
+        }
+
+        graph.put_wall_post(message='Check this out', attachment=attachment)
+        return json.dumps("Successfully posted")
+    else:
+        return json.dumps("Please logged in first")
+
 
 
 #######################################################################################################
