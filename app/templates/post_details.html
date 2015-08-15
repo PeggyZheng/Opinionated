@@ -133,8 +133,10 @@
 <script src="/static/facebookplay.js"></script>
 <script type="text/javascript" src="https://www.google.com/jsapi"></script>
 <script>
+
+
+
     var chart_dict = {{ chart_dict|safe }}; // added the safe to escape the single quote of string
-    console.log(chart_dict);
     function generate_chart_data(chart_dict) {
         var chart_votes = [['Choice', 'Votes']];
         for (var key in chart_dict) {
@@ -144,25 +146,35 @@
     }
 
 
-function google_chart_votes(title, chart_votes) {
-    google.load("visualization", "1", {packages:["corechart"]});
-      google.setOnLoadCallback(drawChart);
-      function drawChart() {
-        var data = google.visualization.arrayToDataTable(chart_votes);
+      function drawChart(chart_dict_remote) {
 
-        var options = {
-          title: title,
-          pieHole: 0.4,
-        };
+          var title = "{{ post.description }}";
+          var chart_votes = null;
+          if (typeof chart_dict_remote === "undefined" ){
+              chart_votes = generate_chart_data(chart_dict);
+          } else {
+              chart_votes = generate_chart_data(chart_dict_remote);
+          }
+
+
+          var data = google.visualization.arrayToDataTable(chart_votes);
+
+          var options = {
+              title: title,
+              pieHole: 0.4,
+          };
 
         var chart = new google.visualization.PieChart(document.getElementById('donutchart'));
         chart.draw(data, options);
       }
 
-}
-    var title = "{{ post.description }}";
-    var chart_votes = generate_chart_data(chart_dict);
-    google_chart_votes(title, chart_votes);
+
+    google.load("visualization", "1", {packages:["corechart"]});
+    //google.setOnLoadCallback(function(){ drawChart()});
+
+    $(document).ready(function(){
+        drawChart();
+    });
 
     function handleComments(evt) {
         evt.preventDefault();
@@ -194,15 +206,20 @@ $('#comment-form').on('submit', handleComments);
             var vote_count = result[0];
             var vote_count_percent = result[1];
             var total_vote = result[2];
+            var chart_dict = result[3];
 
-            var chart_votes = [["choice", "votes"]];
+//            var chart_votes = [["choice", "votes"]];
 
             for (var choice_id in vote_count) {
                 $('#vote-count-'+choice_id).html(vote_count[choice_id].toString());
                 $('.no-vote').empty();
-                chart_votes.push([choice_id, vote_count[choice_id].toString()]);
-//                function chart_votes(chart_vote);
+
             }
+//            for (var choice_text in chart_dict) {
+//                chart_votes.push([choice_text, chart_dict[choice_text]]);
+//            }
+
+//                function chart_votes(chart_vote);
 
             for (var choice_id in vote_count_percent) {
 
@@ -210,9 +227,7 @@ $('#comment-form').on('submit', handleComments);
                   $('.vote-count-percent').empty();
                 }
             $('#total-vote').html(total_vote.toString());
-            console.log(chart_votes);
-//            google_chart_votes(chart_votes);
-
+            drawChart(chart_dict);
         })
 
     }
