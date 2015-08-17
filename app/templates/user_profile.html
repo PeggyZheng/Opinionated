@@ -29,6 +29,9 @@
     {% endif %}
 {% endif %}
 
+<a href="/home/followers/{{ user.user_id }}">Followers<span>{{user.followers.count()}}</span></a>
+<a href="/home/followeds/{{ user.user_id }}">Following<span>{{user.followed.count()}}</span></a>
+
 <h3>All my posts</h3>
 
 <ul class="posts">

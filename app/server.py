@@ -280,8 +280,20 @@ def followers(user_id):
     if user is None:
         flash('Invalid user.')
         return redirect(url_for('show_all_posts'))
-    follows = Follow.query.filter_by(Follow.followed_id==user_id).all()
-    return render_template('followers.html', follows=follows, user=user)
+    followers = user.get_all_followers()
+
+    return render_template('followers.html', followers=followers, user=user)
+
+@app.route('/home/followeds/<int:user_id>')
+def followeds(user_id):
+    user = User.get_user_by_id(user_id)
+    if user is None:
+        flash('Invalid user.')
+        return redirect(url_for('show_all_posts'))
+    followeds = user.get_all_followeds()
+
+    return render_template('followeds.html', followeds=followeds, user=user)
+
 
 
 #######################################################################################################

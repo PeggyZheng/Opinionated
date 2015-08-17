@@ -4,15 +4,15 @@
 <h1>{{ user.user_name }}</h1>
 <table>
     <thead><tr><th>User</th><th>Since</th></tr></thead>
-    {% for follower in followers %}
+    {% for followed in followeds %}
     <tr>
         <td>
-            <a href="/home/user/{{ follower.user_id }}">
-            <img src="{{ follower.profile_pic}}">
-            {{ follower.user_name }}
+            <a href="/home/user/{{ followed.user_id }}">
+            <img src="{{ followed.profile_pic}}">
+            {{ followed.user_name }}
             </a>
         </td>
-        <td>{{ followers[follower] }}</td>
+        <td>{{ followeds[followed] }}</td>
     </tr>
     {% endfor %}
 </table>

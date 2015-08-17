@@ -145,6 +145,23 @@ class User(db.Model):
         return Follow.query.filter_by(Follow.follower_id==user.user_id, Follow.followed_id==self.user_id).first() is not None
 
 
+    def get_all_followers(self):
+        """this function returns a dictionary of info about all followers with the user object as key and timestamp as
+        value"""
+        follows = self.followers.all() #this returns the follow object where the followed_id is self
+        followers = {}
+        for follow in follows:
+            followers[User.get_user_by_id(follow.follower_id)] = follow.timestamp
+
+        return followers
+
+
+    def get_all_followeds(self):
+        follows = self.followed.all()
+        followeds = {}
+        for follow in follows:
+            followeds[User.get_user_by_id(follow.followed_id)] = follow.timestamp
+        return followeds
 
 
 # class Friendship(db.Model):
@@ -177,6 +194,14 @@ class Follow(db.Model):
     follower_id = db.Column(db.BigInteger, db.ForeignKey('users.user_id'), primary_key=True)
     followed_id = db.Column(db.BigInteger, db.ForeignKey('users.user_id'), primary_key=True)
     timestamp = db.Column(db.TIMESTAMP, index=True, default=datetime.utcnow())
+
+    @classmethod
+    def get_follow_by_follower_id(cls, user_id):
+        return cls.query.filter(cls.follower_id==user_id).all()
+
+    @classmethod
+    def get_follow_by_followed_id(cls, user_id):
+        return cls.query.filter(cls.followed_id==user_id).all()
 
 
 
