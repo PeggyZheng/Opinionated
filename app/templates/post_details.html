@@ -2,20 +2,21 @@
 {% block content %}
 
 <a href="/home">Home</a>
+
+<!-- Only the author can see the delete post button-->
 {% if session.get('loggedin', None) %}
 {% if post.author_id == session['loggedin'] %}
 <form action="/home/post/{{ post.post_id }}/delete" method="post">
-   <input type="submit" value="Delete post" id="delete-post">
+    <input type="submit" value="Delete post" id="delete-post">
 </form>
 {% endif %}
 {% endif %}
 
- <!-- Your share button code -->
-    <div class="fb-share-button"
-        data-href="http://014877ee.ngrok.io/home/post/{{ post.post_id }}"
-        data-layout="button_count">
-        <button type="button" id="fb-share">Share the post to facebook</button>
-    </div>
+
+<!-- Your share button code -->
+<div class="fb-share-button" data-href="https://developers.facebook.com/docs/plugins/" data-layout="button-count">
+    <button type="button" id="fb-share">Share the post to facebook</button>
+</div>
 
 <ul class="posts">
 
@@ -26,10 +27,11 @@
         </div>
         {{ post.description }} (<span id="total-vote">{{ total_votes }}</span> people have voted on this)
         <br>
+
         <div class="container">
             {% if post.file_name %}
-            <img src="https://s3-us-west-2.amazonaws.com/opinionated/{{post.file_name}}" alt="{{ post.description }}"\
-                    width="300px" height="auto">
+            <img src="https://s3-us-west-2.amazonaws.com/opinionated/{{post.file_name}}" alt="{{ post.description }}" \
+                 width="300px" height="auto">
             {% endif %}
         </div>
 
@@ -39,56 +41,64 @@
         {% endfor %}
 
 
-    <form action="/home/post/{{ post.post_id }}/refresh" method="post" id="vote-form">
+        <form action="/home/post/{{ post.post_id }}/refresh" method="post" id="vote-form">
 
             {% for choice in choices %}
 
-                {% if choice.choice_text and choice.file_name %}
-                     <input type="radio" name="choice_id" value="{{ choice.choice_id }}" class="choice">
-                     <div>{{ choice.choice_text }}</div>
-                     <div>
-                         <img src="https://s3-us-west-2.amazonaws.com/opinionated/{{choice.file_name}}" alt="{{ choice.choice_text }}" width="300px" height="auto">
-                     </div>
+            {% if choice.choice_text and choice.file_name %}
+            <input type="radio" name="choice_id" value="{{ choice.choice_id }}" class="choice">
 
-                {% elif choice.file_name %}
-                     <input type="radio" name="choice_id" value="{{ choice.choice_id }}" class="choice">
-                     <div>
-                         <img src="https://s3-us-west-2.amazonaws.com/opinionated/{{choice.file_name}}" alt="{{ choice.file_name }}" width="300px" height="auto">
-                     </div>
-                {% else  %}
-                     <input type="radio" name="choice_id" value="{{ choice.choice_id }}" class="choice">
-                     <div>{{ choice.choice_text }}</div>
+            <div>{{ choice.choice_text }}</div>
+            <div>
+                <img src="https://s3-us-west-2.amazonaws.com/opinionated/{{choice.file_name}}"
+                     alt="{{ choice.choice_text }}" width="300px" height="auto">
+            </div>
+
+            {% elif choice.file_name %}
+            <input type="radio" name="choice_id" value="{{ choice.choice_id }}" class="choice">
+
+            <div>
+                <img src="https://s3-us-west-2.amazonaws.com/opinionated/{{choice.file_name}}"
+                     alt="{{ choice.file_name }}" width="300px" height="auto">
+            </div>
+            {% else %}
+            <input type="radio" name="choice_id" value="{{ choice.choice_id }}" class="choice">
+
+            <div>{{ choice.choice_text }}</div>
+            {% endif %}
+
+            <div>
+                number of votes: <span id="vote-count-{{ choice.choice_id }}">{{ vote_dict[choice.choice_id] }}</span>
+                <span id="vote-count-percent-{{choice.choice_id}}"></span>
+                {% if total_votes > 0 %}
+                <span class="vote-count-percent">Percentage: {{ vote_dict[choice.choice_id]/ total_votes }}</span>
+                {% else %}
+                <p class="no-vote">No one has vote yet</p>
                 {% endif %}
-
-                <div>
-                    number of votes: <span id="vote-count-{{ choice.choice_id }}">{{ vote_dict[choice.choice_id] }}</span>
-                    <span id="vote-count-percent-{{choice.choice_id}}"></span>
-                    {% if total_votes > 0 %}
-                    <span class="vote-count-percent">Percentage: {{ vote_dict[choice.choice_id]/ total_votes }}</span>
-                    {% else %}
-                    <p class="no-vote">No one has vote yet</p>
-                    {% endif %}
-                </div>
+            </div>
             {% endfor %}
 
-    <input type="submit" value="Vote" id="submit-vote">
-    </form>
+            <input type="submit" value="Vote" id="submit-vote">
+        </form>
     </li>
 </ul>
 
-    <div>
-        <button type="button" id="previous-post" onclick="previousPost({{ post.post_id }}, {{ post_ids }})">
-            scroll to previous post
-        </button><span id="previous-msg"></span>
-    </div>
-    <div>
-        <button type="button" id="next-post" onclick="nextPost({{ post.post_id }}, {{ post_ids }})">
-            scroll to next post
-        </button><span id="next-msg"></span>
-    </div>
+<div>
+    <button type="button" id="previous-post" onclick="previousPost({{ post.post_id }}, {{ post_ids }})">
+        scroll to previous post
+    </button>
+    <span id="previous-msg"></span>
+</div>
+<div>
+    <button type="button" id="next-post" onclick="nextPost({{ post.post_id }}, {{ post_ids }})">
+        scroll to next post
+    </button>
+    <span id="next-msg"></span>
+</div>
 
 
 <div id="donutchart" style="width: 500px; height: 300px;"></div>
+<div id="mapchart_div" style="width: 500px; height: 300px;"></div>
 
 
 <h3>Comments</h3>
@@ -100,42 +110,35 @@
 
 <ul class="comments">
     {% if comments %}
-        {% for comment in comments %}
-        <li>
-            <a href="/home/user/{{ comment.user_id }}">{{ comment.user.user_name }}</a>:
-            <img src="{{comment.user.profile_pic}}">
-            {{ comment.content }}
-            <!--<div id="ajax-delete" hidden>-->
-                <!--<form action="/home/comment/{{ comment.comment_id }}/delete" method="post">-->
-                    <!--<input type="submit" value="Delete comment" class="delete-comment">-->
-                <!--</form>-->
-            <!--</div>-->
-            {% if session.get('loggedin', None) %}
-            {% if comment.user_id == session['loggedin'] %}
-            <div id="server-delete">
-                <form action="/home/comment/{{ comment.comment_id }}/delete" method="post">
-                    <input type="submit" value="Delete comment" class="delete-comment">
-                </form>
-            </div>
-            {% endif %}
-            {% endif %}
-        </li>
-        {% endfor %}
+    {% for comment in comments %}
+    <li>
+        <a href="/home/user/{{ comment.user_id }}">{{ comment.user.user_name }}</a>:
+        <img src="{{comment.user.profile_pic}}">
+        {{ comment.content }}
+        {% if session.get('loggedin', None) %}
+        {% if comment.user_id == session['loggedin'] %}
+        <div id="server-delete">
+            <form action="/home/comment/{{ comment.comment_id }}/delete" method="post">
+                <input type="submit" value="Delete comment" class="delete-comment">
+            </form>
+        </div>
+        {% endif %}
+        {% endif %}
+    </li>
+    {% endfor %}
 
     {% else %}
-        <p id="no-comment">Oops, looks like no one has commented yet</p>
+    <p id="no-comment">Oops, looks like no one has commented yet</p>
     {% endif %}
 
 </ul>
 
-
 <script src="https://code.jquery.com/jquery.js"></script>
-<script src="/static/facebookplay.js"></script>
 <script type="text/javascript" src="https://www.google.com/jsapi"></script>
 <script>
 
 
-    var chart_dict = {{ chart_dict|safe }}; // added the safe to escape the single quote of string
+    var chart_dict = {{ chart_dict | safe }}; // added the safe to escape the single quote of string
     function generate_chart_data(chart_dict) {
         var chart_votes = [['Choice', 'Votes']];
         for (var key in chart_dict) {
@@ -145,35 +148,51 @@
     }
 
 
-      function drawChart(chart_dict_remote) { // the chart_dict_remote is an optional variable if not provided it will take the global variable
-          // the one from jinja, if provided when updating with ajax, it will use that
+    function drawChart(chart_dict_remote) { // the chart_dict_remote is an optional variable if not provided it will take the global variable
+        // the one from jinja, if provided when updating with ajax, it will use that
 
-          var title = "{{ post.description|safe }}";
-          var chart_votes = null;
-          if (typeof chart_dict_remote === "undefined" ){
-              chart_votes = generate_chart_data(chart_dict);
-          } else {
-              chart_votes = generate_chart_data(chart_dict_remote);
-          }
+        var title = "{{ post.description|safe }}";
+        var chart_votes = null;
+        if (typeof chart_dict_remote === "undefined") {
+            chart_votes = generate_chart_data(chart_dict);
+        } else {
+            chart_votes = generate_chart_data(chart_dict_remote);
+        }
 
 
-          var data = google.visualization.arrayToDataTable(chart_votes);
+        var data = google.visualization.arrayToDataTable(chart_votes);
 
-          var options = {
-              title: title,
-              pieHole: 0.4,
-          };
+        var options = {
+            title: title,
+            pieHole: 0.4,
+        };
 
         var chart = new google.visualization.PieChart(document.getElementById('donutchart'));
         chart.draw(data, options);
-      }
+    }
 
 
-    google.load("visualization", "1", {packages:["corechart"]});
-    google.setOnLoadCallback(function(){
-        if ({{ total_votes }} > 0) { //don't show the chart unless someone has already voted on it
-            drawChart()
-        }
+//    function drawMarkersMap(chart_dict_remote) {
+//        var data = google.visualization.arrayToDataTable([
+//
+//
+//        var options = {
+//            region: 'world',
+//            displayMode: 'markers',
+//            colorAxis: {colors: ['red', 'blue']}
+//        };
+//
+//        var chart = new google.visualization.GeoChart(document.getElementById('mapchart_div'));
+//        chart.draw(data, options);
+//    }
+//
+    google.load("visualization", "1", {packages: ["corechart", "geochart"]});
+    google.setOnLoadCallback(function () {
+                if ({{ total_votes }} > 0) {
+        //don't show the chart unless someone has already voted on it
+        drawChart();
+        // drawMarkersMap();
+    }
     });
 
 
@@ -184,24 +203,24 @@
             console.log(result.has_delete_button);
             console.log(typeof(result.has_delete_button));
 
-            $('.comments').append('<li><a href="/home/user/'+ result.user_id + '">'+ result.user_name + '</a>:'+ result.content + '</li>'+
-                            '<form action="/home/comment/'+result.comment_id+'/delete" method="post">' +
+            var li = '<li><a href="/home/user/' + result.user_id + '">' + result.user_name + '</a>:' + '<img src="' + result.user_pic + '">' + result.content + '</li>';
+            var form = '<form action="/home/comment/' + result.comment_id + '/delete" method="post">' +
                     '<input type="submit" value="Delete comment" class="delete-comment">' +
-                '</form>'
-            );
+                    '</form>';
+            $('.comments').append(li + form);
             $('#no-comment').empty();
             $('#comment-content').val('');
-            })
-        }
-$('#comment-form').on('submit', handleComments);
+        })
+    }
+    $('#comment-form').on('submit', handleComments);
 
 
-    function sharePostonFB(evt){
-        $.post('/home/post/{{post.post_id}}/share',{}, function(result){
+    function sharePostonFB(evt) {
+        $.post('/home/post/{{post.post_id}}/share', {}, function (result) {
             alert(result);
         });
     }
-$('#fb-share').on('click', sharePostonFB);
+    $('#fb-share').on('click', sharePostonFB);
 
 
     function handleVote(evt) {
@@ -246,8 +265,7 @@ $('#fb-share').on('click', sharePostonFB);
 
     }
 
-$('#vote-form').on('submit', handleVote);
-
+    $('#vote-form').on('submit', handleVote);
 
 
     function deletePost(evt) {
@@ -255,42 +273,39 @@ $('#vote-form').on('submit', handleVote);
 
     }
 
-$('#delete-post').on('click', deletePost);
+    $('#delete-post').on('click', deletePost);
 
-       function deleteComment(evt) {
+    function deleteComment(evt) {
         confirm("Are you sure you want to delete the comment");
 
     }
 
-$('.delete-comment').on('click', deleteComment);
+    $('.delete-comment').on('click', deleteComment);
 
 
-  function previousPost (post_id, post_ids) {
-      var idx = post_ids.indexOf(post_id);
-      if (idx > 0) {
-          var previous = post_ids[idx - 1];
-          location.href = previous.toString();
-      } else {
-          $('#previous-post').attr('disabled', true);
-          $('#previous-msg').html('This is the first post');
-      }
+    function previousPost(post_id, post_ids) {
+        var idx = post_ids.indexOf(post_id);
+        if (idx > 0) {
+            var previous = post_ids[idx - 1];
+            location.href = previous.toString();
+        } else {
+            $('#previous-post').attr('disabled', true);
+            $('#previous-msg').html('This is the first post');
+        }
 
-  }
+    }
 
-  function nextPost (post_id, post_ids) {
-      var idx = post_ids.indexOf(post_id);
-      if (idx < post_ids.length - 1) {
-          var next = post_ids[idx + 1];
-          location.href = next.toString();
-      } else {
-          $('#next-post').attr('disabled', true);
-          $('#next-msg').html('This is the last post');
-      }
+    function nextPost(post_id, post_ids) {
+        var idx = post_ids.indexOf(post_id);
+        if (idx < post_ids.length - 1) {
+            var next = post_ids[idx + 1];
+            location.href = next.toString();
+        } else {
+            $('#next-post').attr('disabled', true);
+            $('#next-msg').html('This is the last post');
+        }
 
-  }
-
-
-
+    }
 
 
 </script>

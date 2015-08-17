@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<form action='edit-profile-process' method='post'>
+    <label>Name:
+        <input type='text' name='name' placeholder={{ user.user_name }}>
+    </label>
+    <br>
+    <label>Location:
+        <input type='text' name='location' placeholder="{{ user.location }}">
+    </label>
+    <br>
+    <label>Gender:
+        <input type="radio" name="gender" value="male"> Male
+        <input type="radio" name="gender" value="female"> Female
+    </label>
+    <br>
+    <label>Age range:
+        <input type="radio" name="age" value="21">18 - 25<br>
+        <input type="radio" name="age" value="31">26 - 35<br>
+        <input type="radio" name="age" value="41">36 - 45<br>
+        <input type="radio" name="age" value="51">46 - 55<br>
+        <input type="radio" name="age" value="61">56 and up<br>
+
+    </label>
+    <label>About me
+        <textarea name="about_me"></textarea>
+    </label>
+
+    <input type='submit' value='Submit'>
+</form>
+
+{% endblock %}

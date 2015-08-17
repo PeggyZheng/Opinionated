@@ -3,6 +3,24 @@
 
 <a href="/home">Home</a>
 
+<h3>{{ user.user_name }}</h3>
+<img src="{{ user.profile_pic }}">
+{% if user.user_name or user.location %}
+<p>
+    {% if user.user_name %}{{ user.user_name }}{% endif %}
+    {% if user.location %}
+        From <a href="http://maps.google.com/?q={{ user.location }}">{{ user.location }}</a>
+    {% endif %}
+</p>
+{% endif %}
+
+
+{% if user.user_id == session.get('loggedin') %}
+<a href="/home/edit-profile">
+    Edit Profile
+</a>
+{% endif %}
+
 <h3>All my posts</h3>
 
 <ul class="posts">

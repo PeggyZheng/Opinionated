@@ -1,41 +1,54 @@
 <!doctype html>
 <html>
 <head>
-  <title>Opinionated</title>
+    <title>Opinionated</title>
     <!-- You can use open graph tags to customize link previews.
     Learn more: https://developers.facebook.com/docs/sharing/webmasters -->
-    <meta property="og:url"           content="http://014877ee.ngrok.io" />  <!--a tunnel mirrored to my local host-->
-    <meta property="og:type"          content="website" />
-    <meta property="og:title"         content="Opinionated" />
-    <meta property="og:description"   content="A social networking app that smooths out decision-making" />
-    <meta property="og:image"         content="http://www.your-domain.com/path/image.jpg" />
+    <meta property="og:url" content="http://014877ee.ngrok.io"/>
+    <!--a tunnel mirrored to my local host-->
+    <meta property="og:type" content="website"/>
+    <meta property="og:title" content="Opinionated"/>
+    <meta property="og:description" content="A social networking app that smooths out decision-making"/>
+    <meta property="og:image" content="http://www.your-domain.com/path/image.jpg"/>
 </head>
 
 <body>
+<div id="fb-root"></div>
+
+<script>(function (d, s, id) {
+    var js, fjs = d.getElementsByTagName(s)[0];
+    if (d.getElementById(id)) return;
+    js = d.createElement(s);
+    js.id = id;
+    js.src = "//connect.facebook.net/en_US/sdk.js#xfbml=1&version=v2.4&appId=141368599534524";
+    fjs.parentNode.insertBefore(js, fjs);
+}(document, 'script', 'facebook-jssdk'));</script>
+
+
 <h1>Opinionated</h1>
 
-  {% with messages = get_flashed_messages() %}
-  {% if messages %}
-    <ul>
+{% with messages = get_flashed_messages() %}
+{% if messages %}
+<ul>
     {% for message in messages %}
-      <li>{{ message }}</li>
+    <li>{{ message }}</li>
     {% endfor %}
-    </ul>
-  {% endif %}
+</ul>
+{% endif %}
 {% endwith %}
 
-<!-- <input type="button" value="Logout" action="/logout"> -->
-{% if session.get('loggedin') %}
-<div id="log-out"><a href="/logout">log out</a></div>
-{% else %}
-<div id="log-in"><a href="/">log in</a></div>
-{% endif %}
+ <!--<input type="button" value="Logout" action="/logout">-->
+<!--{% if session.get('loggedin') %}-->
+<!--<div id="log-out"><a href="/logout">log out</a></div>-->
+<!--{% else %}-->
+
+
+<!--{% endif %}-->
 <!--<script src="/static/facebookplay.js"></script>-->
 
-	<div id="fb-root"></div>
 
+{% block content %} put your content here {% endblock %}
 
-  {% block content %} put your content here {% endblock %}
 
 </body>
 </html>

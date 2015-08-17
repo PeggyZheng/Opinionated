@@ -102,6 +102,24 @@ class User(db.Model):
     def get_all_friends(self):
         return [friend.friend_id for friend in self.friendships]
 
+    def update_user_info(self, user_name=None, age_range=None, gender=None, location=None, about_me=None):
+        if user_name:
+            if user_name != self.user_name:
+                self.user_name = user_name
+        if age_range:
+            if age_range != age_range:
+                self.age_range = age_range
+        if gender:
+            if gender != self.gender:
+                self.gender = gender
+        if location:
+            if location != self.location:
+                self.location = location
+        if about_me:
+            if about_me != self.about_me:
+                self.about_me = about_me
+        db.session.commit()
+
 
 class Friendship(db.Model):
     """Keep track of relationship between users"""
@@ -296,6 +314,14 @@ class Post(db.Model):
         return vote_dict, total_votes, chart_dict
 
     # todo: this method may need to be replaced by a new table between user and post to achieve better performance
+
+    # def count_votes_by_location(self):
+    #     choices = Choice.get_choices_by_post_id(self.post_id)
+    #     map_dict = {}
+    #     for choice in choices:
+    #         votes =
+
+
 
     def check_choice_on_post_by_user_id(self, user_id):
         choice = db.session.query(Choice.choice_id).join(Vote).filter(Choice.post_id==self.post_id, Vote.user_id==user_id).first()

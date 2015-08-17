@@ -41,23 +41,23 @@ def login():
     return render_template("login.html")
 
 
-@app.route('/login', methods=['POST'])
-def login_user():
-    """login page for user"""
-    email = request.form.get('email')
-    password = request.form.get('password')
-
-    user = User.get_user_by_email(email)
-    verify_password = user.verify_password(password)
-
-    if user:
-        if verify_password:
-            flash("Logged in")
-            session['loggedin'] = user.user_id
-            return redirect(url_for('show_all_posts'))
-    else:
-        flash("Your email or password is wrong, please re-enter")
-        return redirect(url_for('login'))
+# @app.route('/login', methods=['POST'])
+# def login_user():
+#     """login page for user"""
+#     email = request.form.get('email')
+#     password = request.form.get('password')
+#
+#     user = User.get_user_by_email(email)
+#     verify_password = user.verify_password(password)
+#
+#     if user:
+#         if verify_password:
+#             flash("Logged in")
+#             session['loggedin'] = user.user_id
+#             return redirect(url_for('show_all_posts'))
+#     else:
+#         flash("Your email or password is wrong, please re-enter")
+#         return redirect(url_for('login'))
 
 
 @app.route('/facebook-login-portal', methods=['POST'])
@@ -215,9 +215,32 @@ def user_profile(user_id):
     """this is the page that will show users' all posts, and all things they have voted on"""
     posts = Post.get_posts_by_author_id(user_id)
     session["post_ids"] = [post.post_id for post in posts]
+    user = User.get_user_by_id(user_id)
 
     votes = Vote.get_votes_by_user_id(user_id)
-    return render_template("user_profile.html", posts=posts, votes=votes)
+    return render_template("user_profile.html", posts=posts, votes=votes, user=user)
+
+@app.route('/home/edit-profile')
+def edit_profile():
+    user_id = session.get("loggedin")
+    user = User.get_user_by_id(user_id)
+    return render_template('edit_profile.html', user=user)
+
+@app.route('/home/edit-profile-process', methods=["POST"])
+def edit_profile_process():
+    user_id = session.get('loggedin')
+    user = User.get_user_by_id(user_id)
+    user_name = request.form.get('name')
+    location = request.form.get('location')
+    gender = request.form.get('gender')
+    age_range = int(request.form.get('age'))
+    about_me = request.form.get('about_me')
+    user.update_user_info(user_name=user_name, location=location, gender=gender, age_range=age_range,
+                          about_me=about_me)
+    flash("Your information has been updated")
+
+    return redirect(url_for('user_profile', user_id=user_id))
+
 
 
 #######################################################################################################
@@ -299,12 +322,14 @@ def process_comments(post_id):
     """process the comments the users entered """
     content = request.form.get('comment')
     user_id = session.get('loggedin', None)
-    user_name = User.get_user_by_id(user_id).user_name
+    user = User.get_user_by_id(user_id)
+    user_name = user.user_name
+    user_pic = user.profile_pic
     if user_id:
         new_comment = Comment.create(content=content, user_id=user_id, post_id=post_id)
         comment_id = new_comment.comment_id
         has_delete_button = user_id == new_comment.user_id
-        return jsonify(user_id=user_id, user_name=user_name, content=content,
+        return jsonify(user_id=user_id, user_name=user_name, user_pic=user_pic, content=content,
                        has_delete_button=has_delete_button, comment_id=comment_id)
     else:
         flash("You need to login first")

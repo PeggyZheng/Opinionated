@@ -1,58 +1,56 @@
-
 {% extends 'base.html' %}
 {% block content %}
-<div id='fb-root'></div>
 
-	<fb:login-button size='large'
-		 		 autologoutlink = 'true'
-		 		 scope="public_profile,email,user_friends,user_location,publish_actions"
-		 		 onlogin="checkLoginState();">
-	</fb:login-button>
+<fb:login-button size='large'
+                 scope="public_profile,email,user_friends,user_location,publish_actions"
+                 onlogin="checkLoginState();"
+                 auto_logout_link="true">
+</fb:login-button>
 
+<div id="status"></div>
 
-	<div id="status"></div>
+<!--<form action='/login' method='post'>-->
+    <!--<label>Email<input type="text" name="email"> </label>-->
+    <!--<br>-->
+    <!--<label>Password<input type="password" name="password"> </label>-->
+    <!--<br>-->
+    <!--<input type="submit" value="Login">-->
+<!--</form>-->
 
-<form action='/login' method='post'>
-    <label>Email<input type="text" name="email"> </label>
-    <br>
-    <label>Password<input type="password" name="password"> </label>
-    <br>
-    <input type="submit" value="Login">
+<!--<button type="button" id="signup">Create Account</button>-->
 
-</form>
+<!--<form action='signup-portal' method='post' id="signup-form" hidden>-->
+    <!--<label>Email:-->
+        <!--<input type='email' name='email' placeholder='username@email.com'>-->
+    <!--</label>-->
+    <!--<br>-->
+    <!--<label>Username:-->
+        <!--<input type='text' name='user_name'>-->
+    <!--</label>-->
+    <!--<br>-->
+    <!--<label>Password:-->
+        <!--<input type='password' name='password'>-->
+    <!--</label>-->
+    <!--<br>-->
 
-<button type="button" id="signup">Create Account</button>
-
-<form action='signup-portal' method='post' id="signup-form" hidden>
-		<label>Email:
-			<input type='email' name='email' placeholder='username@email.com'>
-		</label>
-		<br>
-        <label>Username:
-			<input type='text' name='user_name'>
-		</label>
-		<br>
-		<label>Password:
-			<input type='password' name='password'>
-		</label>
-		<br>
-
-		<input type='submit' value='Sign up'>
-</form>
+    <!--<input type='submit' value='Sign up'>-->
+<!--</form>-->
 
 <script src="https://code.jquery.com/jquery.js"></script>
-<script src="../static/fblogin.js"></script>
-
+<script src="/static/fblogin.js"></script>
 <script>
-
-    function showSignupForm(evt) {
-        $('#signup-form').removeAttr('hidden');
-//        $('#signup').attr('hidden');
-    }
-$('#signup').on('click', showSignupForm);
-
-
+     $("fb:login-button").on('click', myFacebookLogout)
 </script>
+
+<!--<script>-->
+
+    <!--function showSignupForm(evt) {-->
+        <!--$('#signup-form').removeAttr('hidden');-->
+    <!--}-->
+    <!--$('#signup').on('click', showSignupForm);-->
+
+
+<!--</script>-->
 
 
 {% endblock %}
