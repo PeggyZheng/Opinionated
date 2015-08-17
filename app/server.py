@@ -3,7 +3,7 @@
 from jinja2 import StrictUndefined
 from flask_debugtoolbar import DebugToolbarExtension
 from flask import Flask, render_template, redirect, request, flash, session, url_for, g
-from models import User, Comment, Post, Vote, Choice, Tag, Friendship, connect_to_db
+from models import User, Comment, Post, Vote, Choice, Tag, Follow, connect_to_db
 from boto.s3.connection import S3Connection
 import os
 from flask import jsonify
@@ -99,12 +99,16 @@ def facebook_login():
         session["loggedin"] = user.user_id
         session["current_access_token"] = current_access_token
         flash("Login successful!")
-        # compare against the existing friend list of this user and update it if needed
+
         if friend_ids:
             for friend_id in friend_ids:
-                all_existing_friends = user.get_all_friends()
-                if friend_id not in all_existing_friends:
-                    Friendship.add_friendship(admin_id=user.user_id, friend_id=friend_id)
+                friend = User.get_user_by_id(friend_id)
+                print "friend is ", friend
+                # check to see if the friend is also an user in the app
+                if friend:
+                    print "type of friend", type(friend)
+                    if not user.is_following(friend):
+                        user.follow(friend)
 
         flash('Thanks for logging into Opinionated')
         return redirect('/home') # the return is not needed because this is a json post, do redirect in json
@@ -123,7 +127,7 @@ def parsing_friends_data(friends):
     """parsing the data received from graph api call to return only the ids of the friends"""
     friend_data = friends.get('data', None)
     if friend_data:
-        return [friend['id'] for friend in friend_data]
+        return [int(friend['id']) for friend in friend_data] # turn the fb id into integer
     else:
         return []
 
@@ -216,9 +220,11 @@ def user_profile(user_id):
     posts = Post.get_posts_by_author_id(user_id)
     session["post_ids"] = [post.post_id for post in posts]
     user = User.get_user_by_id(user_id)
+    viewer_id = session.get('loggedin')
+    viewer = User.get_user_by_id(viewer_id)
 
     votes = Vote.get_votes_by_user_id(user_id)
-    return render_template("user_profile.html", posts=posts, votes=votes, user=user)
+    return render_template("user_profile.html", posts=posts, votes=votes, user=user, viewer=viewer)
 
 @app.route('/home/edit-profile')
 def edit_profile():
@@ -241,6 +247,41 @@ def edit_profile_process():
 
     return redirect(url_for('user_profile', user_id=user_id))
 
+@app.route('/home/follow/<int:user_id>')
+def follow(user_id):
+    user = User.get_user_by_id(user_id)
+    viewer_id = session.get('loggedin')
+    viewer = User.get_user_by_id(viewer_id)
+    if user is None:
+        flash ('Invalid user.')
+        return redirect(url_for('show_all_posts'))
+    if viewer.is_following(user):
+        flash('You are already following %s' % user.user_name)
+        return redirect(url_for('user_profile', user_id=user_id))
+    viewer.follow(user)
+    flash('You are now following %s' % user.user_name)
+    return redirect(url_for('user_profile', user_id=user_id))
+
+@app.route('/home/unfollow/<int:user_id>')
+def unfollow(user_id):
+    user = User.get_user_by_id(user_id)
+    viewer_id = session.get('loggedin')
+    viewer = User.get_user_by_id(viewer_id)
+    if user is None:
+        flash ('Invalid user.')
+    if viewer.is_following(user):
+        viewer.unfollow(user)
+        flash('You are now not following %s' % user.user_name)
+    return redirect(url_for('show_all_posts'))
+
+@app.route('/home/followers/<int:user_id>')
+def followers(user_id):
+    user = User.get_user_by_id(user_id)
+    if user is None:
+        flash('Invalid user.')
+        return redirect(url_for('show_all_posts'))
+    follows = Follow.query.filter_by(Follow.followed_id==user_id).all()
+    return render_template('followers.html', follows=follows, user=user)
 
 
 #######################################################################################################

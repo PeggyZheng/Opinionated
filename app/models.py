@@ -54,6 +54,11 @@ class User(db.Model):
     posts = db.relationship("Post", backref=db.backref("author"), cascade="all, delete, delete-orphan")
     comments = db.relationship("Comment", backref=db.backref("user"), cascade="all, delete, delete-orphan")
     votes = db.relationship("Vote", backref=db.backref("user"), cascade="all, delete, delete-orphan")
+    followed = db.relationship('Follow', primaryjoin="User.user_id == Follow.follower_id", backref=db.backref('follower', lazy='joined'),
+                               lazy='dynamic', cascade='all, delete-orphan')
+    followers = db.relationship('Follow', primaryjoin="User.user_id == Follow.followed_id", backref=db.backref('followed', lazy='joined'),
+                               lazy='dynamic', cascade='all, delete-orphan')
+
 
     def __repr__(self):
         """Provide helpful representation when printed"""
@@ -81,9 +86,9 @@ class User(db.Model):
                        age_range=age_range, gender=gender, profile_pic=profile_pic)
         db.session.add(new_user)
         db.session.commit()
-        if friend_ids:
+        if friend_ids: # follow all facebook friends who are also users of the app automatically when log in
             for friend_id in friend_ids:
-                Friendship.add_friendship(admin_id=new_user.user_id, friend_id=friend_id)
+                new_user.follow(friend_id)
 
         return new_user
 
@@ -99,8 +104,8 @@ class User(db.Model):
     def get_user_by_email(cls, email):
         return cls.query.filter_by(email=email).first()
 
-    def get_all_friends(self):
-        return [friend.friend_id for friend in self.friendships]
+    # def get_all_friends(self):
+    #     return [friend.friend_id for friend in self.friendships]
 
     def update_user_info(self, user_name=None, age_range=None, gender=None, location=None, about_me=None):
         if user_name:
@@ -120,32 +125,58 @@ class User(db.Model):
                 self.about_me = about_me
         db.session.commit()
 
+    def follow(self, user):
+        if not self.is_following(user):
+            f = Follow(follower_id=self.user_id, followed_id=user.user_id)
+            db.session.add(f)
+            db.session.commit()
 
-class Friendship(db.Model):
-    """Keep track of relationship between users"""
+    def unfollow(self, user):
+        f = Follow.query.filter_by(followed_id=user.user_id).first()
+        if f:
+            db.session.delete(f)
+            db.session.commit()
 
-    __tablename__ = 'friendships'
 
-    friendship_id = db.Column(db.Integer, autoincrement=True, primary_key=True)
-    admin_id = db.Column(db.Integer, db.ForeignKey('users.user_id'), nullable=False)
-    friend_id = db.Column(db.Integer, db.ForeignKey('users.user_id'), nullable=False)
+    def is_following(self, user):
+        return Follow.query.filter(Follow.followed_id==user.user_id, Follow.follower_id==self.user_id).first() is not None
 
-    user = db.relationship("User",
-                           primaryjoin="User.user_id == Friendship.admin_id",
-                           backref=db.backref("friendships", order_by=friendship_id))
+    def is_followed_by(self, user):
+        return Follow.query.filter_by(Follow.follower_id==user.user_id, Follow.followed_id==self.user_id).first() is not None
 
-    def __repr__(self):
-        """A helpful representation of the relationship"""
 
-        return "Friendship between admin_id: %s and friend_id: %s>" % (self.admin_id, self.friend_id)
 
-    @classmethod
-    def add_friendship(cls, admin_id, friend_id):
-        """Insert a new friendship into the friendships table"""
-        friendship = cls(admin_id=admin_id, friend_id=friend_id)
-        db.session.add(friendship)
-        db.session.commit()
 
+# class Friendship(db.Model):
+#     """Keep track of relationship between users"""
+#
+#     __tablename__ = 'friendships'
+#
+#     friendship_id = db.Column(db.Integer, autoincrement=True, primary_key=True)
+#     admin_id = db.Column(db.Integer, db.ForeignKey('users.user_id'), nullable=False)
+#     friend_id = db.Column(db.Integer, db.ForeignKey('users.user_id'), nullable=False)
+#
+#     user = db.relationship("User",
+#                            primaryjoin="User.user_id == Friendship.admin_id",
+#                            backref=db.backref("friendships", order_by=friendship_id))
+#
+#     def __repr__(self):
+#         """A helpful representation of the relationship"""
+#
+#         return "Friendship between admin_id: %s and friend_id: %s>" % (self.admin_id, self.friend_id)
+#
+#     @classmethod
+#     def add_friendship(cls, admin_id, friend_id):
+#         """Insert a new friendship into the friendships table"""
+#         friendship = cls(admin_id=admin_id, friend_id=friend_id)
+#         db.session.add(friendship)
+#         db.session.commit()
+
+class Follow(db.Model):
+    __tablename__ = 'follows'
+    follower_id = db.Column(db.BigInteger, db.ForeignKey('users.user_id'), primary_key=True)
+    followed_id = db.Column(db.BigInteger, db.ForeignKey('users.user_id'), primary_key=True)
+    timestamp = db.Column(db.TIMESTAMP, index=True, default=datetime.utcnow())
 
 
 

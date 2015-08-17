@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<h1>{{ user.user_name }}</h1>
+<table>
+    <thead><tr><th>User</th><th>Since</th></tr></thead>
+    {% for follow in follows %}
+    <tr>
+        <td>
+            <a href="/home/user/{{ follow.user.user_id }}"></a>
+            <img src="{{follow.user.profile_pic}}">
+            {{ follow.user.user_name }}
+        </td>
+        <td>{{ follow.timestamp }}</td>
+    </tr>
+    {% endif %}
+    {% endfor %}
+</table>
+
+{% endblock %}
