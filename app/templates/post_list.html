@@ -2,16 +2,27 @@
 {% extends 'base.html' %}
 {% block content %}
 {% if session.get('loggedin') %}
-<a href="/home/user/{{ session['loggedin'] }}">My page</a>
-{% endif %}
-<a href="/home/post">I want to post a question</a>
-<div>
-    <form action="/home/search" method="post">
-  Search Posts:
-  <input type="search" name="postsearch" id="tags" class="form-control tm-input tm-input-info typeahead">
-  <input type = "submit" value="Search">
+<style type="text/css">
+      .on  { background:white; }
+      .off { background:grey; }
+</style>
 
-</form>
+<!--<a href="/home/user/{{ session['loggedin'] }}">My page</a>-->
+<!--{% endif %}-->
+<!--<a href="/home/post">I want to post a question</a>-->
+
+    <!--<form action="/home/search" method="post" class="navbar-form navbar-right" role="search">-->
+        <!--<div class="form-group">-->
+            <!--<input type="search" name="postsearch" id="tags" class="form-control tm-input tm-input-info typeahead"-->
+                    <!--class="form-control" placeholder="Search by tag">-->
+        <!--</div>-->
+        <!--<button type = "submit" class="btn btn-default"><span class="glyphicon glyphicon-search"></span></button>-->
+    <!--</form>-->
+
+
+<div>
+<a href="/home?show-all=true">Show all posts</a>
+<a href="/home?show-all=false">Show followed posts</a> <!--embed the variable show-all in the url to display different post lists -->
 </div>
 
 
@@ -57,24 +68,13 @@
 <script src="../static/typeahead/bloodhound.js"></script>
 <script src="../static/typeahead/typeahead.bundle.js"></script>
 <script src="../static/typeahead/typeahead.jquery.js"></script>
+<script src="https://gitcdn.github.io/bootstrap-toggle/2.2.0/js/bootstrap-toggle.min.js"></script>
 
 <script>
 
     var tag_names = {{ tag_names|safe }};
     console.log(tag_names);
 
-//    jQuery(".tm-input").tagsManager({
-//        CapitalizeFirstLetter: true,
-//        AjaxPush: null,
-//        AjaxPushallTags: null,
-//        AjaxPushParameters: null,
-//        delimiters:[9, 13, 44], //tab, enter, comma
-//        backspace: [8], //backspace removes the rightmost tag
-//        hiddenTagListName: 'hidden_tags_search',
-//        onlyTagList: false,
-//        tagList: new_list
-//
-//    });
 
     var substringMatcher = function(strs) {
         return function findMatches(q, cb) {
@@ -121,6 +121,31 @@ $('#tags').typeahead({
   source: substringMatcher(tag_names)
 });
 
+    function toggleState(checked) {
+        if (checked == true) {
+//           $('#btn').innerHTML("Show all posts");
+//            document.getElementById("toggle-form").action('/home?show-all=true');
+//            document.getElementById("toggle-form").submit();
+            $('#toggle-msg').html("it is on")
+        } else {
+//            $(this).className = "on";
+//            $('#btn').innerHTML("Show followed posts");
+//            $('#toggle').attr("value", "show_followed");
+//            document.getElementById("toggle-form").submit();
+            $('#toggle-msg').html('it is off')
+        }
+    }
+//
+//    $('#toggle').on('checked', function(){
+//        var click = true;
+//        $(this).toggle(click);
+//        toggleState(click);
+//    });
+
+    $('#toggle').change(function() {
+        var checked = $(this).prop('checked');
+        toggleState(checked);
+    } )
 </script>
 
 {% endblock %}

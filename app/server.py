@@ -164,9 +164,21 @@ def logout_user():
 @app.route('/home', methods=['GET', 'POST'])
 def show_all_posts():
     """the homepage of the site where all the posts will be shown in a table"""
-    posts = Post.get_all_posts()
-    session["post_ids"] = [post.post_id for post in posts]
+    show_followed = False
+    # get the variable "show-all" from the template to determine whether to show all posts or followed ones
+    show_what = request.args.get('show-all')
+    print show_what, "this is show_what"
+    if show_what == "false":
+        show_followed = True
 
+    if show_followed:
+        viewer_id = session.get('loggedin')
+        viewer = User.get_user_by_id(viewer_id)
+        posts = viewer.followed_posts()
+    else:
+        posts = Post.get_all_posts()
+
+    session["post_ids"] = [post.post_id for post in posts]
     tag_names = [str(tag.tag_name) for tag in Tag.get_all_tags()]
 
     return render_template('post_list.html', posts=posts, tag_names=tag_names)
@@ -197,7 +209,7 @@ def share_post_fb(post_id):
         graph = facebook.GraphAPI(access_token=current_access_token)
         attachment = {
             'name': 'Opinionated',
-            'link': 'http://06ec8c4c.ngrok.io/home/post/%d' % post_id,
+            'link': 'http://6697043d.ngrok.io/home/post/%d' % post_id,
             'caption': 'Check out this new question I just posted',
             'description': 'This is an app that smooths out decision making process',
             'picture':''
@@ -220,6 +232,7 @@ def user_profile(user_id):
     posts = Post.get_posts_by_author_id(user_id)
     session["post_ids"] = [post.post_id for post in posts]
     user = User.get_user_by_id(user_id)
+
     viewer_id = session.get('loggedin')
     viewer = User.get_user_by_id(viewer_id)
 

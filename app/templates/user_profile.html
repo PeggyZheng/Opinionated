@@ -21,12 +21,14 @@
 </a>
 {% endif %}
 
+
 {% if user.user_id != session.get('loggedin') %}
     {% if not viewer.is_following(user) %}
         <a href="/home/follow/{{user.user_id}}">Follow</a>
     {% else %}
         <a href="/home/unfollow/{{user.user_id}}">Unfollow</a>
     {% endif %}
+
 {% endif %}
 
 <a href="/home/followers/{{ user.user_id }}">Followers<span>{{user.followers.count()}}</span></a>

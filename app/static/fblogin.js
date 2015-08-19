@@ -31,18 +31,13 @@ function statusChangeCallback(response) {
 
         collectUserDetails(accessToken);
 
-        //} else if (response.status === 'not_authorized') {
-        //  // User is connected to FB, but not MLM
-        //  document.getElementById('status').innerHTML = 'Please log into Make Less Mush.';
-    } else {
-      // The person is not logged into Facebook, so we're not sure if
-      // they are logged into MLM or not.
-      document.getElementById('status').innerHTML = 'Please log into Facebook.';
     }
   }
 
+
 function checkLoginState() {
     console.log("check login state");
+
 	FB.getLoginStatus(function(response) {
 	  statusChangeCallback(response);
 	});

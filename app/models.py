@@ -163,6 +163,16 @@ class User(db.Model):
             followeds[User.get_user_by_id(follow.followed_id)] = follow.timestamp
         return followeds
 
+    def followed_posts(self):
+        """gives a list all posts of users that self has been following"""
+        followeds = self.get_all_followeds() #gives a dictionary with the key as user object
+        post_list = []
+        for followed in followeds:
+            posts = Post.query.filter_by(author_id=followed.user_id).all()
+            post_list.append(posts)
+        return post_list
+
+
 
 # class Friendship(db.Model):
 #     """Keep track of relationship between users"""
