@@ -7,7 +7,8 @@
     </label>
     <div class="image question">
             <label>Upload an image for your question
-                <input type="file" name="fileupload_question">
+                <input type="file" name="fileupload_question" class="img" id="img-upload">
+                <img id="img-preview" src="" alt="your image" width="300px" height="auto"/>
             </label>
     </div>
     <div>
@@ -18,7 +19,8 @@
         </div>
         <div class="image choice">
             <label>Upload image
-                <input type="file" name="fileupload1">
+                <input type="file" name="fileupload1" id="img-upload1" class="img">
+                <img id="img-preview1" src="" alt="your image" width="300px" height="auto"/>
             </label>
         </div>
     </div>
@@ -31,7 +33,8 @@
         </div>
         <div class="image choice">
             <label>Upload image
-                <input type="file" name="fileupload2">
+                <input type="file" name="fileupload2" id="img-upload2" class="img">
+                <img id="img-preview2" src="" alt="your image" width="300px" height="auto"/>
             </label>
         </div>
     </div>
@@ -121,6 +124,44 @@ $('#tags .typeahead').typeahead({
   source: substringMatcher(tag_names)
 });
 
+
+function readURL(input,element) {
+    console.log(element);
+    if (input.files && input.files[0]) {
+        var reader = new FileReader();
+
+        reader.onload = function (e) {
+            $(element).attr('src', e.target.result);
+        };
+
+        reader.readAsDataURL(input.files[0]);
+    }
+}
+
+    $(".img").change(function(){
+        console.log(this.id);
+        if ((this.id) === "img-upload1"){
+            var preview = "#img-preview1"
+        } else if ((this.id) === "img-upload2") {
+            var preview = "#img-preview2"
+        } else {
+            var preview = "#img-preview"
+        }
+
+        readURL(this, preview);
+    });
+
+//
+//
+//function previewImg(){
+//    var pair = {"#img-upload1":"#img-preview1", "#img-upload2":"#img-preview2"};
+//    for (var key in pair) {
+//        console.log
+//        $(".img").change(function(){readURL(this, pair[key]);});
+//    }
+//}
+//
+//previewImg()
 
 </script>
 
