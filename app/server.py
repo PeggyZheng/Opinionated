@@ -9,6 +9,7 @@ import os
 from flask import jsonify
 import facebook
 import json
+from decorators import login_required
 
 
 app = Flask(__name__)
@@ -200,7 +201,9 @@ def show_post_detail(post_id):
                            comments=comments, total_votes=total_votes, tag_names=tag_names,
                            post_ids=post_ids, chart_dict=chart_dict)
 
+
 @app.route('/home/post/<int:post_id>/share', methods=['POST'])
+@login_required
 def share_post_fb(post_id):
     """share the post on fb"""
     if session.get('loggedin'):
@@ -226,7 +229,8 @@ def share_post_fb(post_id):
 # functions that render users profile
 
 
-@app.route('/home/user/<int:user_id>')
+@app.route('/home/user/<user_id>')
+@login_required
 def user_profile(user_id):
     """this is the page that will show users' all posts, and all things they have voted on"""
     posts = Post.get_posts_by_author_id(user_id)
@@ -239,13 +243,17 @@ def user_profile(user_id):
     votes = Vote.get_votes_by_user_id(user_id)
     return render_template("user_profile.html", posts=posts, votes=votes, user=user, viewer=viewer)
 
+
 @app.route('/home/edit-profile')
+@login_required
 def edit_profile():
     user_id = session.get("loggedin")
     user = User.get_user_by_id(user_id)
     return render_template('edit_profile.html', user=user)
 
+
 @app.route('/home/edit-profile-process', methods=["POST"])
+@login_required
 def edit_profile_process():
     user_id = session.get('loggedin')
     user = User.get_user_by_id(user_id)
@@ -260,7 +268,9 @@ def edit_profile_process():
 
     return redirect(url_for('user_profile', user_id=user_id))
 
+
 @app.route('/home/follow/<int:user_id>')
+@login_required
 def follow(user_id):
     user = User.get_user_by_id(user_id)
     viewer_id = session.get('loggedin')
@@ -275,7 +285,9 @@ def follow(user_id):
     flash('You are now following %s' % user.user_name)
     return redirect(url_for('user_profile', user_id=user_id))
 
+
 @app.route('/home/unfollow/<int:user_id>')
+@login_required
 def unfollow(user_id):
     user = User.get_user_by_id(user_id)
     viewer_id = session.get('loggedin')
@@ -287,7 +299,9 @@ def unfollow(user_id):
         flash('You are now not following %s' % user.user_name)
     return redirect(url_for('show_all_posts'))
 
+
 @app.route('/home/followers/<int:user_id>')
+@login_required
 def followers(user_id):
     user = User.get_user_by_id(user_id)
     if user is None:
@@ -297,7 +311,9 @@ def followers(user_id):
 
     return render_template('followers.html', followers=followers, user=user)
 
+
 @app.route('/home/followeds/<int:user_id>')
+@login_required
 def followeds(user_id):
     user = User.get_user_by_id(user_id)
     if user is None:
@@ -312,7 +328,9 @@ def followeds(user_id):
 #######################################################################################################
 # functions that handles votes
 
+
 @app.route('/home/post/<int:post_id>/refresh', methods=['POST'])
+@login_required
 def process_vote(post_id):
     """this is the function that process users' votes, so it updates the database and refresh the post-details
     page to show the updated votes and vote allocation"""
@@ -344,15 +362,17 @@ def process_vote(post_id):
 #######################################################################################################
 # functions that handles posting a question
 
-
 @app.route('/home/post')
+@login_required
 def post_question():
     """This is the render the page that users can edit their questions/posts """
     tag_names = [str(tag.tag_name) for tag in Tag.get_all_tags()]
     return render_template("post_question.html", tag_names=tag_names)
 
 
+
 @app.route('/home/post/process', methods=['GET', 'POST'])
+@login_required
 def process_question():
     """Process the questions that user added, and updated the database"""
     description = request.form.get('description')
@@ -373,7 +393,9 @@ def process_question():
 #######################################################################################################
 # functions that handles deleting an existing post
 
+
 @app.route('/home/post/<int:post_id>/delete', methods=['POST'])
+@login_required
 def delete_post(post_id):
     Post.delete_by_post_id(post_id)
     user_id = session['loggedin']
@@ -383,7 +405,9 @@ def delete_post(post_id):
 #######################################################################################################
 # the functions that handles comments
 
+
 @app.route('/home/post/<int:post_id>/comment/refresh', methods=['POST'])
+@login_required
 def process_comments(post_id):
     """process the comments the users entered """
     content = request.form.get('comment')
@@ -401,7 +425,9 @@ def process_comments(post_id):
         flash("You need to login first")
         return redirect(url_for('login'))
 
+
 @app.route('/home/comment/<int:comment_id>/delete', methods=['POST'])
+@login_required
 def delete_comment(comment_id):
     comment = Comment.get_comment_by_comment_id(comment_id)
     post_id = comment.post_id
