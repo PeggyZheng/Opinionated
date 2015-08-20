@@ -181,8 +181,9 @@ def show_all_posts():
 
     session["post_ids"] = [post.post_id for post in posts]
     tag_names = [str(tag.tag_name) for tag in Tag.get_all_tags()]
+    tags = Tag.get_all_tags()
 
-    return render_template('post_list.html', posts=posts, tag_names=tag_names)
+    return render_template('post_list.html', posts=posts, tag_names=tag_names, tags=tags)
 
 
 @app.route('/home/post/<int:post_id>')
@@ -330,7 +331,6 @@ def followeds(user_id):
 
 
 @app.route('/home/post/<int:post_id>/refresh', methods=['POST'])
-@login_required
 def process_vote(post_id):
     """this is the function that process users' votes, so it updates the database and refresh the post-details
     page to show the updated votes and vote allocation"""

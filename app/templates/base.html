@@ -6,23 +6,23 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
     <title>Opinionated</title>
-    <!-- Latest compiled and minified CSS -->
-    <!--<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">-->
+     <!--Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
 
-    <!--&lt;!&ndash; Optional theme &ndash;&gt;-->
-    <!--<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap-theme.min.css">-->
+    <!-- Optional theme -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap-theme.min.css">
 
-    <!--&lt;!&ndash; Latest compiled and minified JavaScript &ndash;&gt;-->
-    <!--<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>-->
+    <!-- Latest compiled and minified JavaScript -->
+    <script src="https://code.jquery.com/jquery.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
 
     <!-- Bootstrap -->
     <link href="/static/css/bootstrap.min.css" rel="stylesheet">
 	<link rel="stylesheet" href="/static/css/font-awesome.min.css">
 	<link rel="stylesheet" href="/static/css/animate.css">
 	<link href="/static/css/animate.min.css" rel="stylesheet">
-	<!--<link href="/static/css/style.css" rel="stylesheet" />--> <!--currently commented out to show black font-->
-    <!--Bootstrap toggle -->
-    <link href="https://gitcdn.github.io/bootstrap-toggle/2.2.0/css/bootstrap-toggle.min.css" rel="stylesheet">
+	<!--<link href="/static/css/style.css" rel="stylesheet" /> &lt;!&ndash;currently commented out to show black font&ndash;&gt;-->
+
 
     <!-- You can use open graph tags to customize link previews.
     Learn more: https://developers.facebook.com/docs/sharing/webmasters -->
@@ -32,11 +32,16 @@
     <meta property="og:title" content="Opinionated"/>
     <meta property="og:description" content="A social networking app that smooths out decision-making"/>
     <meta property="og:image" content="http://www.your-domain.com/path/image.jpg"/>
+        <!--<link rel="stylesheet" type="text/css"-->
+          <!--href="https://cdn-static-1.medium.com/_/fp/css/fonts-full-base.KFgd5iFcfWzZUtuI2xxbwg.css"/>-->
+    <!--<link rel="stylesheet" href="https://cdn-static-1.medium.com/_/fp/css/main-base.rshuTR5GLVpIn8kLmcyeUQ.css">-->
 </head>
 
 <body>
-
 <div id="fb-root"></div>
+<script src="/static/fblogin.js"></script>
+<!--<script src='/static/facebookplay.js'></script>-->
+
 
 <script>(function (d, s, id) {
     var js, fjs = d.getElementsByTagName(s)[0];
@@ -48,8 +53,8 @@
 }(document, 'script', 'facebook-jssdk'));</script>
 
 
-<header id="header">
-   <nav class="navbar navbar-default navbar-static-top" role="banner">
+
+   <nav class="navbar navbar-default navbar-static-top">
         <div class="container">
             <div class="navbar-header">
                 <button type="button"
@@ -78,7 +83,7 @@
                     <li>
                         <form action="/home/search" method="post" class="navbar-form navbar-right" role="search">
                             <div class="form-group">
-                                <input type="search" name="postsearch" id="tags" class="form-control tm-input tm-input-info typeahead"
+                                <input type="text" name="postsearch" id="tags" class="form-control tm-input tm-input-info typeahead"
                                        placeholder="Search by tag">
                             </div>
                             <button type = "submit" class="btn btn-default"><span class="glyphicon glyphicon-search"></span></button>
@@ -86,43 +91,33 @@
                     </li>
                     <li><a href="/home/post">Post a question</a></li>
                     <li>
-                        <fb:login-button size='large'
-                                         scope="public_profile,email,user_friends,user_location,publish_actions"
-                                         onlogin="checkLoginState();"
-                                         auto_logout_link="true">
-                            Log in with Facebook
-                        </fb:login-button>
+                        {% if not session.get('loggedin', None) %}
+                        <button type="button" class="btn btn-default navbar-btn" onclick="login()">Log in</button>
+                        {% else %}
+                        <button type="button" class="btn btn-default navbar-btn" onclick="logout()">Log out</button>
+                        {% endif %}
                     </li>
                 </ul>
             </div>
         </div>
-   </nav>
-</header>
+    </nav>
 
 
-
+<!-- Show flashed messages-->
 {% with messages = get_flashed_messages() %}
 {% if messages %}
-<ul>
     {% for message in messages %}
-    <li>{{ message }}</li>
+        <div class="alert alert-info" role="alert">{{ message }}</div>
     {% endfor %}
-</ul>
 {% endif %}
 {% endwith %}
 
- <!--<input type="button" value="Logout" action="/logout">-->
-<!--{% if session.get('loggedin') %}-->
-<!--<div id="log-out"><a href="/logout">log out</a></div>-->
-<!--{% else %}-->
-
-
-<!--{% endif %}-->
-<!--<script src="/static/facebookplay.js"></script>-->
-
 
 {% block content %} put your content here {% endblock %}
+<!--<script src="/static/js/jquery.js"></script>-->
 
-</div>
+
+
+
 </body>
 </html>

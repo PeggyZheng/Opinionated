@@ -1,7 +1,7 @@
 
 {% extends 'base.html' %}
 {% block content %}
-{% if session.get('loggedin') %}
+<!--{% if session.get('loggedin') %}-->
 <style type="text/css">
       .on  { background:white; }
       .off { background:grey; }
@@ -20,44 +20,75 @@
     <!--</form>-->
 
 
-<div>
-<a href="/home?show-all=true">Show all posts</a>
-<a href="/home?show-all=false">Show followed posts</a> <!--embed the variable show-all in the url to display different post lists -->
+<div class="container">
+    <div class="row">
+        <div class="col-xs-4 col-xs-offset-4">
+            <a href="/home?show-all=true">Show all posts</a>
+            <a href="/home?show-all=false">Show followed posts</a> <!--embed the variable show-all in the url to display different post lists -->
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-xs-8">
+            {% for post in posts %}
+            <dl class="posts">
+                <dt>
+                    <h2><a href="/home/post/{{ post.post_id }}">{{ post.description }}</a></h2>
+
+                <p class="lead">
+                    by <a href="/home/user/{{post.author_id}}">{{post.author.user_name}}</a>
+                </p>
+                <p><span class="glyphicon glyphicon-time"></span>Posted on {{post.timestamp}}</p>
+                {% if post.file_name %}
+                <img src="https://s3-us-west-2.amazonaws.com/opinionated/{{post.file_name}}" alt="{{ post.description }}"
+                     width="300px" height="auto" class="img-responsive">
+                {% endif %}
+                </dt>
+                <hr>
+                <dd class="col-xs-4">
+                    {% for choice in post.choices %}
+                    {% if choice.choice_text %}
+                    {{ choice.choice_text }}
+                    {% endif %}
+                    <br>
+                    {% if choice.file_name %}
+                    <img src="https://s3-us-west-2.amazonaws.com/opinionated/{{choice.file_name}}" alt="{{ choice.choice_text}}"\
+                        width="300px" height="auto">
+                    {% endif %}
+                </dd>
+                {% endfor %}
+            </dl>
+         {% endfor %}
+        </div>
+
+
+        <div class="col-xs-4">
+            <div class="well">
+                <h4>Blog Tags</h4>
+                    <ul class="list-unstyled">
+                        {% for tag in tags %}
+                        <li><a href="/home/tag/{{ tag.tag_name }}">{{ tag.tag_name }}</a>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                        <!--&lt;!&ndash; /.col-lg-6 &ndash;&gt;-->
+                        <!--<div class="col-lg-6">-->
+                            <!--<ul class="list-unstyled">-->
+                                <!--<li><a href="#">Category Name</a>-->
+                                <!--</li>-->
+                                <!--<li><a href="#">Category Name</a>-->
+                                <!--</li>-->
+                                <!--<li><a href="#">Category Name</a>-->
+                                <!--</li>-->
+                                <!--<li><a href="#">Category Name</a>-->
+                                <!--</li>-->
+                            <!--</ul>-->
+                        <!--</div>-->
+                        <!-- /.col-lg-6 -->
+            </div><!-- /.row -->
+        </div>
+    </div>
 </div>
 
-
-<ul class="posts">
-    {% for post in posts %}
-
-    <li class="posts">
-        <div>
-            <a href="/home/post/{{ post.post_id }}">{{ post.description }}</a>
-        </div>
-        <div class="container">
-            {% if post.file_name %}
-            <img src="https://s3-us-west-2.amazonaws.com/opinionated/{{post.file_name}}" alt="{{ post.description }}"\
-                    width="300px" height="auto">
-            {% endif %}
-        </div>
-
-        {% for choice in post.choices %}
-        <div>
-            {% if choice.choice_text %}
-            {{ choice.choice_text }}
-            {% endif %}
-        </div>
-
-        <div class="container">
-            {% if choice.file_name %}
-            <img src="https://s3-us-west-2.amazonaws.com/opinionated/{{choice.file_name}}" alt="{{ choice.choice_text}}"\
-                    width="300px" height="auto">
-            {% endif %}
-        </div>
-        {% endfor %}
-    </li>
-
-    {% endfor %}
-</ul>
 
 <script src="https://code.jquery.com/jquery.js"></script>
 <!-- jQuery/AJAX -->
@@ -121,31 +152,7 @@ $('#tags').typeahead({
   source: substringMatcher(tag_names)
 });
 
-    function toggleState(checked) {
-        if (checked == true) {
-//           $('#btn').innerHTML("Show all posts");
-//            document.getElementById("toggle-form").action('/home?show-all=true');
-//            document.getElementById("toggle-form").submit();
-            $('#toggle-msg').html("it is on")
-        } else {
-//            $(this).className = "on";
-//            $('#btn').innerHTML("Show followed posts");
-//            $('#toggle').attr("value", "show_followed");
-//            document.getElementById("toggle-form").submit();
-            $('#toggle-msg').html('it is off')
-        }
-    }
-//
-//    $('#toggle').on('checked', function(){
-//        var click = true;
-//        $(this).toggle(click);
-//        toggleState(click);
-//    });
 
-    $('#toggle').change(function() {
-        var checked = $(this).prop('checked');
-        toggleState(checked);
-    } )
 </script>
 
 {% endblock %}

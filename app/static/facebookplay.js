@@ -1,14 +1,15 @@
 ///**
 // * Created by peggyzheng on 8/12/15.
 // */
-//window.fbAsyncInit = function() {
-//    FB.init({
-//        appId      : '141368599534524',
-//        xfbml      : true,
-//        status     : true,
-//        cookie     : false,
-//        version    : 'v2.4'
-//    });
+window.fbAsyncInit = function() {
+    FB.init({
+        appId: '141368599534524',
+        xfbml: true,
+        status: true,
+        cookie: false,
+        version: 'v2.4'
+    });
+}
 //    // place code here that I want to run as soon as the page is loaded
 //
 //    //share something on facebook
@@ -35,21 +36,21 @@
 //
 //};  //close the fbAsyncInit function
 //
-//    (function(d, s, id) {
-//      var js, fjs = d.getElementsByTagName(s)[0];
-//      if (d.getElementById(id)) return;
-//      js = d.createElement(s); js.id = id;
-//      js.src = "//connect.facebook.net/en_US/sdk.js#xfbml=1";
-//      fjs.parentNode.insertBefore(js, fjs);
-//    }(document, 'script', 'facebook-jssdk'));
+    (function(d, s, id) {
+      var js, fjs = d.getElementsByTagName(s)[0];
+      if (d.getElementById(id)) return;
+      js = d.createElement(s); js.id = id;
+      js.src = "//connect.facebook.net/en_US/sdk.js#xfbml=1";
+      fjs.parentNode.insertBefore(js, fjs);
+    }(document, 'script', 'facebook-jssdk'));
 //
-////function myFacebookLogin() {
-////      FB.login(function(){}, {scope: 'user_location'});
-////    }
-//
-////myFacebookLogout is never used atm.
-//function myFacebookLogout() {
-//  FB.logout(function(response) {
-//  // user is now logged out
-//  });
-//}
+function myFacebookLogin() {
+      FB.login(function(){}, {scope: 'user_location'});
+    }
+
+//myFacebookLogout is never used atm.
+function myFacebookLogout() {
+  FB.logout(function(response) {
+  // user is now logged out
+  });
+}
