@@ -1,20 +1,22 @@
 {% extends 'base.html' %}
 {% block content %}
+<div class="container">
+    <h1>{{ user.user_name }}</h1>
+    <table>
+        <thead><tr><th>User</th><th>Since</th></tr></thead>
+        {% for followed in followeds %}
+        <tr>
+            <td>
+                <a href="/home/user/{{ followed.user_id }}">
+                <img src="{{ followed.profile_pic}}">
+                {{ followed.user_name }}
+                </a>
+            </td>
+            <td>{{ followeds[followed] }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+</div>
 
-<h1>{{ user.user_name }}</h1>
-<table>
-    <thead><tr><th>User</th><th>Since</th></tr></thead>
-    {% for followed in followeds %}
-    <tr>
-        <td>
-            <a href="/home/user/{{ followed.user_id }}">
-            <img src="{{ followed.profile_pic}}">
-            {{ followed.user_name }}
-            </a>
-        </td>
-        <td>{{ followeds[followed] }}</td>
-    </tr>
-    {% endfor %}
-</table>
 
 {% endblock %}

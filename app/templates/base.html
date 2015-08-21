@@ -18,11 +18,16 @@
 
     <!-- Bootstrap -->
     <link href="/static/css/bootstrap.min.css" rel="stylesheet">
-	<link rel="stylesheet" href="/static/css/font-awesome.min.css">
-	<link rel="stylesheet" href="/static/css/animate.css">
-	<link href="/static/css/animate.min.css" rel="stylesheet">
-    <link href="/static/css/project.css" rel="stylesheet">
+	<!--<link rel="stylesheet" href="/static/css/font-awesome.min.css">-->
+	<!--<link rel="stylesheet" href="/static/css/animate.css">-->
+	<!--<link href="/static/css/animate.min.css" rel="stylesheet">-->
+    <!--<link href="/static/css/project.css" rel="stylesheet">-->
 	<!--<link href="/static/css/style.css" rel="stylesheet" /> &lt;!&ndash;currently commented out to show black font&ndash;&gt;-->
+
+    <!-- Bloodhound & Typeahead -->
+    <script src="/static/typeahead/bloodhound.js"></script>
+    <script src="/static/typeahead/typeahead.bundle.js"></script>
+    <script src="/static/typeahead/typeahead.jquery.js"></script>
 
 
     <!-- You can use open graph tags to customize link previews.
@@ -115,7 +120,7 @@
 {% with messages = get_flashed_messages() %}
 {% if messages %}
     {% for message in messages %}
-        <div class="alert alert-info" role="alert">{{ message }}</div>
+        <div class="alert alert-info" role="alert" id="flash-msg">{{ message }}</div>
     {% endfor %}
 {% endif %}
 {% endwith %}
@@ -136,4 +141,61 @@
 
 
 </body>
+<script>
+     var tag_names = {{ session.get('tag_names', None)|safe }};
+    console.log(tag_names);
+
+
+    var substringMatcher = function(strs) {
+        return function findMatches(q, cb) {
+      if (q === '') {
+          cb(tag_names);
+      }
+      else {
+          var matches, substringRegex;
+
+    // an array that will be populated with substring matches
+    matches = [];
+
+    // regex used to determine if a string contains the substring `q`
+    substrRegex = new RegExp(q, 'i');
+
+    // iterate through the pool of strings and for any string that
+    // contains the substring `q`, add it to the `matches` array
+    $.each(strs, function(i, str) {
+      if (substrRegex.test(str)) {
+        matches.push(str);
+      }
+    });
+
+    cb(matches);
+  }
+ };
+};
+
+function defTags(q, sync) {
+    if (q === '') {
+        sync(tag_names);
+    }
+    else {
+        substringMatcher(tag_names);
+    }
+}
+
+$('#tags').typeahead({
+  hint: true,
+  highlight: true,
+  minLength: 1
+},
+{
+  source: substringMatcher(tag_names)
+});
+
+
+    $(function() {
+   $('#flash-msg').delay(500).fadeIn('normal', function() {
+      $(this).delay(2500).fadeOut();
+   });
+});
+</script>
 </html>

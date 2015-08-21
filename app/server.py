@@ -38,6 +38,8 @@ FB_APP_SECRET = os.environ["FB_APP_SECRET"]
 def login():
     """Homepage with login"""
     # Get all of the authenticated user's friends
+    tag_names = [str(tag.tag_name) for tag in Tag.get_all_tags()]
+    session['tag_names'] = tag_names
 
     return render_template("login.html")
 
@@ -71,9 +73,8 @@ def facebook_login():
     print type(user_id)
     graph = facebook.GraphAPI(access_token=current_access_token)
     friends = graph.get_connections(id='me', connection_name='friends')
-    profile_pic = graph.get_connections(id='me', connection_name='picture')['url']
+    profile_pic = graph.get_connections(id='me', connection_name='picture')['url'] #Todo: this line seems to be very slow,try
     user_details= graph.get_object(id=user_id, fields='name, email, gender, age_range, birthday, location')
-    print user_details
 
     user_id = int(user_id)
     name = user_details.get('name')
@@ -173,17 +174,21 @@ def show_all_posts():
         show_followed = True
 
     if show_followed:
-        viewer_id = session.get('loggedin')
+        viewer_id = session.get('loggedin', None)
+        print viewer_id, "viewer id"
         viewer = User.get_user_by_id(viewer_id)
+        print viewer
         posts = viewer.followed_posts()
+        print posts
     else:
         posts = Post.get_all_posts()
-
-    session["post_ids"] = [post.post_id for post in posts]
-    tag_names = [str(tag.tag_name) for tag in Tag.get_all_tags()]
+    if posts:
+        session["post_ids"] = [post.post_id for post in posts]
+    # tag_names = [str(tag.tag_name) for tag in Tag.get_all_tags()]
+    # session['tag_names'] = tag_names
     tags = Tag.get_all_tags()
 
-    return render_template('post_list.html', posts=posts, tag_names=tag_names, tags=tags)
+    return render_template('post_list.html', posts=posts, tags=tags)
 
 
 @app.route('/home/post/<int:post_id>')

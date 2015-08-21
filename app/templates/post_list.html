@@ -23,8 +23,10 @@
 <div class="container">
     <div class="row">
         <div class="col-xs-4 col-xs-offset-4">
-            <a href="/home?show-all=true">Show all posts</a>
-            <a href="/home?show-all=false">Show followed posts</a> <!--embed the variable show-all in the url to display different post lists -->
+            {% if session.get('loggedin', None) %}
+                <a href="/home?show-all=true">Show all posts</a>
+                <a href="/home?show-all=false">Show followed posts</a> <!--embed the variable show-all in the url to display different post lists -->
+            {% endif %}
         </div>
     </div>
     <div class="row">
@@ -98,60 +100,7 @@
 <script src="../static/typeahead/bloodhound.js"></script>
 <script src="../static/typeahead/typeahead.bundle.js"></script>
 <script src="../static/typeahead/typeahead.jquery.js"></script>
-<script src="https://gitcdn.github.io/bootstrap-toggle/2.2.0/js/bootstrap-toggle.min.js"></script>
+<!--<script src="https://gitcdn.github.io/bootstrap-toggle/2.2.0/js/bootstrap-toggle.min.js"></script>-->
 
-<script>
-
-    var tag_names = {{ tag_names|safe }};
-    console.log(tag_names);
-
-
-    var substringMatcher = function(strs) {
-        return function findMatches(q, cb) {
-      if (q === '') {
-          cb(tag_names);
-      }
-      else {
-          var matches, substringRegex;
-
-    // an array that will be populated with substring matches
-    matches = [];
-
-    // regex used to determine if a string contains the substring `q`
-    substrRegex = new RegExp(q, 'i');
-
-    // iterate through the pool of strings and for any string that
-    // contains the substring `q`, add it to the `matches` array
-    $.each(strs, function(i, str) {
-      if (substrRegex.test(str)) {
-        matches.push(str);
-      }
-    });
-
-    cb(matches);
-  }
- };
-};
-
-function defTags(q, sync) {
-    if (q === '') {
-        sync(tag_names);
-    }
-    else {
-        substringMatcher(tag_names);
-    }
-}
-
-$('#tags').typeahead({
-  hint: true,
-  highlight: true,
-  minLength: 1
-},
-{
-  source: substringMatcher(tag_names)
-});
-
-
-</script>
 
 {% endblock %}

@@ -169,7 +169,7 @@ class User(db.Model):
         post_list = []
         for followed in followeds:
             posts = Post.query.filter_by(author_id=followed.user_id).all()
-            post_list.append(posts)
+            post_list.extend(posts)
         return post_list
 
 

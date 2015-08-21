@@ -80,23 +80,21 @@
                     </div>
                 {% endfor %}
             </div>
-            <div role="tabpanel" class="tab-pane active" id="votes">
-                <div class="col-md-8">
-                    <h3>My votes</h3>
-                        {% for vote in votes %}
-                        <h4><a href="/home/post/{{ vote.choice.post_id }}">{{ vote.choice.post.description }}</a></h4>
-                        {% if vote.choice.choice_text %}
-                        You voted on {{ vote.choice.choice_text }}
-                        {% else %}
-                        You voted on {{ vote.choice.file_name }}
-                        {% endif %}
-                        {% endfor %}
-                </div>
+            <div role="tabpanel" class="tab-pane" id="votes">
+                <h3>My votes</h3>
+                    {% for vote in votes %}
+                    <h4><a href="/home/post/{{ vote.choice.post_id }}">{{ vote.choice.post.description }}</a></h4>
+                    {% if vote.choice.choice_text %}
+                    You voted on {{ vote.choice.choice_text }}
+                    {% else %}
+                    You voted on {{ vote.choice.file_name }}
+                    {% endif %}
+                    <hr>
+                    {% endfor %}
             </div>
         </div>
     </div>
 </div>
-
-
+</div>
 
 {% endblock %}
