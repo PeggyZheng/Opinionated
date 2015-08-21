@@ -1,33 +1,53 @@
 {% extends 'base.html' %}
 {% block content %}
+<div class="container">
+    <form action='edit-profile-process' method='post'>
+        <div class="form-group">
+            <label>Name:
+                <input type='text' name='name' placeholder={{ user.user_name }} class="form-control">
+            </label>
+        </div>
+        <div class="form-group">
+            <label>Location:
+                <input type='text' name='location' placeholder="{{ user.location }}" class="form-control">
+            </label>
+        </div>
+        <div class="form-group">
+            Gender:
+            <label class="radio-inline">
+                <input type="radio" name="gender" value="male"> Male
+            </label>
+            <label class="radio-inline">
+                <input type="radio" name="gender" value="female"> Female
+            </label>
+        </div>
+        <div class="form-group">
+            Age range:
+            <label class="radio-inline">
+                <input type="radio" name="age" value="21">18 - 25
+            </label>
+            <label class="radio-inline">
+                <input type="radio" name="age" value="31">26 - 35
+            </label>
+            <label class="radio-inline">
+                <input type="radio" name="age" value="41">36 - 45
+            </label>
+            <label class="radio-inline">
+                <input type="radio" name="age" value="51">46 - 55
+            </label>
+            <label class="radio-inline">
+                <input type="radio" name="age" value="61">56 and up
+            </label>
+        </div>
+        <div class="form-group">
+            <label>About me
+                <textarea name="about_me" class="form-control" rows="4" cols="50"></textarea>
+            </label>
+        </div>
+            <input type='submit' value='Submit' class="btn btn-default">
+        </div>
+    </form>
 
-<form action='edit-profile-process' method='post'>
-    <label>Name:
-        <input type='text' name='name' placeholder={{ user.user_name }}>
-    </label>
-    <br>
-    <label>Location:
-        <input type='text' name='location' placeholder="{{ user.location }}">
-    </label>
-    <br>
-    <label>Gender:
-        <input type="radio" name="gender" value="male"> Male
-        <input type="radio" name="gender" value="female"> Female
-    </label>
-    <br>
-    <label>Age range:
-        <input type="radio" name="age" value="21">18 - 25<br>
-        <input type="radio" name="age" value="31">26 - 35<br>
-        <input type="radio" name="age" value="41">36 - 45<br>
-        <input type="radio" name="age" value="51">46 - 55<br>
-        <input type="radio" name="age" value="61">56 and up<br>
-
-    </label>
-    <label>About me
-        <textarea name="about_me"></textarea>
-    </label>
-
-    <input type='submit' value='Submit'>
-</form>
+</div>
 
 {% endblock %}
