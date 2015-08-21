@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% block content %}
 <div class="container">
-    <div class="col-md-2">
+    <div class="col-md-4">
         <img src="{{ user.profile_pic }}" class="img-responsive">
         {% if user.user_name or user.location %}
         <p>
@@ -34,68 +34,67 @@
         {% endif %}
 
     </div>
-    <div class="col-md-5">
-        <h3>All my posts</h3>
-
-        <ul class="posts">
-            {% for post in posts %}
-            <li class="posts">
-                <div>
-                    <a href="/home/post/{{ post.post_id }}">{{ post.description }}</a>
-                </div>
-                <div class="container">
-                    {% if post.file_name %}
-                    <img src="https://s3-us-west-2.amazonaws.com/opinionated/{{post.file_name}}"
-                         alt="{{ post.description }}" \
-                         width="300px" height="auto">
-                    {% endif %}
-                </div>
-
-                {% for choice in post.choices %}
-                <div>
-                    {% if choice.choice_text %}
-                    {{ choice.choice_text }}
-                    {% endif %}
-                </div>
-
-                <div>
-                    {% if choice.file_name %}
-                    <div class="container">
-                        <img src="https://s3-us-west-2.amazonaws.com/opinionated/{{choice.file_name}}"
-                             alt="{{ choice.choice_text }}" width="300px" height="auto">
+    <div class="col-md-8" id="tab">
+    <!-- Nav tabs -->
+    <ul class="nav nav-tabs" role="tablist">
+        <li role="presentation" class="active"><a href="#posts" aria-controls="posts" role="tab" data-toggle="tab">My posts</a></li>
+        <li role="presentation"><a href="#votes" aria-controls="votes" role="tab" data-toggle="tab">My votes</a></li>
+    </ul>
+    <!--Tab panels-->
+    <div class="col-md-8" id="tab">
+        <div class="tab-content">
+            <div role="tabpanel" class="tab-pane active" id="posts">
+                <h3>My posts</h3>
+                    {% for post in posts %}
+                    <div class="row">
+                        <div class="span-4 collapse-group">
+                            <h4><a href="/home/post/{{ post.post_id }}">{{ post.description }}</a></h4>
+                            {% if post.file_name %}
+                            <img src="https://s3-us-west-2.amazonaws.com/opinionated/{{post.file_name}}"
+                                 alt="{{ post.description }}" \
+                                 width="300px" height="auto">
+                            {% endif %}
+                            <div class="collapse" id="{{post.post_id}}">
+                                {% for choice in post.choices %}
+                                <div class="col-md-6">
+                                    {% if choice.choice_text %}
+                                    <p>{{ choice.choice_text }}</p>
+                                    {% endif %}
+                                    {% if choice.file_name %}
+                                    <img src="https://s3-us-west-2.amazonaws.com/opinionated/{{choice.file_name}}"
+                                         alt="{{ choice.choice_text }}" width="300px" height="auto">
+                                    {% endif %}
+                                </div>
+                                {% endfor %}
+                            </div>
+                            <br>
+                            <div class="row">
+                                <div class="col-xs-12">
+                                    <br>
+                                    <a class="btn btn-primary button-xs" role="button" data-toggle="collapse" href="#{{post.post_id}}"
+                                  aria-controls="{{post.post_id}}">view choices &raquo;</a>
+                                </div>
+                            </div>
+                        </div>
+                        <hr>
                     </div>
-                    {% endif %}
-                </div>
                 {% endfor %}
-            </li>
-            {% endfor %}
-        </ul>
-    </div>
-    <div class="col-md-5">
-        <h3>All my votes</h3>
-
-        <ul class="votes">
-
-            {% for vote in votes %}
-
-
-            <li class="votes">
-                <div>
-                    <a href="/home/post/{{ vote.choice.post_id }}">{{ vote.choice.post.description }}</a>
+            </div>
+            <div role="tabpanel" class="tab-pane active" id="votes">
+                <div class="col-md-8">
+                    <h3>My votes</h3>
+                        {% for vote in votes %}
+                        <h4><a href="/home/post/{{ vote.choice.post_id }}">{{ vote.choice.post.description }}</a></h4>
+                        {% if vote.choice.choice_text %}
+                        You voted on {{ vote.choice.choice_text }}
+                        {% else %}
+                        You voted on {{ vote.choice.file_name }}
+                        {% endif %}
+                        {% endfor %}
                 </div>
-                <div>
-                    {% if vote.choice.choice_text %}
-                    I voted on {{ vote.choice.choice_text }}
-                    {% else %}
-                    I voted on {{ vote.choice.file_name }}
-                    {% endif %}
-                </div>
-
-            </li>
-            {% endfor %}
-        </ul>
+            </div>
+        </div>
     </div>
-
 </div>
 
 
