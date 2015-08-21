@@ -1,134 +1,146 @@
 {% extends 'base.html' %}
 {% block content %}
 
+
 <div class="container">
-    <!-- Only the author can see the delete post button-->
-{% if session.get('loggedin', None) %}
-{% if post.author_id == session['loggedin'] %}
-<form action="/home/post/{{ post.post_id }}/delete" method="post">
-    <input type="submit" value="Delete post" id="delete-post">
-</form>
-{% endif %}
-{% endif %}
+    <div class="row">
+        <!--Blog post Content Column-->
+        <div class="col-sm-8">
+            <!--blog post-->
+            <!--Title-->
+            <h2>{{ post.description }}  <small>(<span id="total-vote">{{ total_votes }}</span> people have voted on this)</small></h2>
+
+            <!--Author-->
+            <p class="lead">by <a href="/home/user/{{ post.author.user_id }}">{{ post.author.user_name }}</a>
+                <img src="{{ post.author.profile_pic}}" class="img-responsive">
+            </p>
+
+            <hr>
+
+            <!--Date/Time -->
+            <p><span class="glyphicon glyphicon-time"></span>Posted on {{ post.timestamp }}</span></p>
+
+            <hr>
+
+                <!-- Only the author can see the delete post button-->
+            {% if session.get('loggedin', None) %}
+            {% if post.author_id == session['loggedin'] %}
+            <form action="/home/post/{{ post.post_id }}/delete" method="post">
+                <input type="submit" value="Delete post" id="delete-post" class="btn btn-default">
+            </form>
+            {% endif %}
+            {% endif %}
 
 
-<!-- Your share button code -->
-<div class="fb-share-button" data-href="https://developers.facebook.com/docs/plugins/" data-layout="button-count">
-    <button type="button" id="fb-share">Share the post to facebook</button>
-</div>
-
-    <ul class="posts">
-
-        <li class="posts">
-            <div>
-                <a href="/home/user/{{ post.author.user_id }}">{{ post.author.user_name }}</a>
-                <img src="{{ post.author.profile_pic}}">
+             <!-- Your share button code -->
+            <div class="fb-share-button" data-href="https://developers.facebook.com/docs/plugins/" data-layout="button-count">
+                <button type="button" id="fb-share" class="btn btn-default">Share the post to facebook</button>
             </div>
-            {{ post.description }} (<span id="total-vote">{{ total_votes }}</span> people have voted on this)
-            <br>
 
-            <div class="container">
+
                 {% if post.file_name %}
                 <img src="https://s3-us-west-2.amazonaws.com/opinionated/{{post.file_name}}" alt="{{ post.description }}" \
                      width="300px" height="auto">
                 {% endif %}
-            </div>
 
-            tags:
+            Tags:
             {% for tag in tag_names %}
             <a href="/home/tag/{{ tag }}">{{ tag }}</a>
             {% endfor %}
 
+            <div class="row">
+                <form action="/home/post/{{ post.post_id }}/refresh" method="post" id="vote-form">
 
-            <form action="/home/post/{{ post.post_id }}/refresh" method="post" id="vote-form">
+                    {% for choice in choices %}
+                    <div class="col-sm-6">
+                        {% if choice.choice_text and choice.file_name %}
+                        <input type="radio" name="choice_id" value="{{ choice.choice_id }}" class="choice">
 
-                {% for choice in choices %}
+                        {{ choice.choice_text }}
+                        <img src="https://s3-us-west-2.amazonaws.com/opinionated/{{choice.file_name}}"
+                                 alt="{{ choice.choice_text }}" width="300px" height="auto">
 
-                {% if choice.choice_text and choice.file_name %}
-                <input type="radio" name="choice_id" value="{{ choice.choice_id }}" class="choice">
 
-                <div>{{ choice.choice_text }}</div>
-                <div>
-                    <img src="https://s3-us-west-2.amazonaws.com/opinionated/{{choice.file_name}}"
-                         alt="{{ choice.choice_text }}" width="300px" height="auto">
-                </div>
+                        {% elif choice.file_name %}
+                        <input type="radio" name="choice_id" value="{{ choice.choice_id }}" class="choice">
+                            <img src="https://s3-us-west-2.amazonaws.com/opinionated/{{choice.file_name}}"
+                                 alt="{{ choice.file_name }}" width="300px" height="auto">
+                        {% else %}
+                        <input type="radio" name="choice_id" value="{{ choice.choice_id }}" class="choice">
 
-                {% elif choice.file_name %}
-                <input type="radio" name="choice_id" value="{{ choice.choice_id }}" class="choice">
+                        {{ choice.choice_text }}
+                        {% endif %}
 
-                <div>
-                    <img src="https://s3-us-west-2.amazonaws.com/opinionated/{{choice.file_name}}"
-                         alt="{{ choice.file_name }}" width="300px" height="auto">
-                </div>
-                {% else %}
-                <input type="radio" name="choice_id" value="{{ choice.choice_id }}" class="choice">
+                        <div>
+                            number of votes: <span id="vote-count-{{ choice.choice_id }}">{{ vote_dict[choice.choice_id] }}</span>
+                            <span id="vote-count-percent-{{choice.choice_id}}"></span>
+                            {% if total_votes > 0 %}
+                            <span class="vote-count-percent">Percentage: {{ vote_dict[choice.choice_id]/ total_votes }}</span>
+                            {% else %}
+                            <p class="no-vote">No one has vote yet</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
 
-                <div>{{ choice.choice_text }}</div>
-                {% endif %}
+                    <input type="submit" value="Vote" id="submit-vote" class="btn btn-default">
+                </form>
+            </div>
+        </div>
+    </div>
 
-                <div>
-                    number of votes: <span id="vote-count-{{ choice.choice_id }}">{{ vote_dict[choice.choice_id] }}</span>
-                    <span id="vote-count-percent-{{choice.choice_id}}"></span>
-                    {% if total_votes > 0 %}
-                    <span class="vote-count-percent">Percentage: {{ vote_dict[choice.choice_id]/ total_votes }}</span>
-                    {% else %}
-                    <p class="no-vote">No one has vote yet</p>
-                    {% endif %}
-                </div>
-                {% endfor %}
-
-                <input type="submit" value="Vote" id="submit-vote">
-                <div id="vote-msg"></div>
-            </form>
-        </li>
-    </ul>
-
-    <nav>
-        <ul class="pager">
-            <li class="previous"><a href="javascript:" onclick="previousPost({{ post.post_id }}, {{ post_ids }})">
-            <span aria-hidden="true">&larr;</span>previous</a></li>
-            <span id="previous-msg"></span>
-
-            <li class="next"><a href="javascript:" onclick="nextPost({{ post.post_id }}, {{ post_ids }})">
-            next<span aria-hidden="true">&rarr;</span></a></li>
-            <span id="next-msg"></span>
-        </ul>
-    </nav>
 
     <div id="donutchart" style="width: 500px; height: 300px;"></div>
     <div id="mapchart_div" style="width: 500px; height: 300px;"></div>
 
+     <nav>
+        <ul class="pager">
+            <li><a href="javascript:" onclick="previousPost({{ post.post_id }}, {{ post_ids }})">previous</a></li>
+            <li><a href="javascript:" onclick="nextPost({{ post.post_id }}, {{ post_ids }})">next</a></li>
+        </ul>
+    </nav>
 
-    <h3>Comments</h3>
-    <form action="/home/post/{{post.post_id}}/comment/refresh" method="post" id="comment-form">
-        <textarea rows="4" cols="100" name="new_comment" id="comment-content"></textarea>
-        <br>
-        <input id="comment-submit-button" type="submit">
-    </form>
-
-    <ul class="comments">
-        {% if comments %}
-        {% for comment in comments %}
-        <li>
-            <a href="/home/user/{{ comment.user_id }}">{{ comment.user.user_name }}</a>:
-            <img src="{{comment.user.profile_pic}}">
-            {{ comment.content }}
-            {% if session.get('loggedin', None) %}
-            {% if comment.user_id == session['loggedin'] %}
-            <div id="server-delete">
-                <form action="/home/comment/{{ comment.comment_id }}/delete" method="post">
-                    <input type="submit" value="Delete comment" class="delete-comment">
-                </form>
+    <!--Blog Comments-->
+    <!-- Comments Form-->
+    <div class="well">
+         <h3>Comments</h3>
+        <form action="/home/post/{{post.post_id}}/comment/refresh" method="post" id="comment-form" role="form">
+            <div class="form-group">
+                <textarea rows="3" name="new_comment" id="comment-content" class="form-control"></textarea>
+                <br>
             </div>
-            {% endif %}
-            {% endif %}
-        </li>
-        {% endfor %}
+            <input id="comment-submit-button" type="submit" class="btn btn-default">
+        </form>
+    </div>
+    <hr>
+    <!--Posted Comments-->
 
-        {% else %}
-        <p id="no-comment">Oops, looks like no one has commented yet</p>
-        {% endif %}
+    <!--Comment-->
+    <ul class="comments">
+        <div class="media">
+            {% if comments %}
+            {% for comment in comments %}
+            <a href="/home/user/{{ comment.user_id }}" class="pull-left"><img src="{{comment.user.profile_pic}}"></a>
+            <div class="media-body">
+                <h4 class="media-heading"><a href="/home/user/{{ comment.user_id }}">{{ comment.user.user_name }}</a>  <small>{{ comment.timestamp}}</small></h4>
+                {{ comment.content }}
+            </div>
+                {% if session.get('loggedin', None) %}
+                {% if comment.user_id == session['loggedin'] %}
+                <div id="server-delete">
+                    <form action="/home/comment/{{ comment.comment_id }}/delete" method="post">
+                        <input type="submit" value="Delete comment" class="delete-comment btn btn-default btn-xs">
+                    </form>
+                </div>
+                {% endif %}
+                {% endif %}
+            <hr>
+            {% endfor %}
 
+            {% else %}
+            <p id="no-comment">Oops, looks like no one has commented yet</p>
+            {% endif %}
+        </div>
     </ul>
 </div>
 
@@ -204,11 +216,15 @@
             console.log(result.has_delete_button);
             console.log(typeof(result.has_delete_button));
 
-            var li = '<li><a href="/home/user/' + result.user_id + '">' + result.user_name + '</a>:' + '<img src="' + result.user_pic + '">' + result.content + '</li>';
+            var pic = "<div class='media'><a href='/home/user/" + result.user_id + "' class='pull-left'><img src='" + result.user_pic + "'></a>";
+            var author = "<div class='media-body'><h4 class='media-heading'><a href=''/home/user/" + result.user_id + "'>" + result.user_name +
+                    "</a> <small>" + result.comment_timestamp + "</small></h4>" + result.content + "</div>";
+
+                    '<h4 class="media-heading"><a href="/home/user/' + result.user_id + '">' + result.user_name + '</a>'
             var form = '<form action="/home/comment/' + result.comment_id + '/delete" method="post">' +
-                    '<input type="submit" value="Delete comment" class="delete-comment">' +
-                    '</form>';
-            $('.comments').append(li + form);
+                    '<input type="submit" value="Delete comment" class="delete-comment btn btn-default btn-xs">' + '</form> <hr></div>';
+
+            $('.comments').append(pic + author + form);
             $('#no-comment').empty();
             $('#comment-content').val('');
         })

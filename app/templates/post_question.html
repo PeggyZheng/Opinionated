@@ -1,55 +1,58 @@
 
 {% extends 'base.html' %}
 {% block content %}
-<form action='/home/post/process' method='post' enctype="multipart/form-data">
-    <label>Short Description of your questions
-        <textarea rows="4" cols="50" name="description"></textarea>
-    </label>
-    <div class="image question">
-            <label>Upload an image for your question
-                <input type="file" name="fileupload_question" class="img" id="img-upload">
-                <img id="img-preview" src="" alt="your image" width="300px" height="auto"/>
+<div class="container">
+    <div class="row">
+        <form action='/home/post/process' method='post' enctype="multipart/form-data">
+            <div class="form-group">
+            <label><h4>Description of your questions</h4>
+                <textarea rows="4" cols="120" name="description" class="form-control" placeholder="Please enter a description of your question here"></textarea>
             </label>
-    </div>
-    <div>
-        <div class="text choice">
-            <label>Option 1
-                <textarea rows="4" cols="20" name="option1"></textarea>
-            </label>
-        </div>
-        <div class="image choice">
-            <label>Upload image
-                <input type="file" name="fileupload1" id="img-upload1" class="img">
-                <img id="img-preview1" src="" alt="your image" width="300px" height="auto"/>
-            </label>
-        </div>
-    </div>
+            </div>
+            <div class="form-group">
+                <label><h4>Upload a file for your question <small>(File types allowed: .txt, .pdf, .png, .jpg, .jpeg, .gif)</small></h4>
+                    <input type="file" name="fileupload_question" class="img" id="img-upload" class="form-control">
+                    <img id="img-preview" src="" width="300px" height="auto" class="img-responsive">
+                </label>
+            </div>
 
-    <div>
-        <div class="text choice">
-            <label>Option 2
-                <textarea rows="4" cols="20" name="option2"></textarea>
-            </label>
-        </div>
-        <div class="image choice">
-            <label>Upload image
-                <input type="file" name="fileupload2" id="img-upload2" class="img">
-                <img id="img-preview2" src="" alt="your image" width="300px" height="auto"/>
-            </label>
-        </div>
-    </div>
-    <br>
+            <hr>
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label><h4>Option 1</h4>
+                        <textarea rows="4" cols="50" name="option1" class="form-control" placeholder="The description of first choice"></textarea>
+                    </label>
+                    <label><h4>Upload file <small>(File types allowed: .txt, .pdf, .png, .jpg, .jpeg, .gif)</small></h4>
+                        <input type="file" name="fileupload1" id="img-upload1" class="img">
+                        <img id="img-preview1" src="" width="300px" height="auto"/>
+                    </label>
+                </div>
+            </div>
 
-    <div id="tags">
-        <label>Enter your tags here</label>
-        <br>
-        <input class="form-control tm-input tm-input-info typeahead" type="text" placeholder="Tags" name="tags">
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label><h4>Option 2</h4>
+                        <textarea rows="4" cols="50" name="option2" class="form-control" placeholder="The description of second choice"></textarea>
+                    </label>
+                    <label><h4>Upload file <small>(File types allowed: .txt, .pdf, .png, .jpg, .jpeg, .gif)</small></h4>
+                        <input type="file" name="fileupload2" id="img-upload2" class="img">
+                        <img id="img-preview2" src="" width="300px" height="auto"/>
+                    </label>
+                </div>
+            </div>
+            <br>
+            <div class="form-group">
+                <div id="tags">
+                    <label><h4>Enter your tags here</h4></label>
+                    <br>
+                    <input class="form-control tm-input tm-input-info typeahead" type="text" placeholder="Tags" name="tags">
+                </div>
+            </div>
+            <input type="submit" class="btn btn-default">
+        </form>
     </div>
-    <br>
-    <br>
-    <br>
-    <input type="submit">
-</form>
+</div>
+
 
 <script src="https://code.jquery.com/jquery.js"></script>
 <!-- jQuery/AJAX -->

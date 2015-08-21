@@ -383,6 +383,7 @@ def process_question():
     fileupload2 = request.files.get('fileupload2')
     author_id = session['loggedin']
     tags = request.form.get('hidden_tags')
+    print tags, "this is the tag passed in"
 
     choice_data = [(text_option1, fileupload1), (text_option2, fileupload2)]
 
@@ -418,9 +419,10 @@ def process_comments(post_id):
     if user_id:
         new_comment = Comment.create(content=content, user_id=user_id, post_id=post_id)
         comment_id = new_comment.comment_id
+        comment_timestamp = new_comment.timestamp
         has_delete_button = user_id == new_comment.user_id
         return jsonify(user_id=user_id, user_name=user_name, user_pic=user_pic, content=content,
-                       has_delete_button=has_delete_button, comment_id=comment_id)
+                       has_delete_button=has_delete_button, comment_id=comment_id, comment_timestamp=comment_timestamp)
     else:
         flash("You need to login first")
         return redirect(url_for('login'))

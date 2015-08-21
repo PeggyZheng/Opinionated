@@ -32,7 +32,7 @@ function logout() {
             console.log("this is logout status", response.status);
             FB.logout(function (response) {
                 $.get('/logout', {}, function (result) {
-                    location.href = "/home";
+                    location.href = "/";
                 })
             });
         }

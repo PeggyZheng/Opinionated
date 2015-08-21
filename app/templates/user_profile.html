@@ -1,95 +1,103 @@
 {% extends 'base.html' %}
 {% block content %}
+<div class="container">
+    <div class="col-md-2">
+        <img src="{{ user.profile_pic }}" class="img-responsive">
+        {% if user.user_name or user.location %}
+        <p>
+            {% if user.user_name %}<h4><a href="/home/user/{{ user.user_id }}">{{ user.user_name }}</a></h4>{% endif %}
+            {% if user.location %}
+            From <a href="http://maps.google.com/?q={{ user.location }}">{{ user.location }}</a>
+            {% endif %}
+        </p>
+        {% endif %}
 
-<a href="/home">Home</a>
+        <!--Edit profile button-->
+        {% if user.user_id == session.get('loggedin') %}
+        <a href="/home/edit-profile">
+            Edit Profile
+        </a>
+        {% endif %}
+        <br>
 
-<h3>{{ user.user_name }}</h3>
-<img src="{{ user.profile_pic }}">
-{% if user.user_name or user.location %}
-<p>
-    {% if user.user_name %}{{ user.user_name }}{% endif %}
-    {% if user.location %}
-        From <a href="http://maps.google.com/?q={{ user.location }}">{{ user.location }}</a>
-    {% endif %}
-</p>
-{% endif %}
-
-
-{% if user.user_id == session.get('loggedin') %}
-<a href="/home/edit-profile">
-    Edit Profile
-</a>
-{% endif %}
-
-
-{% if user.user_id != session.get('loggedin') %}
-    {% if not viewer.is_following(user) %}
+        <!--Follow a person or unfollow-->
+        <a href="/home/followers/{{ user.user_id }}">Followers <span>{{user.followers.count()}}</span></a><br>
+        <a href="/home/followeds/{{ user.user_id }}">Following <span>{{user.followed.count()}}</span></a>
+        <hr>
+        <!--Count of followers and following-->
+        {% if user.user_id != session.get('loggedin') %}
+        {% if not viewer.is_following(user) %}
         <a href="/home/follow/{{user.user_id}}">Follow</a>
-    {% else %}
+        {% else %}<br>
         <a href="/home/unfollow/{{user.user_id}}">Unfollow</a>
-    {% endif %}
+        {% endif %}
+        {% endif %}
 
-{% endif %}
+    </div>
+    <div class="col-md-5">
+        <h3>All my posts</h3>
 
-<a href="/home/followers/{{ user.user_id }}">Followers<span>{{user.followers.count()}}</span></a>
-<a href="/home/followeds/{{ user.user_id }}">Following<span>{{user.followed.count()}}</span></a>
+        <ul class="posts">
+            {% for post in posts %}
+            <li class="posts">
+                <div>
+                    <a href="/home/post/{{ post.post_id }}">{{ post.description }}</a>
+                </div>
+                <div class="container">
+                    {% if post.file_name %}
+                    <img src="https://s3-us-west-2.amazonaws.com/opinionated/{{post.file_name}}"
+                         alt="{{ post.description }}" \
+                         width="300px" height="auto">
+                    {% endif %}
+                </div>
 
-<h3>All my posts</h3>
+                {% for choice in post.choices %}
+                <div>
+                    {% if choice.choice_text %}
+                    {{ choice.choice_text }}
+                    {% endif %}
+                </div>
 
-<ul class="posts">
-    {% for post in posts %}
-    <li class="posts">
-        <div>
-            <a href="/home/post/{{ post.post_id }}">{{ post.description }}</a>
-        </div>
-        <div class="container">
-            {% if post.file_name %}
-            <img src="https://s3-us-west-2.amazonaws.com/opinionated/{{post.file_name}}" alt="{{ post.description }}"\
-                    width="300px" height="auto">
-            {% endif %}
-        </div>
+                <div>
+                    {% if choice.file_name %}
+                    <div class="container">
+                        <img src="https://s3-us-west-2.amazonaws.com/opinionated/{{choice.file_name}}"
+                             alt="{{ choice.choice_text }}" width="300px" height="auto">
+                    </div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
+    <div class="col-md-5">
+        <h3>All my votes</h3>
 
-        {% for choice in post.choices %}
-        <div>
-            {% if choice.choice_text %}
-             {{ choice.choice_text }}
-            {% endif %}
-        </div>
+        <ul class="votes">
 
-        <div>
-            {% if choice.file_name %}
-            <div class="container">
-                 <img src="https://s3-us-west-2.amazonaws.com/opinionated/{{choice.file_name}}" alt="{{ choice.choice_text }}" width="300px" height="auto">
-            </div>
-            {% endif %}
-        </div>
-        {% endfor %}
-    </li>
-    {% endfor %}
-</ul>
-
-<h3>All my votes</h3>
-
-<ul class="votes">
-
-    {% for vote in votes %}
+            {% for vote in votes %}
 
 
-    <li class="votes">
-        <div>
-            <a href="/home/post/{{ vote.choice.post_id }}">{{ vote.choice.post.description }}</a>
-        </div>
-        <div>
-            {% if vote.choice.choice_text %}
-            I voted on {{ vote.choice.choice_text }}
-            {% else %}
-            I voted on {{ vote.choice.file_name }}
-            {% endif %}
-        </div>
+            <li class="votes">
+                <div>
+                    <a href="/home/post/{{ vote.choice.post_id }}">{{ vote.choice.post.description }}</a>
+                </div>
+                <div>
+                    {% if vote.choice.choice_text %}
+                    I voted on {{ vote.choice.choice_text }}
+                    {% else %}
+                    I voted on {{ vote.choice.file_name }}
+                    {% endif %}
+                </div>
 
-    </li>
-    {% endfor %}
-</ul>
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
+
+</div>
+
 
 
 {% endblock %}
