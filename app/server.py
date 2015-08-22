@@ -73,7 +73,7 @@ def facebook_login():
     print type(user_id)
     graph = facebook.GraphAPI(access_token=current_access_token)
     friends = graph.get_connections(id='me', connection_name='friends')
-    profile_pic = graph.get_connections(id='me', connection_name='picture')['url'] #Todo: this line seems to be very slow,try
+    # profile_pic = graph.get_connections(id='me', connection_name='picture')['url'] #Todo: this line seems to be very slow,try
     user_details= graph.get_object(id=user_id, fields='name, email, gender, age_range, birthday, location')
 
     user_id = int(user_id)
@@ -119,7 +119,7 @@ def facebook_login():
     else:
         # todo: need to generate random password for facebook user, password cannot be None
         new_user = User.create(user_id=user_id, email=email, user_name=name, age_range=int(age_range),
-                               gender=gender, location=location, password="", friend_ids=friend_ids, profile_pic=profile_pic)
+                               gender=gender, location=location, password="", friend_ids=friend_ids, profile_pic="")
         session["loggedin"] = new_user.user_id
         session["current_access_token"] = current_access_token
         flash("Thanks for logging into Opinionated")
@@ -202,10 +202,15 @@ def show_post_detail(post_id):
     comments = Comment.get_comments_by_post_id(post_id)
     tag_names = [tag.tag_name for tag in Tag.get_tags_by_post_id(post_id)]
     post_ids = session.get("post_ids", None)
+    state = post.state #this gives a choice_id or Null
+    decision = None
+    if state:
+        decision = Choice.get_choice_by_id(state)
+
 
     return render_template('post_details.html', post=post, choices=choices, vote_dict=vote_dict,
                            comments=comments, total_votes=total_votes, tag_names=tag_names,
-                           post_ids=post_ids, chart_dict=chart_dict)
+                           post_ids=post_ids, chart_dict=chart_dict, decision=decision)
 
 
 @app.route('/home/post/<int:post_id>/share', methods=['POST'])
@@ -229,8 +234,22 @@ def share_post_fb(post_id):
     else:
         return json.dumps("Please logged in first")
 
+@app.route("/home/post/<int:post_id>/decide", methods=['POST'])
+def update_decision(post_id):
+    post = Post.get_post_by_id(post_id)
+    choice_id = request.form.get("choice_id")
+    print choice_id, "this is choice_id"
+    print type(choice_id), "this is the data type"
+    post.update_decision(int(choice_id))
+    if choice_id != "0":
+        choice = Choice.get_choice_by_id(choice_id)
+        decision_text = choice.choice_text
+        decision_file = choice.file_name
+    else:
+        decision_text = "The author has made the decision but he/she likes to keep it secret"
+        decision_file = ""
 
-
+    return jsonify(decision_text=decision_text, decision_file=decision_file)
 #######################################################################################################
 # functions that render users profile
 
@@ -461,7 +480,7 @@ def post_by_tag(tag_name):
     if posts:
         post_ids = [post.post_id for post in posts]
         session["post_ids"] = post_ids
-        return render_template('post_list_by_tag.html', posts=posts, tag_names=tag_names)
+        return render_template('post_list_by_tag.html', posts=posts, tag_names=tag_names, tag_name=tag_name)
     else:
         flash('your search returns no relevant posts')
         return redirect(url_for('show_all_posts'))

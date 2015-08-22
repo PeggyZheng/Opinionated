@@ -264,6 +264,7 @@ class Post(db.Model):
     author_id = db.Column(db.Integer, db.ForeignKey('users.user_id'), nullable=False)
     description = db.Column(db.Text)
     file_name = db.Column(db.String(250))  # user can also upload a file in question body
+    state = db.Column(db.Integer) # this can be null (undecided) or a specific choice id
     timestamp = db.Column(db.TIMESTAMP, index=True, default=datetime.utcnow())
 
     comments = db.relationship("Comment", backref=db.backref("post"), cascade="all, delete, delete-orphan")
@@ -323,6 +324,10 @@ class Post(db.Model):
 
         flash('Your question has been posted')
 
+    def update_decision(self, choice_id):
+        self.state = choice_id
+        db.session.commit()
+
 
     @classmethod
     def delete_by_post_id(cls, post_id):
@@ -341,9 +346,6 @@ class Post(db.Model):
 
         db.session.delete(post)
         db.session.commit()
-
-
-        #TODO: NEED TO REMOVE THE FILES FROM AWS as well
 
         flash('Your post has been deleted')
 
@@ -479,6 +481,9 @@ class Choice(db.Model):
 
     def get_votes(self):
         return Vote.query.filter_by(choice_id=self.choice_id).all()
+    @classmethod
+    def get_choice_by_id(cls, choice_id):
+        return cls.query.get(choice_id)
 
 
 class Tag(db.Model):

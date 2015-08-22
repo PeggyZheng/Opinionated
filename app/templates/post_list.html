@@ -78,12 +78,11 @@
         <div class="col-xs-4">
             <div class="well">
                 <h4>Blog Tags</h4>
-                    <ul class="list-unstyled">
+                    <!--<ul class="list-unstyled" display>-->
                         {% for tag in tags %}
-                        <li><a href="/home/tag/{{ tag.tag_name }}">{{ tag.tag_name }}</a>
-                        </li>
+                        <h4><span class="label" style="display:inline"><a href="/home/tag/{{ tag.tag_name }}">{{ tag.tag_name }}</a></span></h4>
                         {% endfor %}
-                    </ul>
+                    <!--</ul>-->
 
             </div><!-- /.well -->
         </div><!-- /.col-xs-4 -->
