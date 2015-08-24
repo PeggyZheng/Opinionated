@@ -39,7 +39,7 @@ def login():
     """Homepage with login"""
     # Get all of the authenticated user's friends
     tag_names = [str(tag.tag_name) for tag in Tag.get_all_tags()]
-    session['tag_names'] = tag_names
+    #session['tag_names'] = tag_names
 
     return render_template("login.html")
 
@@ -198,7 +198,11 @@ def show_post_detail(post_id):
     post = Post.get_post_by_id(post_id)
     choices = Choice.get_choices_by_post_id(post_id)
     vote_dict, total_votes, chart_dict = post.count_votes()
-    print chart_dict, "this is the chart dict"
+    bar_chart_gender = post.bar_chart_gender()
+    geochart = post.count_votes_by_location()
+    bar_chart_age = post.count_votes_by_age()
+    print bar_chart_age, "this is age data for bar chart"
+
     comments = Comment.get_comments_by_post_id(post_id)
     tag_names = [tag.tag_name for tag in Tag.get_tags_by_post_id(post_id)]
     post_ids = session.get("post_ids", None)
@@ -210,7 +214,8 @@ def show_post_detail(post_id):
 
     return render_template('post_details.html', post=post, choices=choices, vote_dict=vote_dict,
                            comments=comments, total_votes=total_votes, tag_names=tag_names,
-                           post_ids=post_ids, chart_dict=chart_dict, decision=decision)
+                           post_ids=post_ids, chart_dict=chart_dict, decision=decision, bar_chart_gender=bar_chart_gender,
+                           geochart=geochart, bar_chart_age=bar_chart_age)
 
 
 @app.route('/home/post/<int:post_id>/share', methods=['POST'])
@@ -243,7 +248,7 @@ def update_decision(post_id):
     post.update_decision(int(choice_id))
     if choice_id != "0":
         choice = Choice.get_choice_by_id(choice_id)
-        decision_text = choice.choice_text
+        decision_text = "The user has decided to go with: " + choice.choice_text
         decision_file = choice.file_name
     else:
         decision_text = "The author has made the decision but he/she likes to keep it secret"
@@ -374,11 +379,15 @@ def process_vote(post_id):
 
         vote_dict, total_votes, chart_dict = post.count_votes()
         print type(chart_dict.keys()[0])
+        bar_chart_gender = post.bar_chart_gender()
+        geo_chart_location = post.count_votes_by_location()
+        bar_chart_age = post.count_votes_by_age()
         total_votes_percent = {}
         for vote in vote_dict:
             total_votes_percent[vote] = float(vote_dict[vote]) / total_votes
 
-        return json.dumps([vote_dict, total_votes_percent, total_votes, chart_dict])
+        return json.dumps([vote_dict, total_votes_percent, total_votes, chart_dict, bar_chart_gender, geo_chart_location,
+                           bar_chart_age])
     else:
           return json.dumps("undefined")
 
@@ -405,6 +414,8 @@ def process_question():
     text_option2 = request.form.get('option2')
     fileupload1 = request.files.get('fileupload1')
     fileupload2 = request.files.get('fileupload2')
+    print fileupload1, "this is file uploaded"
+    print type(fileupload1), "this is the type"
     author_id = session['loggedin']
     tags = request.form.get('hidden_tags')
     print tags, "this is the tag passed in"
@@ -412,6 +423,7 @@ def process_question():
     choice_data = [(text_option1, fileupload1), (text_option2, fileupload2)]
 
     Post.create(author_id=author_id, description=description, tag_list=tags, choice_data=choice_data, file_name=file_name)
+    flash('Your question has been posted')
 
     return redirect(url_for('user_profile', user_id=author_id))
 

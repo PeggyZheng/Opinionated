@@ -28,6 +28,14 @@ def allowed_file(filename):
     """a helper function to see verify the file type uploaded"""
     return '.' in filename and filename.lower().rsplit('.', 1)[1] in ALLOWED_EXTENSIONS
 
+def parse_location(unicode):
+    location = str(unicode)
+    if "," in location:
+        lst = location.split(',')
+        return lst[0]
+    else:
+        return location
+
 
 ##############################################################################
 # Model definitions
@@ -321,8 +329,8 @@ class Post(db.Model):
                     flash('the file type you uploaded is not valid')
             else:
                 Choice.create(choice_text=choice_text, post_id=new_post.post_id)
+        return new_post
 
-        flash('Your question has been posted')
 
     def update_decision(self, choice_id):
         self.state = choice_id
@@ -369,25 +377,112 @@ class Post(db.Model):
     def count_votes(self):
         choices = Choice.get_choices_by_post_id(self.post_id)
         vote_dict = {}  # vote count dictionary that maps choice to number of votes
-        chart_dict = {}
+        doughnut_chart_dict = self.doughnut_chart()
         for choice in choices:
             vote_dict[choice.choice_id] = len(choice.get_votes())
-            if choice.choice_text:
-                chart_dict[str(choice.choice_text)] = len(choice.get_votes())
-            else:
-                index = choices.index(choice)
-                key = "choice" + str(index + 1)
-                chart_dict[key] = len(choice.get_votes())
         total_votes = sum(vote_dict.values())
-        return vote_dict, total_votes, chart_dict
+        return vote_dict, total_votes, doughnut_chart_dict
+
+    def get_voters(self):
+        voters = db.session.query(User).join(Vote).join(Choice).filter(Vote.choice_id==Choice.choice_id, Vote.user_id==User.user_id, self.post_id==Choice.post_id).all()
+        return voters
+
+
+    def doughnut_chart(self):
+        choices = Choice.get_choices_by_post_id(self.post_id)
+        chart_dict = {}
+        for choice in choices:
+             if choice.choice_text:
+                 chart_dict[str(choice.choice_text)] = len(choice.get_votes())
+             else:
+                 index = choices.index(choice)
+                 key = "choice" + str(index + 1)
+                 chart_dict[key] = len(choice.get_votes())
+
+        return chart_dict
+
+    def bar_chart_gender(self):
+        choices = Choice.get_choices_by_post_id(self.post_id)
+        chart_lst = [["Choices", {"role": 'annotation'}]]
+        voters = self.get_voters() # the voters for this post
+        female_voters = set([voter for voter in voters if voter.gender=="female"])
+        male_voters = set([voter for voter in voters if voter.gender=="male"])
+        choice_dict = {}
+        for choice in choices:
+            if choice.choice_text:
+                text = str(choice.choice_text)
+            else:
+                text = "choice " + str(choices.index(choice) + 1)
+            chart_lst[0].insert(choices.index(choice) + 1, text)
+            voters = set(choice.get_voters())
+            female = len(female_voters.intersection(voters))
+            male = len(male_voters.intersection(voters))
+            choice_dict[choices.index(choice)] = (female, male)
+
+        chart_lst.append(["Female", choice_dict[0][0], choice_dict[1][0], ""])
+        chart_lst.append(["Male", choice_dict[0][1], choice_dict[1][1], ""])
+
+        return chart_lst
+
 
     # todo: this method may need to be replaced by a new table between user and post to achieve better performance
 
-    # def count_votes_by_location(self):
-    #     choices = Choice.get_choices_by_post_id(self.post_id)
-    #     map_dict = {}
-    #     for choice in choices:
-    #         votes =
+    def count_votes_by_location(self):
+        choices = Choice.get_choices_by_post_id(self.post_id)
+        chart_lst = [["City"]]
+        voters = self.get_voters()
+        location_dict = {} # a dictionary with key as location, and a set of user objects as values
+        for voter in voters:
+            location = parse_location(voter.location)
+            if location not in location_dict and location != None:
+                location_dict[location] = set([voter])
+            elif location in location_dict:
+                location_dict[location].add(voter)
+        print location_dict, "this is the location dict"
+
+        for choice in choices:
+            if choice.choice_text:
+                text = str(choice.choice_text)
+            else:
+                text = "choice" + str(choices.index(choice) + 1)
+            chart_lst[0].insert(choices.index(choice) + 1, text)
+
+        for location in location_dict:
+            temp_list = [location]
+            for choice in choices:
+                voters = set(choice.get_voters())
+                count = len(location_dict[location].intersection(voters))
+                temp_list.append(count)
+
+            chart_lst.append(temp_list)
+        return chart_lst
+
+    def count_votes_by_age(self):
+        choices = Choice.get_choices_by_post_id(self.post_id)
+        chart_lst = [["Age group"]]
+        voters = self.get_voters()
+        age_dict = {}
+        for voter in voters:
+            age = str(voter.age_range)
+            if age not in age_dict and age != None:
+                age_dict[age] = set([voter])
+            elif age in age_dict:
+                age_dict[age].add(voter)
+        for choice in choices:
+            if choice.choice_text:
+                text = str(choice.choice_text)
+            else:
+                text = "choice" + str(choices.index(choice) + 1)
+            chart_lst[0].insert(choices.index(choice) + 1, text)
+
+        for age in age_dict:
+            temp_list = [age]
+            for choice in choices:
+                voters = set(choice.get_voters())
+                count = len(age_dict[age].intersection(voters))
+                temp_list.append(count)
+            chart_lst.append(temp_list)
+        return chart_lst
 
 
 
@@ -481,9 +576,14 @@ class Choice(db.Model):
 
     def get_votes(self):
         return Vote.query.filter_by(choice_id=self.choice_id).all()
+
     @classmethod
     def get_choice_by_id(cls, choice_id):
         return cls.query.get(choice_id)
+
+    def get_voters(self):
+        voters = db.session.query(User).join(Vote).filter(Vote.choice_id==self.choice_id, Vote.user_id==User.user_id).all()
+        return voters
 
 
 class Tag(db.Model):
