@@ -12,7 +12,7 @@
                 {{ follower.user_name }}
                 </a>
             </td>
-            <td>{{ followers[follower] }}</td>
+            <td>{{ followers[follower] | datetimefilter }}</td>
         </tr>
         {% endfor %}
     </table>

@@ -96,7 +96,8 @@ class User(db.Model):
         db.session.commit()
         if friend_ids: # follow all facebook friends who are also users of the app automatically when log in
             for friend_id in friend_ids:
-                new_user.follow(friend_id)
+                friend  = User.get_user_by_id(friend_id)
+                new_user.follow(friend)
 
         return new_user
 
@@ -390,16 +391,16 @@ class Post(db.Model):
 
     def doughnut_chart(self):
         choices = Choice.get_choices_by_post_id(self.post_id)
-        chart_dict = {}
+        chart_lst = [["Choice", "Votes"]]
         for choice in choices:
              if choice.choice_text:
-                 chart_dict[str(choice.choice_text)] = len(choice.get_votes())
+                 chart_lst.append([str(choice.choice_text), len(choice.get_votes())])
              else:
                  index = choices.index(choice)
                  key = "choice" + str(index + 1)
-                 chart_dict[key] = len(choice.get_votes())
+                 chart_lst.append([key, len(choice.get_votes())])
 
-        return chart_dict
+        return chart_lst
 
     def bar_chart_gender(self):
         choices = Choice.get_choices_by_post_id(self.post_id)

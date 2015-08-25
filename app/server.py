@@ -30,6 +30,16 @@ FB_APP_ID = os.environ["FB_APP_ID"]
 FB_APP_NAME = os.environ["FB_APP_NAME"]
 FB_APP_SECRET = os.environ["FB_APP_SECRET"]
 
+#######################################################################################################
+# custom filter for the jinja template to handle date time display
+
+
+@app.template_filter()
+def datetimefilter(value, format='%Y/%m/%d %H:%M'):
+    """convert a datetime to a different format."""
+    return value.strftime(format)
+
+app.jinja_env.filters['datetimefilter'] = datetimefilter
 
 #######################################################################################################
 # functions that handles login and logout
@@ -39,7 +49,7 @@ def login():
     """Homepage with login"""
     # Get all of the authenticated user's friends
     tag_names = [str(tag.tag_name) for tag in Tag.get_all_tags()]
-    #session['tag_names'] = tag_names
+    session['tag_names'] = tag_names
 
     return render_template("login.html")
 
@@ -73,7 +83,7 @@ def facebook_login():
     print type(user_id)
     graph = facebook.GraphAPI(access_token=current_access_token)
     friends = graph.get_connections(id='me', connection_name='friends')
-    # profile_pic = graph.get_connections(id='me', connection_name='picture')['url'] #Todo: this line seems to be very slow,try
+    profile_pic = graph.get_connections(id='me', connection_name='picture')['url'] #Todo: this line seems to be very slow,try
     user_details= graph.get_object(id=user_id, fields='name, email, gender, age_range, birthday, location')
 
     user_id = int(user_id)
@@ -119,7 +129,7 @@ def facebook_login():
     else:
         # todo: need to generate random password for facebook user, password cannot be None
         new_user = User.create(user_id=user_id, email=email, user_name=name, age_range=int(age_range),
-                               gender=gender, location=location, password="", friend_ids=friend_ids, profile_pic="")
+                               gender=gender, location=location, password="", friend_ids=friend_ids, profile_pic=profile_pic)
         session["loggedin"] = new_user.user_id
         session["current_access_token"] = current_access_token
         flash("Thanks for logging into Opinionated")
@@ -197,6 +207,11 @@ def show_post_detail(post_id):
     User can also vote on the questions"""
     post = Post.get_post_by_id(post_id)
     choices = Choice.get_choices_by_post_id(post_id)
+    viewer_id = session.get('loggedin', None)
+    if_voted = None
+    if viewer_id:
+        if_voted = post.check_choice_on_post_by_user_id(viewer_id)
+
     vote_dict, total_votes, chart_dict = post.count_votes()
     bar_chart_gender = post.bar_chart_gender()
     geochart = post.count_votes_by_location()
@@ -206,16 +221,21 @@ def show_post_detail(post_id):
     comments = Comment.get_comments_by_post_id(post_id)
     tag_names = [tag.tag_name for tag in Tag.get_tags_by_post_id(post_id)]
     post_ids = session.get("post_ids", None)
-    state = post.state #this gives a choice_id or Null
+    state = post.state #this gives a choice_id or Null, for displaying the decision the author has made
     decision = None
     if state:
         decision = Choice.get_choice_by_id(state)
 
+    if if_voted:
+        return render_template('post_details.html', post=post, choices=choices, vote_dict=vote_dict,
+                       comments=comments, total_votes=total_votes, tag_names=tag_names,
+                       post_ids=post_ids, chart_dict=chart_dict, decision=decision, bar_chart_gender=bar_chart_gender,
+                       geochart=geochart, bar_chart_age=bar_chart_age)
+    else:
+        return render_template('post_details.html', post=post, choices=choices, comments=comments, post_ids=post_ids,
+                               tag_names=tag_names, total_votes=total_votes)
 
-    return render_template('post_details.html', post=post, choices=choices, vote_dict=vote_dict,
-                           comments=comments, total_votes=total_votes, tag_names=tag_names,
-                           post_ids=post_ids, chart_dict=chart_dict, decision=decision, bar_chart_gender=bar_chart_gender,
-                           geochart=geochart, bar_chart_age=bar_chart_age)
+
 
 
 @app.route('/home/post/<int:post_id>/share', methods=['POST'])
@@ -360,6 +380,7 @@ def followeds(user_id):
 
 
 @app.route('/home/post/<int:post_id>/refresh', methods=['POST'])
+@login_required #add the decorator so if user is trying to vote without logging in, they will be directed to login page
 def process_vote(post_id):
     """this is the function that process users' votes, so it updates the database and refresh the post-details
     page to show the updated votes and vote allocation"""
@@ -378,7 +399,7 @@ def process_vote(post_id):
             Vote.create(user_id=user_id, choice_id=choice_id) #if it's first time vote, create a new vote
 
         vote_dict, total_votes, chart_dict = post.count_votes()
-        print type(chart_dict.keys()[0])
+
         bar_chart_gender = post.bar_chart_gender()
         geo_chart_location = post.count_votes_by_location()
         bar_chart_age = post.count_votes_by_age()
@@ -389,7 +410,7 @@ def process_vote(post_id):
         return json.dumps([vote_dict, total_votes_percent, total_votes, chart_dict, bar_chart_gender, geo_chart_location,
                            bar_chart_age])
     else:
-          return json.dumps("undefined")
+          return json.dumps("undefined_test")
 
 
 #######################################################################################################

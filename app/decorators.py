@@ -12,3 +12,5 @@ def login_required(f):
                 return redirect(url_for('login'))
         return f(*args, **kwargs)
     return decorated_function
+
+

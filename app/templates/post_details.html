@@ -18,7 +18,7 @@
             <hr>
 
             <!--Date/Time -->
-            <p><span class="glyphicon glyphicon-time"></span>Posted on {{ post.timestamp }}</span></p>
+            <p><span class="glyphicon glyphicon-time"></span>Posted on {{ post.timestamp | datetimefilter }}</span></p>
 
             <hr>
 
@@ -76,14 +76,21 @@
                         {% endif %}
 
                         <div>
-                            number of votes: <span id="vote-count-{{ choice.choice_id }}">{{ vote_dict[choice.choice_id] }}</span>
-                            <span id="vote-count-percent-{{choice.choice_id}}"></span>
+                            <span class="vote-count-{{ choice.choice_id }}">
+                            {% if vote_dict is defined %}
+                                value of variable: {{ vote_dict[choice.choice_id] }}
+                                {% endif %}
+
+                            </span>
+
+                            <span class="vote-count-percent-{{choice.choice_id}}"></span>
                             {% if total_votes > 0 %}
-                            <span class="vote-count-percent">Percentage: {{ vote_dict[choice.choice_id]/ total_votes }}</span>
+                            <span class="vote-count-percent">{% if vote_dict is defined %}Percentage: {{ vote_dict[choice.choice_id]/total_votes }}{% endif %}</span>
                             {% else %}
                             <p class="no-vote">No one has vote yet</p>
                             {% endif %}
                         </div>
+
                     </div>
                     {% endfor %}
 
@@ -94,17 +101,20 @@
     </div>
 
     <div id="decision">
-    {% if decision and decision != 0 %}
-    The user has decided to go with: {{ decision.choice_text }}
-    {% elif decision and decision == 0 %}
-    The author has made the decision but he/she likes to keep it secret
+    {% if decision is defined %}
+        {% if decision and decision != 0 %}
+        <p>The user has decided to go with: {{ decision.choice_text }}</p>
+        {% elif decision and decision == 0 %}
+        <p>The author has made the decision but he/she likes to keep it secret</p>
+        {% endif %}
     {% endif %}
     </div>
 
-    <div id="donutchart" style="width: 500px; height: 300px;"></div>
-    <div id="barchart gender" style="width: 500px; height: 300px;"></div>
-    <div id="geochart" style="width: 500px; height: 300px;"></div>
-    <div id="barchart age" style="width: 500px; height: 300px;"></div>
+    <div id="donutchart" style="width: 500px; height: 300px; display: inline-block"></div>
+    <div id="barchart gender" style="width: 500px; height: 300px; display: inline-block"></div>
+    <div id="geochart" style="width: 500px; height: 300px; display: inline-block"></div>
+    <div id="barchart age" style="width: 500px; height: 300px; display: inline-block"></div>
+
 
      <nav>
         <ul class="pager">
@@ -135,7 +145,7 @@
             {% for comment in comments %}
             <a href="/home/user/{{ comment.user_id }}" class="pull-left"><img src="{{comment.user.profile_pic}}"></a>
             <div class="media-body">
-                <h4 class="media-heading"><a href="/home/user/{{ comment.user_id }}">{{ comment.user.user_name }}</a>  <small>{{ comment.timestamp}}</small></h4>
+                <h4 class="media-heading"><a href="/home/user/{{ comment.user_id }}">{{ comment.user.user_name }}</a>  <small>{{ comment.timestamp | datetimefilter}}</small></h4>
                 {{ comment.content }}
             </div>
                 {% if session.get('loggedin', None) %}
@@ -207,30 +217,39 @@
 <script type="text/javascript" src="https://www.google.com/jsapi"></script>
 <script>
 
-
+    {% if chart_dict is defined %}
     var chart_dict = {{ chart_dict | safe }}; // added the safe to escape the single quote of string
+    {% endif %}
+    {% if bar_chart_gender is defined %}
     var chart_gender = {{ bar_chart_gender | safe }}
+    {% endif %}
+    {% if geochart is defined %}
     var chart_location = {{ geochart | safe }}
+    {% endif %}
+    {% if bar_chart_age is defined %}
     var chart_age = {{ bar_chart_age | safe }}
+    {% endif %}
 
-    function generate_chart_data(chart_dict) {
-        var chart_votes = [['Choice', 'Votes']];
-        for (var key in chart_dict) {
-            chart_votes.push([key.toString(), chart_dict[key]]);
-        }
-        return chart_votes;
-    }
 
+//    function generate_chart_data(chart_dict) {
+//        var chart_votes = [['Choice', 'Votes']];
+//        for (var key in chart_dict) {
+//            chart_votes.push([key.toString(), chart_dict[key]]);
+//        }
+//        console.log(chart_votes);
+//        return chart_votes;
+//    }
+// this function is no longer needed bsecause I passed chart dict in list of list format already
 
     function drawChart(chart_dict_remote) { // the chart_dict_remote is an optional variable if not provided it will take the global variable
         // the one from jinja, if provided when updating with ajax, it will use that
 
-        var title = "{{ post.description|safe }}";
+        var title = "Votes distribution";
         var chart_votes = null;
         if (typeof chart_dict_remote === "undefined") {
-            chart_votes = generate_chart_data(chart_dict);
+            chart_votes = chart_dict;
         } else {
-            chart_votes = generate_chart_data(chart_dict_remote);
+            chart_votes = chart_dict_remote;
 
         }
 
@@ -251,7 +270,7 @@
     function drawBarChartGender(chart_dict_remote) { // the chart_dict_remote is an optional variable if not provided it will take the global variable
         // the one from jinja, if provided when updating with ajax, it will use that
 
-        var title = "{{ post.description|safe }}";
+        var title = "Votes by Gender";
 
         if (typeof chart_dict_remote === "undefined") {
             chart_gender = chart_gender
@@ -264,8 +283,9 @@
 
 
          var options_bar = {
-             width: 600,
-             height: 400,
+             title: title,
+             width: 500,
+             height: 300,
              legend: { position: 'top', maxLines: 3 },
              bar: { groupWidth: '75%' },
              isStacked: true,
@@ -277,7 +297,7 @@
 
     function drawMarkersMap(chart_dict_remote) {
 
-        var title = "{{ post.description|safe }}";
+        var title = "Votes by Region";
 
         if (typeof chart_dict_remote === "undefined") {
             chart_location = chart_location
@@ -287,12 +307,14 @@
         }
         var location_data = google.visualization.arrayToDataTable(chart_location);
         console.log(location_data);
-        console.log('this is location data'
-        )
+        console.log('this is location data');
 
 
         var options = {
+            title: title, //the google geochart doesn't support a title
             region: '021', //America
+            width: 500,
+            height: 300,
             displayMode: 'markers',
             colorAxis: {colors: ['red', 'blue']}
         };
@@ -304,7 +326,7 @@
      function drawBarChartAge(chart_dict_remote) { // the chart_dict_remote is an optional variable if not provided it will take the global variable
         // the one from jinja, if provided when updating with ajax, it will use that
 
-        var title = "{{ post.description|safe }}";
+        var title = "Votes by Age";
 
         if (typeof chart_dict_remote === "undefined") {
             chart_age = chart_age;
@@ -317,8 +339,9 @@
 
 
          var options_bar = {
-             width: 600,
-             height: 400,
+             title: title,
+             width: 500,
+             height: 300,
              legend: { position: 'top', maxLines: 3 },
              bar: { groupWidth: '75%' },
              isStacked: true,
@@ -393,10 +416,12 @@
 
     function handleVote(evt) {
         evt.preventDefault();
-
         var formInputs = {choice_id: $('input[type="radio"][name="choice_id"]:checked').val()};
 
+        console.log(formInputs);
+
         $.post('/home/post/{{post.post_id}}/refresh', formInputs, function (result) {
+            console.log(result);
             var compare = JSON.parse(result) !== "undefined";
             if (compare) {
                 result = JSON.parse(result);
@@ -409,22 +434,16 @@
                 var geo_chart_location = result[5];
                 var bar_chart_age = result[6];
 
-//            var chart_votes = [["choice", "votes"]];
-
+//
                 for (var choice_id in vote_count) {
-                    $('#vote-count-' + choice_id).html(vote_count[choice_id].toString());
+                    $('.vote-count-' + choice_id).html("Number of votes:" + vote_count[choice_id].toString());
                     $('.no-vote').empty();
 
                 }
-//            for (var choice_text in chart_dict) {
-//                chart_votes.push([choice_text, chart_dict[choice_text]]);
-//            }
-
-//                function chart_votes(chart_vote);
-
+//
                 for (var choice_id in vote_count_percent) {
 
-                    $('#vote-count-percent-' + choice_id).html("percentage:" + vote_count_percent[choice_id].toString());
+                    $('.vote-count-percent-' + choice_id).html("Percentage:" + vote_count_percent[choice_id].toString());
                     $('.vote-count-percent').empty();
                 }
                 $('#total-vote').html(total_votes.toString());
