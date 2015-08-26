@@ -198,15 +198,14 @@
 									       class="choice">
 
                                     {{ choice.choice_text }}
-									<img src="https://s3-us-west-2.amazonaws.com/opinionated/{{ choice.file_name }}"
-									     alt="{{ choice.choice_text }}" width="300px" height="auto">
+{#									<img src="https://s3-us-west-2.amazonaws.com/opinionated/{{ choice.file_name }}"#}
+{#									     alt="{{ choice.choice_text }}" width="300px" height="auto">#}
 
 
                                 {% elif choice.file_name %}
 									<input type="radio" name="modal_choice_id" value="{{ choice.choice_id }}"
 									       class="choice">
-									<img src="https://s3-us-west-2.amazonaws.com/opinionated/{{ choice.file_name }}"
-									     alt="{{ choice.file_name }}" width="300px" height="auto">
+									choice {{ choices.index(choice) + 1 }}
                                 {% else %}
 									<input type="radio" name="modal_choice_id" value="{{ choice.choice_id }}"
 									       class="choice">

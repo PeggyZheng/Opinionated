@@ -119,7 +119,6 @@ def facebook_login():
                 print "friend is ", friend
                 # check to see if the friend is also an user in the app
                 if friend:
-                    print "type of friend", type(friend)
                     if not user.is_following(friend):
                         user.follow(friend)
 
@@ -195,8 +194,6 @@ def show_all_posts():
         posts = Post.get_all_posts()
     if posts:
         session["post_ids"] = [post.post_id for post in posts]
-    # tag_names = [str(tag.tag_name) for tag in Tag.get_all_tags()]
-    # session['tag_names'] = tag_names
     tags = Tag.sort_all_tags_by_popularity()
 
     return render_template('post_list.html', posts=posts, tags=tags)
