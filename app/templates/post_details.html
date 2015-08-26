@@ -330,7 +330,7 @@
 			$.post('/home/post/{{post.post_id}}/comment/refresh', formInputs, function (result) {
 				console.log(result.has_delete_button);
 				console.log(typeof(result.has_delete_button));
-				if (result !== "undefined") {
+				if (result.user_id !== "undefined") {
 					var pic = "<div class='media'><a href='/home/user/" + result.user_id + "' class='pull-left'><img src='" + result.user_pic + "'></a>";
 					var author = "<div class='media-body'><h4 class='media-heading'><a href=''/home/user/" + result.user_id + "'>" + result.user_name +
 							"</a> <small>" + result.comment_timestamp + "</small></h4>" + result.content + "</div>";

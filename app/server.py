@@ -483,7 +483,7 @@ def process_comments(post_id):
         return jsonify(user_id=user_id, user_name=user_name, user_pic=user_pic, content=content,
                        has_delete_button=has_delete_button, comment_id=comment_id, comment_timestamp=comment_timestamp)
     else:
-        return json.dumps("undefined")
+        return jsonify(user_id="undefined")
 
 
 @app.route('/home/comment/<int:comment_id>/delete', methods=['POST'])
