@@ -44,6 +44,9 @@
                     <img src="https://s3-us-west-2.amazonaws.com/opinionated/{{post.file_name}}" alt="{{ post.description }}"
                          width="300px" height="auto" class="img-responsive">
                     {% endif %}
+                    {% if post.state %}
+                    <p>This question is closed by its author</p>
+                    {% endif %}
 
                         <div class="collapse" id="{{post.post_id}}">
                             {% for choice in post.choices %}

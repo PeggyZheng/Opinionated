@@ -619,6 +619,24 @@ class Tag(db.Model):
     @classmethod
     def get_tag_by_name(cls, tag_name):
         return cls.query.filter_by(tag_name=tag_name).first()
+    @classmethod
+    def sort_all_tags_by_popularity(cls):
+        all_tags = cls.get_all_tags()
+        count_dict = {}
+        for tag in all_tags:
+            count = len(tag.posts)
+            if count in count_dict:
+                count_dict[count].append(tag)
+            else:
+                count_dict[count] = [tag]
+        print count_dict
+        all_counts_sorted = sorted(count_dict.keys(), reverse=True)
+        print all_counts_sorted
+        sorted_tag_list = []
+        for count in all_counts_sorted:
+            print sorted_tag_list
+            sorted_tag_list.extend(count_dict[count])
+        return sorted_tag_list
 
 
 class TagPost(db.Model):

@@ -30,15 +30,15 @@
             </form>
             <!--<form action="/home/post/{{post.post_id}}/decide" method="post">-->
                 <!--<input type="text" name="decision">-->
-            <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#myModal">Close this question</button>
+            <button type="button" class="btn btn-default" data-toggle="modal" data-target="#myModal">Close this question</button>
             <!--</form>-->
             {% endif %}
             {% endif %}
 
 
              <!-- Your share button code -->
-            <div class="fb-share-button" data-href="https://developers.facebook.com/docs/plugins/" data-layout="button-count">
-                <button type="button" id="fb-share" class="btn btn-default">Share the post to facebook</button>
+            <div class="fb-share-button" data-href="http://a6baa6c4.ngrok.io" data-layout="button-count">
+                <button type="button" id="fb-share" class="btn btn-primary">Share this post on Facebook</button>
             </div>
 
 
@@ -78,7 +78,7 @@
                         <div>
                             <span class="vote-count-{{ choice.choice_id }}">
                             {% if vote_dict is defined %}
-                                value of variable: {{ vote_dict[choice.choice_id] }}
+                                Number of votes: {{ vote_dict[choice.choice_id] }}
                                 {% endif %}
 
                             </span>
@@ -230,6 +230,11 @@
     var chart_age = {{ bar_chart_age | safe }}
     {% endif %}
 
+//    var author_id = {{ post.author_id }};
+//    var fb_app_id = "{{ session.get('FB_APP_ID', undefined) }}";
+//    var fb_app_secret = "{{ session.get('FB_APP_SECRET', undefined) }}";
+//    var app_access_token = fb_app_id + "|" + fb_app_secret;
+
 
 //    function generate_chart_data(chart_dict) {
 //        var chart_votes = [['Choice', 'Votes']];
@@ -245,9 +250,8 @@
         // the one from jinja, if provided when updating with ajax, it will use that
 
         var title = "Votes distribution";
-        var chart_votes = null;
         if (typeof chart_dict_remote === "undefined") {
-            chart_votes = chart_dict;
+            var chart_votes = chart_dict;
         } else {
             chart_votes = chart_dict_remote;
 
@@ -451,9 +455,11 @@
                 drawBarChartGender(bar_chart_gender);
                 drawMarkersMap(geo_chart_location);
                 drawBarChartAge(bar_chart_age);
+
             } else {
                 alert('Please log in to vote');
             }
+
         });
 
     }
@@ -499,6 +505,26 @@
 
     }
 
+    // unfortunately only web canvas app can send notification in fb
+//function sendNotification (user_id, app_access_token) {
+//    FB.api('/'+ user_id + '/notifications', 'post',
+//       {
+//           access_token: app_access_token,
+//           template: "You have been added to THIS item on THIS app",
+//           href: window.location.href,
+//       },
+//       function(response)
+//       {
+//          if (!response || response.error)
+//          {  console.log(response);
+//             alert('Error occurred');
+//          }
+//          else
+//          {
+//             alert('Success :D');
+//          }
+//       });
+//}
 
 
 </script>

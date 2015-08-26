@@ -30,6 +30,7 @@ FB_APP_ID = os.environ["FB_APP_ID"]
 FB_APP_NAME = os.environ["FB_APP_NAME"]
 FB_APP_SECRET = os.environ["FB_APP_SECRET"]
 
+
 #######################################################################################################
 # custom filter for the jinja template to handle date time display
 
@@ -196,7 +197,7 @@ def show_all_posts():
         session["post_ids"] = [post.post_id for post in posts]
     # tag_names = [str(tag.tag_name) for tag in Tag.get_all_tags()]
     # session['tag_names'] = tag_names
-    tags = Tag.get_all_tags()
+    tags = Tag.sort_all_tags_by_popularity()
 
     return render_template('post_list.html', posts=posts, tags=tags)
 
@@ -217,6 +218,8 @@ def show_post_detail(post_id):
     geochart = post.count_votes_by_location()
     bar_chart_age = post.count_votes_by_age()
     print bar_chart_age, "this is age data for bar chart"
+    # session['FB_APP_ID'] = FB_APP_ID
+    # session['FB_APP_SECRET'] = str(FB_APP_SECRET)
 
     comments = Comment.get_comments_by_post_id(post_id)
     tag_names = [tag.tag_name for tag in Tag.get_tags_by_post_id(post_id)]
@@ -248,7 +251,7 @@ def share_post_fb(post_id):
         graph = facebook.GraphAPI(access_token=current_access_token)
         attachment = {
             'name': 'Opinionated',
-            'link': 'http://6697043d.ngrok.io/home/post/%d' % post_id,
+            'link': 'http://a6baa6c4.ngrok.io/home/post/%d' % post_id,
             'caption': 'Check out this new question I just posted',
             'description': 'This is an app that smooths out decision making process',
             'picture':''

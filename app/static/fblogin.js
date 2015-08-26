@@ -40,6 +40,9 @@ function logout() {
 }
 
 
+
+
+
 //function checkLoginState() {
 //    console.log("check login state");
 //
