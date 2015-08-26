@@ -174,13 +174,10 @@ class User(db.Model):
 
     def followed_posts(self):
         """gives a list all posts of users that self has been following"""
-        #todo: sort the followed post by timestamp instead of user id
         followeds = self.get_all_followeds() #gives a dictionary with the key as user object
-        post_list = []
-        for followed in followeds:
-            posts = Post.query.filter_by(author_id=followed.user_id).all()
-            post_list.extend(posts)
-        return post_list
+        followed_ids = [followed.user_id for followed in followeds]
+        posts = Post.query.filter(Post.author_id.in_(followed_ids)).order_by(Post.timestamp.desc()).all()
+        return posts
 
 
 
@@ -362,7 +359,7 @@ class Post(db.Model):
 
     @classmethod
     def get_all_posts(cls):
-        return cls.query.all()
+        return cls.query.order_by(Post.timestamp.desc()).all()
 
     @classmethod
     def get_post_by_id(cls, post_id):

@@ -51,7 +51,6 @@ def login():
     # Get all of the authenticated user's friends
     tag_names = [str(tag.tag_name) for tag in Tag.get_all_tags()]
     session['tag_names'] = tag_names
-
     return render_template("login.html")
 
 
@@ -185,11 +184,8 @@ def show_all_posts():
 
     if show_followed:
         viewer_id = session.get('loggedin', None)
-        print viewer_id, "viewer id"
         viewer = User.get_user_by_id(viewer_id)
-        print viewer
         posts = viewer.followed_posts()
-        print posts
     else:
         posts = Post.get_all_posts()
     if posts:
