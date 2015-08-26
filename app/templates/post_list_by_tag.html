@@ -55,17 +55,15 @@
 <script src="https://code.jquery.com/jquery.js"></script>
 <!-- jQuery/AJAX -->
 <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
-<!--Tag Manager -->
-<script src="../static/tag/tagmanager.js"></script>
+
 <!-- Bloodhound & Typeahead -->
-<script src="../static/typeahead/bloodhound.js"></script>
-<script src="../static/typeahead/typeahead.bundle.js"></script>
-<script src="../static/typeahead/typeahead.jquery.js"></script>
+<script src="/static/typeahead/bloodhound.js"></script>
+<script src="/static/typeahead/typeahead.bundle.js"></script>
+<script src="/static/typeahead/typeahead.jquery.js"></script>
 
 <script>
 
     var tag_names = {{ tag_names|safe }};
-    console.log(tag_names;
 
     var substringMatcher = function(strs) {
         return function findMatches(q, cb) {
