@@ -2,531 +2,458 @@
 {% block content %}
 
 
-<div class="container">
-    <div class="row">
-        <!--Blog post Content Column-->
-        <div class="col-sm-8">
-            <!--blog post-->
-            <!--Title-->
-            <h2>{{ post.description }}  <small>(<span id="total-vote">{{ total_votes }}</span> people have voted on this)</small></h2>
+	<div class="container">
+		<div class="row">
+			<!--Blog post Content Column-->
+			<div class="col-sm-8">
+				<!--blog post-->
+				<!--Title-->
+				<h2>{{ post.description }}
+					<small>(<span id="total-vote">{{ total_votes }}</span> people have voted on this)</small>
+				</h2>
 
-            <!--Author-->
-            <p class="lead">by <a href="/home/user/{{ post.author.user_id }}">{{ post.author.user_name }}</a>
-                <img src="{{ post.author.profile_pic}}" class="img-responsive">
-            </p>
+				<!--Author-->
+				<p class="lead">by <a href="/home/user/{{ post.author.user_id }}">{{ post.author.user_name }}</a>
+					<img src="{{ post.author.profile_pic }}" class="img-responsive">
+				</p>
 
-            <hr>
+				<hr>
 
-            <!--Date/Time -->
-            <p><span class="glyphicon glyphicon-time"></span>Posted on {{ post.timestamp | datetimefilter }}</span></p>
+				<!--Date/Time -->
+				<p><span class="glyphicon glyphicon-time"></span>Posted on {{ post.timestamp | datetimefilter }}</p>
 
-            <hr>
+				<hr>
 
-                <!-- Only the author can see the delete post button-->
-            {% if session.get('loggedin', None) %}
-            {% if post.author_id == session['loggedin'] %}
-            <form action="/home/post/{{ post.post_id }}/delete" method="post">
-                <input type="submit" value="Delete post" id="delete-post" class="btn btn-default">
-            </form>
-            <!--<form action="/home/post/{{post.post_id}}/decide" method="post">-->
-                <!--<input type="text" name="decision">-->
-            <button type="button" class="btn btn-default" data-toggle="modal" data-target="#myModal">Close this question</button>
-            <!--</form>-->
-            {% endif %}
-            {% endif %}
+				<!-- Only the author can see the delete post button-->
+                {% if session.get('loggedin', None) %}
+                    {% if post.author_id == session['loggedin'] %}
+						<form action="/home/post/{{ post.post_id }}/delete" method="post">
+							<input type="submit" value="Delete post" id="delete-post" class="btn btn-default">
+						</form>
+						<!--<form action="/home/post/{{post.post_id}}/decide" method="post">-->
+						<!--<input type="text" name="decision">-->
+						<button type="button" class="btn btn-default" data-toggle="modal" data-target="#myModal">Close
+							this question
+						</button>
+						<!--</form>-->
+                    {% endif %}
+                {% endif %}
 
 
-             <!-- Your share button code -->
-            <div class="fb-share-button" data-href="http://a6baa6c4.ngrok.io" data-layout="button-count">
-                <button type="button" id="fb-share" class="btn btn-primary">Share this post on Facebook</button>
-            </div>
+				<!-- Your share button code -->
+				<div class="fb-share-button" data-href="http://a6baa6c4.ngrok.io" data-layout="button-count">
+					<button type="button" id="fb-share" class="btn btn-primary">Share this post on Facebook</button>
+				</div>
 
 
                 {% if post.file_name %}
-                <img src="https://s3-us-west-2.amazonaws.com/opinionated/{{post.file_name}}" alt="{{ post.description }}" \
-                     width="300px" height="auto">
+					<img src="https://s3-us-west-2.amazonaws.com/opinionated/{{ post.file_name }}"
+					     alt="{{ post.description }}" width="300px" height="auto">
                 {% endif %}
 
-            Tags:
-            {% for tag in tag_names %}
-            <a href="/home/tag/{{ tag }}">{{ tag }}</a>
-            {% endfor %}
+				Tags:
+                {% for tag in tag_names %}
+					<a href="/home/tag/{{ tag }}">{{ tag }}</a>
+                {% endfor %}
 
-            <div class="row">
-                <form action="/home/post/{{ post.post_id }}/refresh" method="post" id="vote-form">
+				<div class="row">
+					<form action="/home/post/{{ post.post_id }}/refresh" method="post" id="vote-form">
 
-                    {% for choice in choices %}
-                    <div class="col-sm-6">
-                        {% if choice.choice_text and choice.file_name %}
-                        <input type="radio" name="choice_id" value="{{ choice.choice_id }}" class="choice">
-                        {{ choice.choice_text }}<br>
-                        <img src="https://s3-us-west-2.amazonaws.com/opinionated/{{choice.file_name}}"
-                                 alt="{{ choice.choice_text }}" width="300px" height="auto">
+                        {% for choice in choices %}
+							<div class="col-sm-6">
+                                {% if choice.choice_text and choice.file_name %}
+									<input type="radio" name="choice_id" value="{{ choice.choice_id }}" class="choice">
+                                    {{ choice.choice_text }}<br>
+									<img src="https://s3-us-west-2.amazonaws.com/opinionated/{{ choice.file_name }}"
+									     alt="{{ choice.choice_text }}" width="300px" height="auto">
 
 
-                        {% elif choice.file_name %}
-                        <input type="radio" name="choice_id" value="{{ choice.choice_id }}" class="choice">
-                        choice {{ choices.index(choice) + 1}}<br>
-                        <img src="https://s3-us-west-2.amazonaws.com/opinionated/{{choice.file_name}}"
-                                 alt="{{ choice.file_name }}" width="300px" height="auto">
+                                {% elif choice.file_name %}
+									<input type="radio" name="choice_id" value="{{ choice.choice_id }}" class="choice">
+									choice {{ choices.index(choice) + 1 }}<br>
+									<img src="https://s3-us-west-2.amazonaws.com/opinionated/{{ choice.file_name }}"
+									     alt="{{ choice.file_name }}" width="300px" height="auto">
 
-                        {% else %}
-                        {{ choice.choice_text }}
-                        <input type="radio" name="choice_id" value="{{ choice.choice_id }}" class="choice">
-                        {% endif %}
+                                {% else %}
+                                    {{ choice.choice_text }}
+									<input type="radio" name="choice_id" value="{{ choice.choice_id }}" class="choice">
+                                {% endif %}
 
-                        <div>
+								<div>
                             <span class="vote-count-{{ choice.choice_id }}">
                             {% if vote_dict is defined %}
-                                Number of votes: {{ vote_dict[choice.choice_id] }}
-                                {% endif %}
+	                            Number of votes: {{ vote_dict[choice.choice_id] }}
+                            {% endif %}
 
                             </span>
 
-                            <span class="vote-count-percent-{{choice.choice_id}}"></span>
-                            {% if total_votes > 0 %}
-                            <span class="vote-count-percent">{% if vote_dict is defined %}Percentage: {{ vote_dict[choice.choice_id]/total_votes }}{% endif %}</span>
-                            {% else %}
-                            <p class="no-vote">No one has vote yet</p>
-                            {% endif %}
-                        </div>
+									<span class="vote-count-percent-{{ choice.choice_id }}"></span>
+                                    {% if total_votes > 0 %}
+										<span class="vote-count-percent">{% if vote_dict is defined %}Percentage:
+                                            {{ vote_dict[choice.choice_id]/total_votes }}{% endif %}</span>
+                                    {% else %}
+										<p class="no-vote">No one has vote yet</p>
+                                    {% endif %}
+								</div>
 
-                    </div>
-                    {% endfor %}
+							</div>
+                        {% endfor %}
 
-                    <input type="submit" value="Vote" id="submit-vote" class="btn btn-default">
-                </form>
-            </div>
-        </div>
-    </div>
+						<input type="submit" value="Vote" id="submit-vote" class="btn btn-default">
+					</form>
+				</div>
+			</div>
+		</div>
 
-    <div id="decision">
-    {% if decision is defined %}
-        {% if decision and decision != 0 %}
-        <p>The user has decided to go with: {{ decision.choice_text }}</p>
-        {% elif decision and decision == 0 %}
-        <p>The author has made the decision but he/she likes to keep it secret</p>
-        {% endif %}
-    {% endif %}
-    </div>
-
-    <div id="donutchart" style="width: 500px; height: 300px; display: inline-block"></div>
-    <div id="barchart gender" style="width: 500px; height: 300px; display: inline-block"></div>
-    <div id="geochart" style="width: 500px; height: 300px; display: inline-block"></div>
-    <div id="barchart age" style="width: 500px; height: 300px; display: inline-block"></div>
-
-
-     <nav>
-        <ul class="pager">
-            <li><a href="javascript:" onclick="previousPost({{ post.post_id }}, {{ post_ids }})">previous</a></li>
-            <li><a href="javascript:" onclick="nextPost({{ post.post_id }}, {{ post_ids }})">next</a></li>
-        </ul>
-    </nav>
-
-    <!--Blog Comments-->
-    <!-- Comments Form-->
-    <div class="well">
-         <h3>Comments</h3>
-        <form action="/home/post/{{post.post_id}}/comment/refresh" method="post" id="comment-form" role="form">
-            <div class="form-group">
-                <textarea rows="3" name="new_comment" id="comment-content" class="form-control"></textarea>
-                <br>
-            </div>
-            <input id="comment-submit-button" type="submit" class="btn btn-default">
-        </form>
-    </div>
-    <hr>
-    <!--Posted Comments-->
-
-    <!--Comment-->
-    <ul class="comments">
-        <div class="media">
-            {% if comments %}
-            {% for comment in comments %}
-            <a href="/home/user/{{ comment.user_id }}" class="pull-left"><img src="{{comment.user.profile_pic}}"></a>
-            <div class="media-body">
-                <h4 class="media-heading"><a href="/home/user/{{ comment.user_id }}">{{ comment.user.user_name }}</a>  <small>{{ comment.timestamp | datetimefilter}}</small></h4>
-                {{ comment.content }}
-            </div>
-                {% if session.get('loggedin', None) %}
-                {% if comment.user_id == session['loggedin'] %}
-                <div id="server-delete">
-                    <form action="/home/comment/{{ comment.comment_id }}/delete" method="post">
-                        <input type="submit" value="Delete comment" class="delete-comment btn btn-default btn-xs">
-                    </form>
-                </div>
+		<div id="decision">
+            {% if decision is defined %}
+                {% if decision and decision != 0 %}
+					<p>The user has decided to go with: {{ decision.choice_text }}</p>
+                {% elif decision and decision == 0 %}
+					<p>The author has made the decision but he/she likes to keep it secret</p>
                 {% endif %}
-                {% endif %}
-            <hr>
-            {% endfor %}
-
-            {% else %}
-            <p id="no-comment">Oops, looks like no one has commented yet</p>
             {% endif %}
-        </div>
-    </ul>
-</div>
+		</div>
+
+		<div id="donutchart" style="width: 500px; height: 300px; display: inline-block"></div>
+		<div id="barchart gender" style="width: 500px; height: 300px; display: inline-block"></div>
+		<div id="geochart" style="width: 500px; height: 300px; display: inline-block"></div>
+		<div id="barchart age" style="width: 500px; height: 300px; display: inline-block"></div>
 
 
-<!--Modal-->
-<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
-  <div class="modal-dialog" role="document">
-    <div class="modal-content">
-      <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-        <h4 class="modal-title" id="myModalLabel">Have you made your decision? Tell us what it is!</h4>
-      </div>
-      <div class="modal-body">
-        <form action="/home/post/{{ post.post_id }}/decide" method="post" id="vote-form">
-             <div class="col-sm-12">
-                    {% for choice in choices %}
+		<nav>
+			<ul class="pager">
+				<li><a href="javascript:" onclick="previousPost({{ post.post_id }}, {{ post_ids }})">previous</a></li>
+				<li><a href="javascript:" onclick="nextPost({{ post.post_id }}, {{ post_ids }})">next</a></li>
+			</ul>
+		</nav>
 
-                        {% if choice.choice_text and choice.file_name %}
-                        <input type="radio" name="modal_choice_id" value="{{ choice.choice_id }}" class="choice">
+		<!--Blog Comments-->
+		<!-- Comments Form-->
+		<div class="well">
+			<h3>Comments</h3>
 
-                        {{ choice.choice_text }}
-                        <img src="https://s3-us-west-2.amazonaws.com/opinionated/{{choice.file_name}}"
-                                 alt="{{ choice.choice_text }}" width="300px" height="auto">
+			<form action="/home/post/{{ post.post_id }}/comment/refresh" method="post" id="comment-form" role="form">
+				<div class="form-group">
+					<textarea rows="3" name="new_comment" id="comment-content" class="form-control"></textarea>
+					<br>
+				</div>
+				<input id="comment-submit-button" type="submit" class="btn btn-default">
+			</form>
+		</div>
+		<hr>
+		<!--Posted Comments-->
 
-
-                        {% elif choice.file_name %}
-                        <input type="radio" name="modal_choice_id" value="{{ choice.choice_id }}" class="choice">
-                            <img src="https://s3-us-west-2.amazonaws.com/opinionated/{{choice.file_name}}"
-                                 alt="{{ choice.file_name }}" width="300px" height="auto">
-                        {% else %}
-                        <input type="radio" name="modal_choice_id" value="{{ choice.choice_id }}" class="choice">
-
-                        {{ choice.choice_text }}
+		<!--Comment-->
+		<ul class="comments">
+			<div class="media">
+                {% if comments %}
+                    {% for comment in comments %}
+						<a href="/home/user/{{ comment.user_id }}" class="pull-left"><img
+								src="{{ comment.user.profile_pic }}"></a>
+						<div class="media-body">
+							<h4 class="media-heading"><a
+									href="/home/user/{{ comment.user_id }}">{{ comment.user.user_name }}</a>
+								<small>{{ comment.timestamp | datetimefilter }}</small>
+							</h4>
+                            {{ comment.content }}
+						</div>
+                        {% if session.get('loggedin', None) %}
+                            {% if comment.user_id == session['loggedin'] %}
+								<div id="server-delete">
+									<form action="/home/comment/{{ comment.comment_id }}/delete" method="post">
+										<input type="submit" value="Delete comment"
+										       class="delete-comment btn btn-default btn-xs">
+									</form>
+								</div>
+                            {% endif %}
                         {% endif %}
+						<hr>
                     {% endfor %}
-                     <input type="radio" name="modal_choice_id" value="0" class="choice">
-                     I want to keep secret.
-             </div>
-            <!--<input type="submit" value="Vote" id="submit-vote" class="btn btn-default">-->
-        </form>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-        <button type="button" class="btn btn-primary" data-dismiss="modal" onclick="processDecision()">Submit</button>
-      </div>
-    </div>
-  </div>
-</div>
 
-<!--<script src="https://code.jquery.com/jquery.js"></script>-->
-<script type="text/javascript" src="https://www.google.com/jsapi"></script>
-<script>
-
-    {% if chart_dict is defined %}
-    var chart_dict = {{ chart_dict | safe }}; // added the safe to escape the single quote of string
-    {% endif %}
-    {% if bar_chart_gender is defined %}
-    var chart_gender = {{ bar_chart_gender | safe }}
-    {% endif %}
-    {% if geochart is defined %}
-    var chart_location = {{ geochart | safe }}
-    {% endif %}
-    {% if bar_chart_age is defined %}
-    var chart_age = {{ bar_chart_age | safe }}
-    {% endif %}
-
-//    var author_id = {{ post.author_id }};
-//    var fb_app_id = "{{ session.get('FB_APP_ID', undefined) }}";
-//    var fb_app_secret = "{{ session.get('FB_APP_SECRET', undefined) }}";
-//    var app_access_token = fb_app_id + "|" + fb_app_secret;
+                {% else %}
+					<p id="no-comment">Oops, looks like no one has commented yet</p>
+                {% endif %}
+			</div>
+		</ul>
+	</div>
 
 
-//    function generate_chart_data(chart_dict) {
-//        var chart_votes = [['Choice', 'Votes']];
-//        for (var key in chart_dict) {
-//            chart_votes.push([key.toString(), chart_dict[key]]);
-//        }
-//        console.log(chart_votes);
-//        return chart_votes;
-//    }
-// this function is no longer needed bsecause I passed chart dict in list of list format already
+    <!--Modal-->
+	<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+		<div class="modal-dialog" role="document">
+			<div class="modal-content">
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+							aria-hidden="true">&times;</span></button>
+					<h4 class="modal-title" id="myModalLabel">Have you made your decision? Tell us what it is!</h4>
+				</div>
+				<div class="modal-body">
+					<form action="/home/post/{{ post.post_id }}/decide" method="post" id="vote-form">
+						<div class="col-sm-12">
+                            {% for choice in choices %}
 
-    function drawChart(chart_dict_remote) { // the chart_dict_remote is an optional variable if not provided it will take the global variable
-        // the one from jinja, if provided when updating with ajax, it will use that
+                                {% if choice.choice_text and choice.file_name %}
+									<input type="radio" name="modal_choice_id" value="{{ choice.choice_id }}"
+									       class="choice">
 
-        var title = "Votes distribution";
-        if (typeof chart_dict_remote === "undefined") {
-            var chart_votes = chart_dict;
-        } else {
-            chart_votes = chart_dict_remote;
-
-        }
-
-
-        var data = google.visualization.arrayToDataTable(chart_votes);
+                                    {{ choice.choice_text }}
+									<img src="https://s3-us-west-2.amazonaws.com/opinionated/{{ choice.file_name }}"
+									     alt="{{ choice.choice_text }}" width="300px" height="auto">
 
 
-        var options_doughnut = {
-            title: title,
-            pieHole: 0.4,
-        };
+                                {% elif choice.file_name %}
+									<input type="radio" name="modal_choice_id" value="{{ choice.choice_id }}"
+									       class="choice">
+									<img src="https://s3-us-west-2.amazonaws.com/opinionated/{{ choice.file_name }}"
+									     alt="{{ choice.file_name }}" width="300px" height="auto">
+                                {% else %}
+									<input type="radio" name="modal_choice_id" value="{{ choice.choice_id }}"
+									       class="choice">
 
-        var donut_chart = new google.visualization.PieChart(document.getElementById('donutchart'));
-        donut_chart.draw(data, options_doughnut);
+                                    {{ choice.choice_text }}
+                                {% endif %}
+                            {% endfor %}
+							<input type="radio" name="modal_choice_id" value="0" class="choice">
+							I want to keep secret.
+						</div>
+						<!--<input type="submit" value="Vote" id="submit-vote" class="btn btn-default">-->
+					</form>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+					<button type="button" class="btn btn-primary" data-dismiss="modal" onclick="processDecision()">
+						Submit
+					</button>
+				</div>
+			</div>
+		</div>
+	</div>
 
-    }
+    <!--<script src="https://code.jquery.com/jquery.js"></script>-->
+	<script type="text/javascript" src="https://www.google.com/jsapi"></script>
+	<script>
 
-    function drawBarChartGender(chart_dict_remote) { // the chart_dict_remote is an optional variable if not provided it will take the global variable
-        // the one from jinja, if provided when updating with ajax, it will use that
+		{% if chart_dict is defined %}
+			var chart_dict = {{ chart_dict | safe }}; // added the safe to escape the single quote of string
+		{% endif %}
+		{% if bar_chart_gender is defined %}
+			var chart_gender = {{ bar_chart_gender | safe }}
+		{% endif %}
+		{% if geochart is defined %}
+			var chart_location = {{ geochart | safe }}
+		{% endif %}
+		{% if bar_chart_age is defined %}
+			var chart_age = {{ bar_chart_age | safe }}
+		{% endif %}
 
-        var title = "Votes by Gender";
+		// Draw charts if they're defined
+		google.load("visualization", "1", {packages: ["corechart", "geochart"]});
+		google.setOnLoadCallback(function () {
+			if (
+					typeof chart_dict !== "undefined" &&
+					typeof chart_gender !== "undefined" &&
+					typeof chart_location !== "undefined" &&
+					typeof chart_age !== "undefined"
+			) {
+				// don't draw the chart unless all chart exists
+				drawChart(chart_dict);
+				drawBarChartGender(chart_gender);
+				drawMarkersMap(chart_location);
+				drawBarChartAge(chart_age);
+			}
+		});
 
-        if (typeof chart_dict_remote === "undefined") {
-            chart_gender = chart_gender
-        } else {
-            chart_gender = chart_dict_remote;
-        }
+		function drawChart(chart_votes) {
+			var data = google.visualization.arrayToDataTable(chart_votes);
+
+			var options_doughnut = {
+				title: "Votes distribution",
+				pieHole: 0.4,
+			};
+
+			var donut_chart = new google.visualization.PieChart(document.getElementById('donutchart'));
+			donut_chart.draw(data, options_doughnut);
+		}
+
+		function drawBarChartGender(chart_gender) {
+			var gender_data = google.visualization.arrayToDataTable(chart_gender);
+
+			var options_bar = {
+				title: "Votes by Gender",
+				width: 500,
+				height: 300,
+				legend: {position: 'top', maxLines: 3},
+				bar: {groupWidth: '75%'},
+				isStacked: true,
+			};
+
+			var bar_chart = new google.visualization.ColumnChart(document.getElementById('barchart gender'));
+			bar_chart.draw(gender_data, options_bar);
+		}
+
+		function drawMarkersMap(chart_location) {
+			var location_data = google.visualization.arrayToDataTable(chart_location);
+
+			var options = {
+				title: "Votes by Region", //the google geochart doesn't support a title
+				region: '021', //America
+				width: 500,
+				height: 300,
+				displayMode: 'markers',
+				colorAxis: {colors: ['red', 'blue']}
+			};
+
+			var chart = new google.visualization.GeoChart(document.getElementById('geochart'));
+			chart.draw(location_data, options);
+		}
+
+		function drawBarChartAge(chart_age) {
+			var age_data = google.visualization.arrayToDataTable(chart_age);
+
+			var options_bar = {
+				title: "Votes by Age",
+				width: 500,
+				height: 300,
+				legend: {position: 'top', maxLines: 3},
+				bar: {groupWidth: '75%'},
+				isStacked: true,
+			};
+
+			var bar_chart = new google.visualization.BarChart(document.getElementById('barchart age'));
+			bar_chart.draw(age_data, options_bar);
+		}
+
+		function handleComments(evt) {
+			evt.preventDefault();
+			var formInputs = {comment: $("#comment-content").val()};
+			$.post('/home/post/{{post.post_id}}/comment/refresh', formInputs, function (result) {
+				console.log(result.has_delete_button);
+				console.log(typeof(result.has_delete_button));
+				if (result !== "undefined") {
+					var pic = "<div class='media'><a href='/home/user/" + result.user_id + "' class='pull-left'><img src='" + result.user_pic + "'></a>";
+					var author = "<div class='media-body'><h4 class='media-heading'><a href=''/home/user/" + result.user_id + "'>" + result.user_name +
+							"</a> <small>" + result.comment_timestamp + "</small></h4>" + result.content + "</div>";
+
+					'<h4 class="media-heading"><a href="/home/user/' + result.user_id + '">' + result.user_name + '</a>'
+					var form = '<form action="/home/comment/' + result.comment_id + '/delete" method="post">' +
+							'<input type="submit" value="Delete comment" class="delete-comment btn btn-default btn-xs">' + '</form> <hr></div>';
+
+					$('.comments').append(pic + author + form);
+					$('#no-comment').empty();
+					$('#comment-content').val('');
+				} else {
+					alert ("Please log in to leave comment!")
+				}
 
 
-        var gender_data = google.visualization.arrayToDataTable(chart_gender);
+			})
+		}
+		$('#comment-form').on('submit', handleComments);
 
 
-         var options_bar = {
-             title: title,
-             width: 500,
-             height: 300,
-             legend: { position: 'top', maxLines: 3 },
-             bar: { groupWidth: '75%' },
-             isStacked: true,
-         };
+		function sharePostonFB(evt) {
+			$.post('/home/post/{{post.post_id}}/share', {}, function (result) {
+				alert(result);
+			});
+		}
+		$('#fb-share').on('click', sharePostonFB);
 
-        var bar_chart = new google.visualization.ColumnChart(document.getElementById('barchart gender'));
-        bar_chart.draw(gender_data, options_bar);
-    }
+		function processDecision(evt) {
+			var formInputs = {choice_id: $('input[type="radio"][name="modal_choice_id"]:checked').val()};
+			console.log(formInputs);
+			$.post('/home/post/{{ post.post_id }}/decide', formInputs, function (result) {
+				var decisionText = result.decision_text;
+				var decisionFile = result.decision_file;
+				var decision = document.createElement("p");
+				var img = document.createElement("img");
+				decision.innerHTML = decisionText;
+				img.src = "https://s3-us-west-2.amazonaws.com/opinionated/" + decisionFile;
+				if (decisionFile) {
+					decision.appendChild(img);
+				}
+				$('#decision').html(decision);
 
-    function drawMarkersMap(chart_dict_remote) {
+			});
+		}
 
-        var title = "Votes by Region";
+		function handleVote(evt) {
+			evt.preventDefault();
+			var formInputs = {choice_id: $('input[type="radio"][name="choice_id"]:checked').val()};
 
-        if (typeof chart_dict_remote === "undefined") {
-            chart_location = chart_location
-            console.log(chart_location)
-        } else {
-            chart_location = chart_dict_remote;
-        }
-        var location_data = google.visualization.arrayToDataTable(chart_location);
-        console.log(location_data);
-        console.log('this is location data');
+			$.post('/home/post/{{post.post_id}}/refresh', formInputs, function (result) {
+				var compare = JSON.parse(result) !== "undefined";
+				if (compare) {
+					result = JSON.parse(result);
+
+					var vote_count = result[0];
+					var vote_count_percent = result[1];
+					var total_votes = result[2];
+					var chart_dict = result[3];
+					var bar_chart_gender = result[4];
+					var geo_chart_location = result[5];
+					var bar_chart_age = result[6];
+
+					for (var choice_id in vote_count) {
+						$('.vote-count-' + choice_id).html("Number of votes:" + vote_count[choice_id].toString());
+						$('.no-vote').empty();
+					}
+					for (var choice_id in vote_count_percent) {
+						$('.vote-count-percent-' + choice_id).html("Percentage:" + vote_count_percent[choice_id].toString());
+						$('.vote-count-percent').empty();
+					}
+					$('#total-vote').html(total_votes.toString());
+
+					// Update all the charts
+					drawChart(chart_dict);
+					drawBarChartGender(bar_chart_gender);
+					drawMarkersMap(geo_chart_location);
+					drawBarChartAge(bar_chart_age);
+				} else {
+					alert('Please log in to vote!');
+				}
+			});
+		}
+		$('#vote-form').on('submit', handleVote);
 
 
-        var options = {
-            title: title, //the google geochart doesn't support a title
-            region: '021', //America
-            width: 500,
-            height: 300,
-            displayMode: 'markers',
-            colorAxis: {colors: ['red', 'blue']}
-        };
+		function deletePost(evt) {
+			confirm("Are you sure you want to delete the post");
+		}
 
-        var chart = new google.visualization.GeoChart(document.getElementById('geochart'));
-        chart.draw(location_data, options);
-    }
+		$('#delete-post').on('click', deletePost);
 
-     function drawBarChartAge(chart_dict_remote) { // the chart_dict_remote is an optional variable if not provided it will take the global variable
-        // the one from jinja, if provided when updating with ajax, it will use that
+		function deleteComment(evt) {
+			confirm("Are you sure you want to delete the comment");
+		}
 
-        var title = "Votes by Age";
-
-        if (typeof chart_dict_remote === "undefined") {
-            chart_age = chart_age;
-        } else {
-            chart_age = chart_dict_remote;
-        }
+		$('.delete-comment').on('click', deleteComment);
 
 
-        var age_data = google.visualization.arrayToDataTable(chart_age);
-
-
-         var options_bar = {
-             title: title,
-             width: 500,
-             height: 300,
-             legend: { position: 'top', maxLines: 3 },
-             bar: { groupWidth: '75%' },
-             isStacked: true,
-         };
-
-        var bar_chart = new google.visualization.BarChart(document.getElementById('barchart age'));
-        bar_chart.draw(age_data, options_bar);
-    }
-
+		function previousPost(post_id, post_ids) {
+			var idx = post_ids.indexOf(post_id);
+			if (idx > 0) {
+				var previous = post_ids[idx - 1];
+				location.href = previous.toString();
+			} else {
+				$('#previous-post').removeClass('previous').addClass('previous disabled');
 //
-    google.load("visualization", "1", {packages: ["corechart", "geochart"]});
-    google.setOnLoadCallback(function () {
-                if ({{ total_votes }} > 0) {
-        //don't show the chart unless someone has already voted on it
-        drawChart();
-        drawBarChartGender();
-        drawMarkersMap();
-        drawBarChartAge();
-    }
-    });
+			}
+
+		}
+
+		function nextPost(post_id, post_ids) {
+			var idx = post_ids.indexOf(post_id);
+			if (idx < post_ids.length - 1) {
+				var next = post_ids[idx + 1];
+				location.href = next.toString();
+			} else {
+				$('#next-post').removeClass('next').addClass('next disabled');
+			}
+
+		}
 
 
-    function handleComments(evt) {
-        evt.preventDefault();
-        var formInputs = {comment: $("#comment-content").val()};
-        $.post('/home/post/{{post.post_id}}/comment/refresh', formInputs, function (result) {
-            console.log(result.has_delete_button);
-            console.log(typeof(result.has_delete_button));
-
-            var pic = "<div class='media'><a href='/home/user/" + result.user_id + "' class='pull-left'><img src='" + result.user_pic + "'></a>";
-            var author = "<div class='media-body'><h4 class='media-heading'><a href=''/home/user/" + result.user_id + "'>" + result.user_name +
-                    "</a> <small>" + result.comment_timestamp + "</small></h4>" + result.content + "</div>";
-
-                    '<h4 class="media-heading"><a href="/home/user/' + result.user_id + '">' + result.user_name + '</a>'
-            var form = '<form action="/home/comment/' + result.comment_id + '/delete" method="post">' +
-                    '<input type="submit" value="Delete comment" class="delete-comment btn btn-default btn-xs">' + '</form> <hr></div>';
-
-            $('.comments').append(pic + author + form);
-            $('#no-comment').empty();
-            $('#comment-content').val('');
-        })
-    }
-    $('#comment-form').on('submit', handleComments);
-
-
-    function sharePostonFB(evt) {
-        $.post('/home/post/{{post.post_id}}/share', {}, function (result) {
-            alert(result);
-        });
-    }
-    $('#fb-share').on('click', sharePostonFB);
-
-    function processDecision(evt) {
-        var formInputs = {choice_id: $('input[type="radio"][name="modal_choice_id"]:checked').val()};
-        console.log(formInputs);
-        $.post('/home/post/{{ post.post_id }}/decide', formInputs, function(result){
-            var decisionText = result.decision_text;
-            var decisionFile = result.decision_file;
-            var decision = document.createElement("p");
-            var img = document.createElement("img");
-            decision.innerHTML = decisionText;
-            img.src = "https://s3-us-west-2.amazonaws.com/opinionated/" + decisionFile;
-            if (decisionFile) {
-                 decision.appendChild(img);
-            }
-            $('#decision').html(decision);
-
-        });
-    }
-
-
-
-    function handleVote(evt) {
-        evt.preventDefault();
-        var formInputs = {choice_id: $('input[type="radio"][name="choice_id"]:checked').val()};
-
-        console.log(formInputs);
-
-        $.post('/home/post/{{post.post_id}}/refresh', formInputs, function (result) {
-            console.log(result);
-            var compare = JSON.parse(result) !== "undefined";
-            if (compare) {
-                result = JSON.parse(result);
-
-                var vote_count = result[0];
-                var vote_count_percent = result[1];
-                var total_votes = result[2];
-                var chart_dict = result[3];
-                var bar_chart_gender = result[4];
-                var geo_chart_location = result[5];
-                var bar_chart_age = result[6];
-
-//
-                for (var choice_id in vote_count) {
-                    $('.vote-count-' + choice_id).html("Number of votes:" + vote_count[choice_id].toString());
-                    $('.no-vote').empty();
-
-                }
-//
-                for (var choice_id in vote_count_percent) {
-
-                    $('.vote-count-percent-' + choice_id).html("Percentage:" + vote_count_percent[choice_id].toString());
-                    $('.vote-count-percent').empty();
-                }
-                $('#total-vote').html(total_votes.toString());
-                drawChart(chart_dict);
-                drawBarChartGender(bar_chart_gender);
-                drawMarkersMap(geo_chart_location);
-                drawBarChartAge(bar_chart_age);
-
-            } else {
-                alert('Please log in to vote');
-            }
-
-        });
-
-    }
-
-    $('#vote-form').on('submit', handleVote);
-
-
-    function deletePost(evt) {
-        confirm("Are you sure you want to delete the post");
-
-    }
-
-    $('#delete-post').on('click', deletePost);
-
-    function deleteComment(evt) {
-        confirm("Are you sure you want to delete the comment");
-
-    }
-
-    $('.delete-comment').on('click', deleteComment);
-
-
-    function previousPost(post_id, post_ids) {
-        var idx = post_ids.indexOf(post_id);
-        if (idx > 0) {
-            var previous = post_ids[idx - 1];
-            location.href = previous.toString();
-        } else {
-            $('#previous-post').removeClass('previous').addClass('previous disabled');
-//
-        }
-
-    }
-
-    function nextPost(post_id, post_ids) {
-        var idx = post_ids.indexOf(post_id);
-        if (idx < post_ids.length - 1) {
-            var next = post_ids[idx + 1];
-            location.href = next.toString();
-        } else {
-            $('#next-post').removeClass('next').addClass('next disabled');
-        }
-
-    }
-
-    // unfortunately only web canvas app can send notification in fb
-//function sendNotification (user_id, app_access_token) {
-//    FB.api('/'+ user_id + '/notifications', 'post',
-//       {
-//           access_token: app_access_token,
-//           template: "You have been added to THIS item on THIS app",
-//           href: window.location.href,
-//       },
-//       function(response)
-//       {
-//          if (!response || response.error)
-//          {  console.log(response);
-//             alert('Error occurred');
-//          }
-//          else
-//          {
-//             alert('Success :D');
-//          }
-//       });
-//}
-
-
-</script>
+	</script>
 
 {% endblock %}

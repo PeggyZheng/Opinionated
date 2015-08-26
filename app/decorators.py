@@ -6,10 +6,7 @@ def login_required(f):
     def decorated_function(*args, **kwargs):
         if not session.get('loggedin'):
             flash("Please log in first")
-            if request.url:
-                return redirect(url_for('login', next=request.url))
-            else:
-                return redirect(url_for('login'))
+            return redirect(url_for('login'))
         return f(*args, **kwargs)
     return decorated_function
 

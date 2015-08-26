@@ -383,7 +383,7 @@ def followeds(user_id):
 
 
 @app.route('/home/post/<int:post_id>/refresh', methods=['POST'])
-@login_required #add the decorator so if user is trying to vote without logging in, they will be directed to login page
+#@login_required #add the decorator so if user is trying to vote without logging in, they will be directed to login page
 def process_vote(post_id):
     """this is the function that process users' votes, so it updates the database and refresh the post-details
     page to show the updated votes and vote allocation"""
@@ -413,7 +413,7 @@ def process_vote(post_id):
         return json.dumps([vote_dict, total_votes_percent, total_votes, chart_dict, bar_chart_gender, geo_chart_location,
                            bar_chart_age])
     else:
-          return json.dumps("undefined_test")
+        return json.dumps("undefined")
 
 
 #######################################################################################################
@@ -468,15 +468,14 @@ def delete_post(post_id):
 
 
 @app.route('/home/post/<int:post_id>/comment/refresh', methods=['POST'])
-@login_required
 def process_comments(post_id):
     """process the comments the users entered """
     content = request.form.get('comment')
     user_id = session.get('loggedin', None)
-    user = User.get_user_by_id(user_id)
-    user_name = user.user_name
-    user_pic = user.profile_pic
     if user_id:
+        user = User.get_user_by_id(user_id)
+        user_name = user.user_name
+        user_pic = user.profile_pic
         new_comment = Comment.create(content=content, user_id=user_id, post_id=post_id)
         comment_id = new_comment.comment_id
         comment_timestamp = new_comment.timestamp
@@ -484,8 +483,7 @@ def process_comments(post_id):
         return jsonify(user_id=user_id, user_name=user_name, user_pic=user_pic, content=content,
                        has_delete_button=has_delete_button, comment_id=comment_id, comment_timestamp=comment_timestamp)
     else:
-        flash("You need to login first")
-        return redirect(url_for('login'))
+        return json.dumps("undefined")
 
 
 @app.route('/home/comment/<int:comment_id>/delete', methods=['POST'])
