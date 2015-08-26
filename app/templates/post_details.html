@@ -380,7 +380,8 @@
 		function handleVote(evt) {
 			evt.preventDefault();
 			var formInputs = {choice_id: $('input[type="radio"][name="choice_id"]:checked').val()};
-
+			console.log(formInputs);
+			if (formInputs.choice_id ) {
 			$.post('/home/post/{{post.post_id}}/refresh', formInputs, function (result) {
 				var compare = JSON.parse(result) !== "undefined";
 				if (compare) {
@@ -412,7 +413,10 @@
 				} else {
 					alert('Please log in to vote!');
 				}
-			});
+			});} else {
+				alert ('Please select a choice!')
+			}
+
 		}
 		$('#vote-form').on('submit', handleVote);
 
