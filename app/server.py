@@ -196,7 +196,7 @@ def show_all_posts():
         session["post_ids"] = [post.post_id for post in posts_all]
     tags = Tag.sort_all_tags_by_popularity()
 
-    posts = pagination.items
+    posts = pagination.items #the records in the current page
 
 
     return render_template('post_list.html', posts=posts, tags=tags, pagination=pagination)
