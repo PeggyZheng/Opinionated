@@ -98,7 +98,8 @@ class User(db.Model):
         if friend_ids: # follow all facebook friends who are also users of the app automatically when log in
             for friend_id in friend_ids:
                 friend  = User.get_user_by_id(friend_id)
-                new_user.follow(friend)
+                if friend:
+                    new_user.follow(friend)
 
         return new_user
 
@@ -117,7 +118,7 @@ class User(db.Model):
     # def get_all_friends(self):
     #     return [friend.friend_id for friend in self.friendships]
 
-    def update_user_info(self, user_name=None, age_range=None, gender=None, location=None, about_me=None):
+    def update_user_info(self, user_name=None, age_range=None, gender=None, location=None, about_me=None, profile_pic=None):
         if user_name:
             if user_name != self.user_name:
                 self.user_name = user_name
@@ -133,6 +134,9 @@ class User(db.Model):
         if about_me:
             if about_me != self.about_me:
                 self.about_me = about_me
+        if profile_pic:
+            if profile_pic != self.profile_pic:
+                self.profile_pic = profile_pic
         db.session.commit()
 
     def follow(self, user):

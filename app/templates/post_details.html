@@ -149,25 +149,24 @@
 			<div class="media">
                 {% if comments %}
                     {% for comment in comments %}
-						<a href="/home/user/{{ comment.user_id }}" class="pull-left"><img
-								src="{{ comment.user.profile_pic }}"></a>
+						<a href="/home/user/{{ comment.user_id }}" class="pull-left"><img src="{{ comment.user.profile_pic }}" width="50" height="50"></a>
 						<div class="media-body">
 							<h4 class="media-heading"><a
 									href="/home/user/{{ comment.user_id }}">{{ comment.user.user_name }}</a>
 								<small>{{ comment.timestamp | datetimefilter }}</small>
+	                            <span id="server-delete">
+	                            {% if session.get('loggedin', None) %}
+								    {% if comment.user_id == session['loggedin'] %}
+										<form action="/home/comment/{{ comment.comment_id }}/delete" method="post">
+											<input type="submit" value="Delete comment"
+											       class="delete-comment btn btn-default btn-xs">
+										</form>
+								    {% endif %}
+								{% endif %}
+	                            </span>
 							</h4>
                             {{ comment.content }}
 						</div>
-                        {% if session.get('loggedin', None) %}
-                            {% if comment.user_id == session['loggedin'] %}
-								<div id="server-delete">
-									<form action="/home/comment/{{ comment.comment_id }}/delete" method="post">
-										<input type="submit" value="Delete comment"
-										       class="delete-comment btn btn-default btn-xs">
-									</form>
-								</div>
-                            {% endif %}
-                        {% endif %}
 						<hr>
                     {% endfor %}
 
@@ -330,15 +329,14 @@
 				console.log(result.has_delete_button);
 				console.log(typeof(result.has_delete_button));
 				if (result.user_id !== "undefined") {
-					var pic = "<div class='media'><a href='/home/user/" + result.user_id + "' class='pull-left'><img src='" + result.user_pic + "'></a>";
+					var pic = "<div class='media'><a href='/home/user/" + result.user_id + "' class='pull-left'><img src='" + result.user_pic + "' width='50' height='50'></a>";
 					var author = "<div class='media-body'><h4 class='media-heading'><a href=''/home/user/" + result.user_id + "'>" + result.user_name +
-							"</a> <small>" + result.comment_timestamp + "</small></h4>" + result.content + "</div>";
+							"</a> <small>" + result.comment_timestamp + "</small></h4></div>";
+					var form = '<span><form action="/home/comment/' + result.comment_id + '/delete" method="post">' +
+							'<input type="submit" value="Delete comment" class="delete-comment btn btn-default btn-xs"></form></span>';
+					var content = result.content;
 
-					'<h4 class="media-heading"><a href="/home/user/' + result.user_id + '">' + result.user_name + '</a>'
-					var form = '<form action="/home/comment/' + result.comment_id + '/delete" method="post">' +
-							'<input type="submit" value="Delete comment" class="delete-comment btn btn-default btn-xs">' + '</form> <hr></div>';
-
-					$('.comments').append(pic + author + form);
+					$('.comments').append(pic + author + form + content);
 					$('#no-comment').empty();
 					$('#comment-content').val('');
 				} else {

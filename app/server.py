@@ -316,8 +316,9 @@ def edit_profile_process():
     gender = request.form.get('gender')
     age_range = int(request.form.get('age'))
     about_me = request.form.get('about_me')
+    profile_pic = request.form.get('profile_pic')
     user.update_user_info(user_name=user_name, location=location, gender=gender, age_range=age_range,
-                          about_me=about_me)
+                          about_me=about_me, profile_pic=profile_pic)
     flash("Your information has been updated")
 
     return redirect(url_for('user_profile', user_id=user_id))

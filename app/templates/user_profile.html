@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% block content %}
 <div class="container">
-    <div class="col-md-4">
+    <div class="col-md-3">
         <img src="{{ user.profile_pic }}" class="img-responsive">
         {% if user.user_name or user.location %}
         <p>
@@ -9,6 +9,7 @@
             {% if user.location %}
             From <a href="http://maps.google.com/?q={{ user.location }}">{{ user.location }}</a>
             {% endif %}
+            {% if user.about_me %}<p>{{ user.about_me }}</p>{% endif %}
         </p>
         {% endif %}
 
@@ -41,7 +42,7 @@
         <li role="presentation"><a href="#votes" aria-controls="votes" role="tab" data-toggle="tab">My votes</a></li>
     </ul>
     <!--Tab panels-->
-    <div class="col-md-8" id="tab">
+    <div class="col-md-9" id="tab">
         <div class="tab-content">
             <div role="tabpanel" class="tab-pane active" id="posts">
                 <h3>My posts</h3>
