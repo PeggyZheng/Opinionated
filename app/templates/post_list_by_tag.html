@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% import "_macro.html" as macros %}
 {% block content %}
 <div class="container">
     <div class="row">
@@ -48,6 +49,13 @@
                 <hr>
             </div>
             {% endfor %}
+        </div>
+    </div>
+    <div class="row">
+        <div class="pagination">
+            {% if pagination %}
+            {{ macros.pagination_widget(pagination, 'post_by_tag', tag_name=tag_name) }}
+            {% endif %}
         </div>
     </div>
 </div>

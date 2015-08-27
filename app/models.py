@@ -22,6 +22,7 @@ bucket = conn.get_bucket(os.environ['AWS_BUCKET'])
 
 # define allowed file type for uploading
 ALLOWED_EXTENSIONS = set(['txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'])
+POSTS_PER_PAGE = 20
 
 
 def allowed_file(filename):
@@ -179,6 +180,10 @@ class User(db.Model):
         posts = Post.query.filter(Post.author_id.in_(followed_ids)).order_by(Post.timestamp.desc()).all()
         return posts
 
+    def followed_posts_pagination(self, page):
+        followeds = self.get_all_followeds() #gives a dictionary with the key as user object
+        followed_ids = [followed.user_id for followed in followeds]
+        return Post.query.filter(Post.author_id.in_(followed_ids)).order_by(Post.timestamp.desc()).paginate(page, per_page=POSTS_PER_PAGE, error_out=False)
 
 
 # class Friendship(db.Model):
@@ -362,6 +367,11 @@ class Post(db.Model):
         return cls.query.order_by(Post.timestamp.desc()).all()
 
     @classmethod
+    def get_all_posts_pagination(cls, page):
+        return cls.query.order_by(Post.timestamp.desc()).paginate(page, per_page=POSTS_PER_PAGE, error_out=False)
+
+
+    @classmethod
     def get_post_by_id(cls, post_id):
         return cls.query.filter_by(post_id=post_id).first()
 
@@ -371,7 +381,11 @@ class Post(db.Model):
 
     @classmethod
     def get_posts_by_tag(cls, tag):
-        return cls.query.filter(cls.tags.any(tag_name=tag)).all()
+        return cls.query.filter(cls.tags.any(tag_name=tag)).order_by(Post.timestamp.desc()).all()
+
+    @classmethod
+    def get_posts_by_tag_pagination(cls, tag, page):
+        return cls.query.filter(cls.tags.any(tag_name=tag)).order_by(Post.timestamp.desc()).paginate(page, per_page=POSTS_PER_PAGE, error_out=False)
 
     def count_votes(self):
         choices = Choice.get_choices_by_post_id(self.post_id)

@@ -31,6 +31,7 @@ FB_APP_NAME = os.environ["FB_APP_NAME"]
 FB_APP_SECRET = os.environ["FB_APP_SECRET"]
 
 
+
 #######################################################################################################
 # custom filter for the jinja template to handle date time display
 
@@ -178,6 +179,7 @@ def show_all_posts():
     show_followed = False
     # get the variable "show-all" from the template to determine whether to show all posts or followed ones
     show_what = request.args.get('show-all')
+    page = request.args.get('page', 1, type=int)
     print show_what, "this is show_what"
     if show_what == "false":
         show_followed = True
@@ -185,14 +187,19 @@ def show_all_posts():
     if show_followed:
         viewer_id = session.get('loggedin', None)
         viewer = User.get_user_by_id(viewer_id)
-        posts = viewer.followed_posts()
+        posts_all = viewer.followed_posts()
+        pagination = viewer.followed_posts_pagination(page)
     else:
-        posts = Post.get_all_posts()
-    if posts:
-        session["post_ids"] = [post.post_id for post in posts]
+        posts_all = Post.get_all_posts()
+        pagination = Post.get_all_posts_pagination(page)
+    if posts_all:
+        session["post_ids"] = [post.post_id for post in posts_all]
     tags = Tag.sort_all_tags_by_popularity()
 
-    return render_template('post_list.html', posts=posts, tags=tags)
+    posts = pagination.items
+
+
+    return render_template('post_list.html', posts=posts, tags=tags, pagination=pagination)
 
 
 @app.route('/home/post/<int:post_id>')
@@ -501,13 +508,17 @@ def search_post_by_tag():
 @app.route('/home/tag/<tag_name>')
 def post_by_tag(tag_name):
     """the function that shows the relevant post list based on the tags the user select"""
-    posts = Post.get_posts_by_tag(tag_name)
+    page = request.args.get('page', 1, type=int)
+    posts_all = Post.get_posts_by_tag(tag_name)
     tag_names = [str(tag.tag_name) for tag in Tag.get_all_tags()]
 
-    if posts:
-        post_ids = [post.post_id for post in posts]
+    if posts_all:
+        post_ids = [post.post_id for post in posts_all]
         session["post_ids"] = post_ids
-        return render_template('post_list_by_tag.html', posts=posts, tag_names=tag_names, tag_name=tag_name)
+        pagination = Post.get_posts_by_tag_pagination(tag=tag_name, page=page)
+        posts = pagination.items
+        return render_template('post_list_by_tag.html', posts=posts, tag_names=tag_names, tag_name=tag_name,
+                               pagination=pagination)
     else:
         flash('your search returns no relevant posts')
         return redirect(url_for('show_all_posts'))

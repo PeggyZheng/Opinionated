@@ -1,5 +1,6 @@
 
 {% extends 'base.html' %}
+{% import "_macro.html" as macros %}
 {% block content %}
 
 <style type="text/css">
@@ -66,7 +67,6 @@
         </div>
 
 
-
         <div class="col-xs-4">
             <div class="well">
                 <h4>Featured Tags</h4>
@@ -79,6 +79,13 @@
             </div><!-- /.well -->
         </div><!-- /.col-xs-4 -->
     </div><!-- /.row -->
+    <div class="row">
+        <div class="pagination">
+            {% if pagination %}
+            {{ macros.pagination_widget(pagination, 'show_all_posts')}}
+            {% endif %}
+        </div>
+    </div><!--row for the pagination-->
 </div><!-- /.container -->
 
 
