@@ -52,7 +52,8 @@ def login():
     # Get all of the authenticated user's friends
     tag_names = [str(tag.tag_name) for tag in Tag.get_all_tags()]
     session['tag_names'] = tag_names
-    return render_template("login.html")
+    top_6_tags = Tag.get_most_popular_tags(6)
+    return render_template("login.html", top_6_tags=top_6_tags)
 
 
 # @app.route('/login', methods=['POST'])

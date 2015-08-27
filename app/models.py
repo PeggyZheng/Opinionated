@@ -641,14 +641,17 @@ class Tag(db.Model):
                 count_dict[count].append(tag)
             else:
                 count_dict[count] = [tag]
-        print count_dict
         all_counts_sorted = sorted(count_dict.keys(), reverse=True)
-        print all_counts_sorted
         sorted_tag_list = []
         for count in all_counts_sorted:
-            print sorted_tag_list
             sorted_tag_list.extend(count_dict[count])
         return sorted_tag_list
+
+    @classmethod
+    def get_most_popular_tags(cls, n):
+        """the argument n decides how many tags you want"""
+        all_sorted_tags = cls.sort_all_tags_by_popularity()
+        return all_sorted_tags[:n]
 
 
 class TagPost(db.Model):

@@ -97,7 +97,7 @@
 		</div>
 		<!--/#about-slider-->
 	</div><!--/#slider-->
-
+	{% if top_6_tags %}
 	<div class="gallery">
 		<div class="text-center">
 			<h2>Popular Tags</h2>
@@ -106,63 +106,63 @@
 		<div class="container">
 			<div class="col-md-4">
 				<figure class="effect-marley">
-					<img src="/static/img/8.jpg" alt="" class="img-responsive"/>
+					<a href="/home/tag/{{ top_6_tags[0].tag_name }}"><img src="/static/img/8.jpg" alt="" class="img-responsive"/></a>
 					<figcaption>
-						<h4>sweet marley</h4>
+						<h4>{{ top_6_tags[0].tag_name }}</h4>
 						<p>Marley tried to convince her but she was not interested.</p>
 					</figcaption>
 				</figure>
 			</div>
 			<div class="col-md-4">
 				<figure class="effect-marley">
-					<img src="/static/img/9.jpg" alt="" class="img-responsive"/>
+					<a href="/home/tag/{{ top_6_tags[1].tag_name }}"><img src="/static/img/9.jpg" alt="" class="img-responsive"/></a>
 					<figcaption>
-						<h4>sweet marley</h4>
+						<h4>{{ top_6_tags[1].tag_name }}</h4>
 						<p>Marley tried to convince her but she was not interested.</p>
 					</figcaption>
 				</figure>
 			</div>
 			<div class="col-md-4">
 				<figure class="effect-marley">
-					<img src="/static/img/10.jpg" alt="" class="img-responsive"/>
+					<a href="/home/tag/{{ top_6_tags[2].tag_name }}"><img src="/static/img/10.jpg" alt="" class="img-responsive"/></a>
 					<figcaption>
-						<h4>sweet marley</h4>
+						<h4>{{ top_6_tags[2].tag_name }}</h4>
 						<p>Marley tried to convince her but she was not interested.</p>
 					</figcaption>
 				</figure>
 			</div>
 		</div>
-
+		<br>
 		<div class="container">
 			<div class="col-md-4">
 				<figure class="effect-marley">
-					<img src="/static/img/11.jpg" alt="" class="img-responsive"/>
+					<a href="/home/tag/{{ top_6_tags[3].tag_name }}"><img src="/static/img/11.jpg" alt="" class="img-responsive"/></a>
 					<figcaption>
-						<h4>sweet marley</h4>
+						<h4>{{ top_6_tags[3].tag_name }}</h4>
 						<p>Marley tried to convince her but she was not interested.</p>
 					</figcaption>
 				</figure>
 			</div>
 			<div class="col-md-4">
 				<figure class="effect-marley">
-					<img src="/static/img/12.jpg" alt="" class="img-responsive"/>
+					<a href="/home/tag/{{ top_6_tags[4].tag_name }}"><img src="/static/img/12.jpg" alt="" class="img-responsive"/></a>
 					<figcaption>
-						<h4>sweet marley</h4>
+						<h4>{{ top_6_tags[4].tag_name }}</h4>
 						<p>Marley tried to convince her but she was not interested.</p>
 					</figcaption>
 				</figure>
 			</div>
 			<div class="col-md-4">
 				<figure class="effect-marley">
-					<img src="/static/img/13.jpg" alt="" class="img-responsive"/>
+					<a href="/home/tag/{{ top_6_tags[5].tag_name }}"><img src="/static/img/13.jpg" alt="" class="img-responsive"/></a>
 					<figcaption>
-						<h4>sweet marley</h4>
+						<h4>{{ top_6_tags[5].tag_name }}</h4>
 						<p>Marley tried to convince her but she was not interested.</p>
 					</figcaption>
 				</figure>
 			</div>
 		</div>
 	</div>
-
+	{% endif %}
 	<script src="/static/js/bootstrap.min.js"></script>
 {% endblock %}
