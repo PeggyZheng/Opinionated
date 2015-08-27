@@ -15,14 +15,15 @@
     <!-- Latest compiled and minified JavaScript -->
     <script src="https://code.jquery.com/jquery.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+{#    <script src="/static/js/wow.min.js"></script>#}
 
     <!-- Bootstrap -->
     <link href="/static/css/bootstrap.min.css" rel="stylesheet">
-	<!--<link rel="stylesheet" href="/static/css/font-awesome.min.css">-->
-	<!--<link rel="stylesheet" href="/static/css/animate.css">-->
-	<!--<link href="/static/css/animate.min.css" rel="stylesheet">-->
-    <link href="/static/css/project.css" rel="stylesheet">
-	<!--<link href="/static/css/style.css" rel="stylesheet" /> &lt;!&ndash;currently commented out to show black font&ndash;&gt;-->
+{#    <link rel="stylesheet" href="/static/css/font-awesome.min.css">#}
+{#    <link rel="stylesheet" href="/static/css/animate.css">#}
+{#	<link href="/static/css/animate.min.css" rel="stylesheet">#}
+    <link href="/static/css/project.css" rel="stylesheet"><!--modal window-->
+	<link href="/static/css/style.css" rel="stylesheet" > <!--this is the one that enables gallery-->
 
     <!-- Bloodhound & Typeahead -->
     <script src="/static/typeahead/bloodhound.js"></script>
@@ -46,8 +47,6 @@
 <body>
 <div id="fb-root"></div>
 <script src="/static/fblogin.js"></script>
-<!--<script src='/static/facebookplay.js'></script>-->
-
 
 <script>(function (d, s, id) {
     var js, fjs = d.getElementsByTagName(s)[0];
@@ -66,7 +65,7 @@
                 <button type="button"
                         class="navbar-toggle collapsed"
                         data-toggle="collapse"
-                        data-target="#navbar">
+                        data-target=".navbar-collapse">
                     <span class="sr-only">Toggle navigation</span>
                     <span class="icon-bar"></span>
                     <span class="icon-bar"></span>
