@@ -353,7 +353,7 @@ def unfollow(user_id):
     if viewer.is_following(user):
         viewer.unfollow(user)
         flash('You are now not following %s' % user.user_name)
-    return redirect(url_for('show_all_posts'))
+    return redirect(url_for('user_profile', user_id=user_id))
 
 
 @app.route('/home/followers/<int:user_id>')

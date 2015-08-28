@@ -147,6 +147,7 @@ class User(db.Model):
 
     def unfollow(self, user):
         f = Follow.query.filter_by(followed_id=user.user_id).first()
+        print f
         if f:
             db.session.delete(f)
             db.session.commit()
@@ -381,7 +382,7 @@ class Post(db.Model):
 
     @classmethod
     def get_posts_by_author_id(cls, author_id):
-        return cls.query.filter_by(author_id=author_id).all()
+        return cls.query.filter_by(author_id=author_id).order_by(Post.timestamp.desc()).all()
 
     @classmethod
     def get_posts_by_tag(cls, tag):
@@ -535,7 +536,7 @@ class Vote(db.Model):
 
     @classmethod
     def get_votes_by_user_id(cls, user_id):
-        return cls.query.filter_by(user_id=user_id).all()
+        return cls.query.filter_by(user_id=user_id).order_by(Vote.timestamp.desc()).all()
 
     @classmethod
     def get_votes_by_post_id(cls, post_id):
