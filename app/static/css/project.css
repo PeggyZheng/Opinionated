@@ -1,4 +1,6 @@
-
+body {
+    padding-bottom: 30px;
+}
 .modal-backdrop {
     z-index: 1020;
 }

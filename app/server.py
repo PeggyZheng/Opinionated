@@ -315,6 +315,7 @@ def edit_profile_process():
     location = request.form.get('location')
     gender = request.form.get('gender')
     age_range = int(request.form.get('age'))
+    print age_range
     about_me = request.form.get('about_me')
     profile_pic = request.form.get('profile_pic')
     user.update_user_info(user_name=user_name, location=location, gender=gender, age_range=age_range,

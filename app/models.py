@@ -123,7 +123,7 @@ class User(db.Model):
             if user_name != self.user_name:
                 self.user_name = user_name
         if age_range:
-            if age_range != age_range:
+            if age_range != self.age_range:
                 self.age_range = age_range
         if gender:
             if gender != self.gender:

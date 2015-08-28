@@ -32,7 +32,7 @@
                     <p><span class="glyphicon glyphicon-time"></span>Posted on {{post.timestamp | datetimefilter }}</p>
                     {% if post.file_name %}
                     <img src="https://s3-us-west-2.amazonaws.com/opinionated/{{post.file_name}}" alt="{{ post.description }}"
-                         width="300px" height="auto" class="img-responsive">
+                         width="300" height="auto" class="img-responsive">
                     {% endif %}
                     {% if post.state >= 0 %}
                     <p>This question has been closed by its author</p>
@@ -47,7 +47,7 @@
                                 <br>
                                 {% if choice.file_name %}
                                 <img src="https://s3-us-west-2.amazonaws.com/opinionated/{{choice.file_name}}" alt="{{ choice.choice_text}}"\
-                                     width="300px" height="auto" class="img-responsive">
+                                     width="300" height="auto" class="img-responsive">
                                 {% endif %}
                             </div>
                             {% endfor %}
