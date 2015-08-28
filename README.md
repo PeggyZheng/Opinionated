@@ -10,83 +10,63 @@ Python, Flask, Jinja, SQLite3, SQLAlchemy, Amazon S3 API/Boto, Facebook graph AP
 Google charts, Javascript, jQuery, typeahead.js, tagmanager, Bootstrap, HTML5, CSS3
 
 ###Facebook login and graph API
-Users will login with their Facebook account and gives the app the permission to access the public information on their facebook profile, such as user name, age, gender, location, profile picture, and friend list, as well as writing to their wall, which is needed for sharing posts to their facebook page. The user will folllow their facebook friends who are also registered with the app automatically when they first log in, and the app will update the following list every time they sign in with facebook credentials. 
+Users will login with their Facebook account and gives the app the permission to access the public information on their facebook profile, such as user name, age, gender, location, profile picture, and friend list, as well as writing to their wall, which is needed for sharing posts to their facebook page. 
+
+The user will folllow their facebook friends who are also registered with the app automatically when they first log in, and the app will update the following list every time they sign in with facebook credentials. 
 Users will be able to share their posts or votes on Facebook by clicking on the share button on each post detail page. But this function is only enabled with the use of [ngrok] (https://ngrok.com/) or when the app is deployed. 
 Once the users log out, they will be logged out of both the app and their Facebook account. 
 
+This feature is implemented through Facebook open graph API in conjunction with the library <a href="https://facebook-sdk.readthedocs.org/en/latest/">Facebook SDK for Python</a>. The login popup window and authentication are implemented in javascript with Facebook API and the fetching of user information is done in the controller for ease of storing and manipulating the data. 
 
-![Alt Text](http://g.recordit.co/ZZL9a09qJL.gif)<br><br>
-I copied the Jcrop div onto an HTML5 canvas, base64-encoded the canvas, and sent the selection to the server. Then, I decoded and sharpened the image, processed it using Python-Tesseract, verified it was a decimal value, and returned it on a charge form.
 
-Some images were too large too be previewed and Jcropped on all devices (especially mobile), so I used the following Javascript to resize the image and the Jcrop utility (note: "preview2" is hidden using CSS):
-<br>
-```javascript
-$(document).on('change','#new-receipt', function(){
-    displayImage(this);
-});
-function displayImage(input) {
-    if (input.files && input.files[0]){
-        var readImage = new FileReader();
-        readImage.readAsDataURL(input.files[0]);
-        readImage.onloadend = function(e) {
-            var imgdisplay = new Image();
-            imgdisplay.src = e.target.result;
-            imgdisplay.onload = function(c) {
-                var orig_h = this.height;
-                var orig_w = this.width;
-                var canvas = document.getElementById("preview2");
-                var context = canvas.getContext('2d');
-                canvas.width=300;
-                canvas.height=300*(orig_h/orig_w);
-                context.drawImage(imgdisplay,0,0,300,300*(orig_h/orig_w));
-                transformed = canvas.toDataURL("image/jpeg",1.0);
-                $('#receipt-display').attr('src', transformed);
-            }     
-        }
-    }
- };
-```
+###Posting a question
+A user needs to log in to post a question. If they are not logged in, they will be redirected to the home page for logging in. 
+####File types
+Users could upload files in these formats: 'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif' for clearer representation of their questions and options. They will see a preview of the image once they attach the files. All images are saved on Amazon S3 (using a hashed name).
 
-Recommendation: If taking a picture of a receipt using an iPhone, make sure it is a landscape picture. See <b>Next Steps</b>.
+####Tags
+Users can add tags to their posts so it is searchable. The typeahead function is enabled, so as the users are typing, all existing tags with word or letter matched will show up for suggestions. This feature uses <a href="https://maxfavilli.com/jquery-tag-manager">Tag Manager</a> and <a href="http://twitter.github.io/typeahead.js/">Typeahead</a>.
 
-###Charge Entry and Organization
-####Groups
-Users can organize charges by adding Groups (using the "GROUP" button). Groups expand to show basic information about charges. Groups can be deleted by clicking on the "x" on the far right hand side of the panel. Deleting a group does <i>not</i> delete the charges in the group.
 
-![image](static/readme_imgs/chargeboard.png)
+####Deleting a post
+Users can also delete their posts if they want to. But modification on the post details is not allowed once a post is created for the purpose of maintaining the voting integrity. 
 
-####Charges
-Users can add and edit charges to Break It Up. Users can specify the amount paid and how it should be split between the two individuals; the total amount, percent split, and total split input fields update each other using jQuery. Any images that may be good to track (e.g. receipts, photos) can be uploaded and saved on Amazon S3 (using a hashed name). 
+###Voting on a post
+Users can view their own and other users' posts and vote on them or leaving comments in the post details page. Each user can only cast one valid vote, but they are allowed to change vote as many times as they want. 
+When the user first arrives on a new post that he/she has not voted on, the voting result will be hidden so the viewer can vote unbiasedly. Once they vote, the result will show up in chart format. 
 
-Charges may also be tagged with any of the Groups that have been created (including multiple). Users must proactively create groups with which they want to tag their charges. This feature uses <a href="https://maxfavilli.com/jquery-tag-manager">Tag Manager</a> and <a href="http://twitter.github.io/typeahead.js/">Typeahead</a>.
+A user can view any posts and comments without having to log in. But in order to vote and see the vote results, he/she will need to log in. 
 
-![image](static/readme_imgs/chargeform.png)
+####Google Charts
+The voting results are displayed in interactive charts based on different attributes. 4 types of charts(donut chart, bar chart, geochart, and column chart) are utilized to better demonstrate how the votes are broken down on certain user characterists, such as gender, geographic location and age group. The information are gathered through Facebook. Users can also hover over the chart to see the details on how many poeple voted on which choice.
+This feature is implemented with Google charts. 
 
-###Payments
-Users can pay one another back using Venmo, Square, or in person (cash/check). After verifying the transaction, the payment is logged in the "All Charges" group. 
-####Venmo
-Users can authorize Break It Up to make payments using Venmo. After authorizing Break It Up, the page redirects back to the Chargeboard. The "VENMO" button now shows up instead of the "Authorize Venmo" button. The Venmo modal pulls in the user's partner's email address in the system as well as the amount entered, which are used to send the payment via Venmo. The user can change/add the email address, amount, and (private) note in the modal. If the payment is successfully completed, a green NotifyBar pops up at the bottom of the screen, and a payment is logged in "All Charges" (including the payment ID).
+####Commenting
+Users can interact with the author or other users through the commenting area. They can leave comments and delete comments anytime. 
 
-![image](static/readme_imgs/venmo.png)
- 
-####Square
-The Square Connect API is only for merchants, so Break It Up uses <a href="https://squareup.com/help/us/en/article/5372-square-cash-with-email">Square Cash</a> with Email. When a user selects the "SQUARE" button, a mailto link opens in a new tab (requiring a user to be signed into their email), and a modal verifies that the user sent the Square email. This payment is logged in "All Charges."
+####Sharing to Facebook
+The users are able to share a particular post to their Facebook wall by clicking on the share button. So it provides a link back to the post page for their facebook friends who are interested in checking it out.
 
-###c3.js Visualizations
-These c3 gauges make it easy to see what percentage of the time and how much out of the total the user pays. The gauges change color depending on how far the numbers stray from ~50%.
-![image](static/readme_imgs/c3.png)
 
-###Linking Accounts
-Users must link accounts in order to use the application to track expenses and payments. Both users must input each other's email addresses to start tracking expenses. See <b>Next Steps</b>.
-![image](static/readme_imgs/acctsettings.png)
+###Follow other users
+A following system is in place, where users can follow other users whom they want to keep up to date with all their posts. Just click on the follow button on a particular user's profile page and you are now following her/him. Unfollowing a person is equally easy, by just clicking the unfollow button. You could see a list of your followers and people you followed as well as since when the follow starts. 
+On the home page you could filter to see only the posts from the people you follow instead of every single post. 
 
-###Mixpanel Integration
-Break It Up tracks how often users click on different payment methods and submit the respective modals. 
+###Tags
+####Search by tags
+Tags are great place to start with your exploration of the whole site. On the login page, you could see 6 tiles showing the current most popular tags and links to the posts associated with the tag. Choose the ones that interest you and get started
+
+A search box in placed on the navigation bar that allows you to search posts by tags, whichever page you are on. 
+
+###Test
+####Unittest
+The unittesting covers most of the methods in the model and is implemented throughout the development process.
+A test suite that consists of a setup of test database and teardown is in place to facilitate refactoring and testing corner cases. 
 
 ###Setup
 * Clone or fork this repo:
 ```
-https://github.com/bpownow/BreakItUp.git
+https://github.com/PeggyZheng/Opinionated.git
 ```
 
 * Create and activate a virtual environment inside your project directory: 
@@ -100,59 +80,40 @@ source env/bin/activate
 pip install -r requirements.txt
 ```
 
-* Set up a <kbd>.env</kbd> file. You will need [Venmo] (https://developer.venmo.com/) and [AWS S3] (http://aws.amazon.com/s3/) developer accounts.
+* Set up a <kbd>.env</kbd> file. You will need [Facebook] (https://developers.facebook.com/) and [AWS S3] (http://aws.amazon.com/s3/) developer accounts.
 ```
 SECRET_KEY=YOUR_SECRET_ID_HERE
 SQLALCHEMY_DATABASE_URI=postgresql+psycopg2://YOUR_USER_NAME@localhost/YOUR_FILE_DIRECTORY
-CONSUMER_SECRET=YOUR_VENMO_CONSUMER_SECRET
-CONSUMER_ID=YOUR_VENMO_CONSUMER_ID
+FB_APP_ID=YOUR_FACEBOOK_APP_ID
+FB_APP_NAME=YOUR_FACEBOOK_APP_NAME
+FB_APP_SECRET=YOUR_FACEBOOK_APP_SECRET
 AWS_ACCESS_KEY=YOUR_AMAZON_S3_ACCESS_KEY
 AWS_SECRET_KEY=YOUR_AMAZON_S3_SECRET_KEY
 AWS_BUCKET=YOUR_AMAZON_S3_BUCKET
 ```
 
-* Set up [Foreman] (http://ddollar.github.io/foreman/) to [source .env] (http://mauricio.github.io/2014/02/09/foreman-and-environment-variables.html).
-
-* Run Postgres server in a separate shell window. If you don't have Postgres, check out [Postgres.app] (http://postgresapp.com/).
-
-* Create the database in Postgres
+* In your virtual environment, run the following to set up the tables in your database:
 ```
-CREATE DATABASE biu;
-```
-
-* Back in your virtual environment, run the following to set up the tables in your Postgres database:
-```
-foreman run python -i model.py
+python -i models.py
 db.create_all()
 ```
 
 * Run the app:
 ```
-foreman run python server.py
+python server.py
 ```
 
 * Navigate to `localhost:5000` on your browser.
 
-* If you want to test out the mobile version, download and unzip [ngrok] (https://ngrok.com/). For example, when I downloaded ngrok, it went to my Downloads folder. I used the following to unzip it:
-```
-unzip ../../Downloads/ngrok_2.0.17_darwin_amd64.zip
-```
-
-* To start ngrok, use `./ngrok http 5000`. Visit the Forwarding link on your phone's browser.
+* If you need to test the Facebook share function, download <a href="https://ngrok.com/To start ngrok">ngrok</a>.
+* 
+* To start ngrok, use `./ngrok http 5000`, and copy the url it generates to the browser.
 
 ###Next Steps
-1. Use <a href="https://openexchangerates.org/">Open Exchange Rates API</a> to add point-in-time currency conversion based on transaction date. May use <a href="https://github.com/ashokfernandez/PyExchangeRates">PyExchangeRates</a> wrapper.
-2. Add a charge-specific chat or notes feature to discuss charges.
-3. Find correct image orientation when displaying receipt images on non-desktop devices. See <a href="http://stackoverflow.com/questions/9353629/images-turning-sideways-upside-down-after-being-uploaded-via-phonegap-ios">this</a>.
-4. Allow users to link to multiple other users and groups (many-to-many).
-5. Include more Mixpanel events.
+1. Add the anonymous posting capibilities, so the user can choose to be anonymous for posting questions
+2. Enable infite scroll on the post list page, which is more desirable in a moden web app. 
+3. Migrate to Postgres or MySql to allow flexible query and managing bigger size of users and posts.
+4. Allow uploading of other file types, audio and video, for easier describing of the questions and options. 
+5. Work on image compression, so it is compressed to certain size for faster uploading speed and consistency in displaying. 
 
-Technology Stack
 
-Backend
-
-Python, Flask, Jinja, PostgreSQL, SQLAlchemy, AJAX, Amazon S3 API/Boto, Venmo API, Tesseract-OCR/PyTesseract, Pillow (fork of Python Imaging Library), Mixpanel
-
-Frontend
-
-Javascript, jQuery, C3.js, Bootstrap, HTML5, CSS3
