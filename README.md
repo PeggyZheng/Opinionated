@@ -21,22 +21,23 @@ This feature is implemented through Facebook open graph API in conjunction with 
 
 ###Posting a question
 A user needs to log in to post a question. If they are not logged in, they will be redirected to the home page for logging in. 
+![Alt Text](http://g.recordit.co/kWzPNEfs0K.gif)<br><br>
 ####File types
 Users could upload files in these formats: 'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif' for clearer representation of their questions and options. They will see a preview of the image once they attach the files. All images are saved on Amazon S3 (using a hashed name).
 
 ####Tags
 Users can add tags to their posts so it is searchable. The typeahead function is enabled, so as the users are typing, all existing tags with word or letter matched will show up for suggestions. This feature uses <a href="https://maxfavilli.com/jquery-tag-manager">Tag Manager</a> and <a href="http://twitter.github.io/typeahead.js/">Typeahead</a>.
 
-
 ####Deleting a post
 Users can also delete their posts if they want to. But modification on the post details is not allowed once a post is created for the purpose of maintaining the voting integrity. 
+
 
 ###Voting on a post
 Users can view their own and other users' posts and vote on them or leaving comments in the post details page. Each user can only cast one valid vote, but they are allowed to change vote as many times as they want. 
 When the user first arrives on a new post that he/she has not voted on, the voting result will be hidden so the viewer can vote unbiasedly. Once they vote, the result will show up in chart format. 
 
 A user can view any posts and comments without having to log in. But in order to vote and see the vote results, he/she will need to log in. 
-
+![Alt Text](http://g.recordit.co/OQmcHStP1k.gif)<br><br>
 ####Google Charts
 The voting results are displayed in interactive charts based on different attributes. 4 types of charts(donut chart, bar chart, geochart, and column chart) are utilized to better demonstrate how the votes are broken down on certain user characterists, such as gender, geographic location and age group. The information are gathered through Facebook. Users can also hover over the chart to see the details on how many poeple voted on which choice.
 This feature is implemented with Google charts. 
