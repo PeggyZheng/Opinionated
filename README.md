@@ -37,7 +37,7 @@ Users can view their own and other users' posts and vote on them or leaving comm
 When the user first arrives on a new post that he/she has not voted on, the voting result will be hidden so the viewer can vote unbiasedly. Once they vote, the result will show up in chart format. 
 
 A user can view any posts and comments without having to log in. But in order to vote and see the vote results, he/she will need to log in. 
-![Alt Text](http://g.recordit.co/OQmcHStP1k.gif)<br><br>
+![Alt Text](http://g.recordit.co/4tBbzbrkEI.gif)<br><br>
 ####Google Charts
 The voting results are displayed in interactive charts based on different attributes. 4 types of charts(donut chart, bar chart, geochart, and column chart) are utilized to better demonstrate how the votes are broken down on certain user characterists, such as gender, geographic location and age group. The information are gathered through Facebook. Users can also hover over the chart to see the details on how many poeple voted on which choice.
 This feature is implemented with Google charts. 
