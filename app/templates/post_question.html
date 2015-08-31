@@ -3,57 +3,59 @@
 {% block content %}
 <div class="container">
     <div class="row">
-        <form action='/home/post/process' method='post' enctype="multipart/form-data">
-            <div class="form-group">
-            <label><h4>Description of your questions</h4>
-                <textarea rows="4" cols="120" name="description" class="form-control" placeholder="Please enter a description of your question here" required></textarea>
-            </label>
-            </div>
-            <div class="form-group">
-                <label><h4>Upload a file for your question <small>(File types allowed: .txt, .pdf, .png, .jpg, .jpeg, .gif)</small></h4>
-                    <input type="file" name="fileupload_question" class="img" id="img-upload">
-                    <img id="img-preview" src="" width="auto" height="300" class="img-responsive">
+        <div class="col-xs-10 col-xs-offset-1">
+            <form action='/home/post/process' method='post' enctype="multipart/form-data">
+                <div class="form-group">
+                <label><h4>Description of your questions</h4>
+                    <textarea rows="4" cols="120" name="description" class="form-control" placeholder="Please enter a description of your question here" required></textarea>
                 </label>
-            </div>
-
-            <hr>
-            <div class="col-md-6">
+                </div>
                 <div class="form-group">
-                    <label><h4>Option 1</h4>
-                        <textarea rows="4" cols="50" name="option1" class="form-control" placeholder="The description of first choice"></textarea>
-                    </label>
-                    <label><h4>Upload file <small>(File types allowed: .txt, .pdf, .png, .jpg, .jpeg, .gif)</small></h4>
-                        <input type="file" name="fileupload1" id="img-upload1" class="img">
-                        <img id="img-preview1" src="" width="auto" height="300" class="img-responsive"/>
+                    <label><h4>Upload a file for your question <small>(File types allowed: .txt, .pdf, .png, .jpg, .jpeg, .gif)</small></h4>
+                        <input type="file" name="fileupload_question" class="img" id="img-upload">
+                        <img id="img-preview" src="" width="auto" height="300" class="img-responsive">
                     </label>
                 </div>
-            </div>
 
-            <div class="col-md-6">
-                <div class="form-group">
-                    <label><h4>Option 2</h4>
-                        <textarea rows="4" cols="50" name="option2" class="form-control" placeholder="The description of second choice"></textarea>
-                    </label>
-                    <label><h4>Upload file <small>(File types allowed: .txt, .pdf, .png, .jpg, .jpeg, .gif)</small></h4>
-                        <input type="file" name="fileupload2" id="img-upload2" class="img">
-                        <img id="img-preview2" src="" width="auto" height="300" class="img-responsive"/>
-                    </label>
-                </div>
-            </div>
-            <br>
-            <br>
-            <div class="form-group">
-                <div class="col-xs-12">
-                    <div id="tags">
-                       <label><h4>Enter your tags here</h4></label>
-                       <input class="form-control tm-input tm-input-info typeahead" type="text" placeholder="Tags" name="tags">
+                <hr>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label><h4>Option 1</h4>
+                            <textarea rows="4" cols="50" name="option1" class="form-control" placeholder="The description of first choice"></textarea>
+                        </label>
+                        <label><h4>Upload file <small>(File types allowed: .txt, .pdf, .png, .jpg, .jpeg, .gif)</small></h4>
+                            <input type="file" name="fileupload1" id="img-upload1" class="img">
+                            <img id="img-preview1" src="" width="auto" height="300" class="img-responsive"/>
+                        </label>
                     </div>
                 </div>
-            </div>
-            <div class="col-xs-12">
-                <input type="submit" class="btn btn-default">
-            </div>
-        </form>
+
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label><h4>Option 2</h4>
+                            <textarea rows="4" cols="50" name="option2" class="form-control" placeholder="The description of second choice"></textarea>
+                        </label>
+                        <label><h4>Upload file <small>(File types allowed: .txt, .pdf, .png, .jpg, .jpeg, .gif)</small></h4>
+                            <input type="file" name="fileupload2" id="img-upload2" class="img">
+                            <img id="img-preview2" src="" width="auto" height="300" class="img-responsive"/>
+                        </label>
+                    </div>
+                </div>
+                <br>
+                <br>
+                <div class="form-group">
+                    <div class="col-xs-12">
+                        <div id="tags">
+                           <label><h4>Enter your tags here</h4></label>
+                           <input class="form-control tm-input tm-input-info typeahead" type="text" placeholder="Tags" name="tags">
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xs-12">
+                    <input type="submit" class="btn btn-default">
+                </div>
+            </form>
+        </div>
     </div>
 </div>
 
