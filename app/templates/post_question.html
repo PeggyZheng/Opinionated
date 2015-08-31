@@ -12,7 +12,7 @@
             <div class="form-group">
                 <label><h4>Upload a file for your question <small>(File types allowed: .txt, .pdf, .png, .jpg, .jpeg, .gif)</small></h4>
                     <input type="file" name="fileupload_question" class="img" id="img-upload" class="form-control">
-                    <img id="img-preview" src="" width="300px" height="auto" class="img-responsive">
+                    <img id="img-preview" src="" width="auto" height="300" class="img-responsive">
                 </label>
             </div>
 
@@ -24,7 +24,7 @@
                     </label>
                     <label><h4>Upload file <small>(File types allowed: .txt, .pdf, .png, .jpg, .jpeg, .gif)</small></h4>
                         <input type="file" name="fileupload1" id="img-upload1" class="img">
-                        <img id="img-preview1" src="" width="300px" height="auto"/>
+                        <img id="img-preview1" src="" width="auto" height="300"/>
                     </label>
                 </div>
             </div>
@@ -36,7 +36,7 @@
                     </label>
                     <label><h4>Upload file <small>(File types allowed: .txt, .pdf, .png, .jpg, .jpeg, .gif)</small></h4>
                         <input type="file" name="fileupload2" id="img-upload2" class="img">
-                        <img id="img-preview2" src="" width="300px" height="auto"/>
+                        <img id="img-preview2" src="" width="auto" height="300"/>
                     </label>
                 </div>
             </div>
@@ -46,12 +46,13 @@
                 <div class="col-xs-12">
                     <div id="tags">
                        <label><h4>Enter your tags here</h4></label>
-                       <br>
                        <input class="form-control tm-input tm-input-info typeahead" type="text" placeholder="Tags" name="tags">
                     </div>
                 </div>
             </div>
-            <input type="submit" class="btn btn-default">
+            <div class="col-xs-12">
+                <input type="submit" class="btn btn-default">
+            </div>
         </form>
     </div>
 </div>
@@ -157,17 +158,6 @@ function readURL(input,element) {
         readURL(this, preview);
     });
 
-//
-//
-//function previewImg(){
-//    var pair = {"#img-upload1":"#img-preview1", "#img-upload2":"#img-preview2"};
-//    for (var key in pair) {
-//        console.log
-//        $(".img").change(function(){readURL(this, pair[key]);});
-//    }
-//}
-//
-//previewImg()
 
 </script>
 

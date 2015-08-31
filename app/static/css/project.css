@@ -4,3 +4,17 @@ body {
 .modal-backdrop {
     z-index: 1020;
 }
+
+.tags {
+font-size: 12px;
+font-family: "jaf-bernino-sans","Lucida Grande","Lucida Sans Unicode","Lucida Sans",Geneva,Verdana,sans-serif;
+letter-spacing: -0.02em;
+font-weight: 400;
+font-style: normal;
+}
+
+
+.sidebar .tags--postTags {
+  margin-top: 18px;
+  margin-bottom: 40px;
+}

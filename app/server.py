@@ -12,6 +12,7 @@ import json
 from decorators import login_required
 
 
+
 app = Flask(__name__)
 
 # Required to use Flask sessions and the debug toolbar
@@ -219,8 +220,7 @@ def show_post_detail(post_id):
     geochart = post.count_votes_by_location()
     bar_chart_age = post.count_votes_by_age()
     print bar_chart_age, "this is age data for bar chart"
-    # session['FB_APP_ID'] = FB_APP_ID
-    # session['FB_APP_SECRET'] = str(FB_APP_SECRET)
+
 
     comments = Comment.get_comments_by_post_id(post_id)
     tag_names = [tag.tag_name for tag in Tag.get_tags_by_post_id(post_id)]
@@ -531,7 +531,7 @@ def post_by_tag(tag_name):
 if __name__ == "__main__":
     # We have to set debug=True here, since it has to be True at the point
     # that we invoke the DebugToolbarExtension
-    app.debug = True
+    app.debug = False
 
     connect_to_db(app)
 
