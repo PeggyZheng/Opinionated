@@ -5,20 +5,22 @@
 	<div class="container">
 		<div class="row">
 			<!--Blog post Content Column-->
-			<div class="col-sm-8">
+			<div class="col-sm-12">
 				<!--blog post-->
 				<!--Title-->
-				<h2>{{ post.description }}
-				</h2>
+				<h3>{{ post.description }}</h3>
+				{% if post.file_name %}
+					<img src="https://s3-us-west-2.amazonaws.com/opinionated/{{ post.file_name }}"
+					     alt="{{ post.description }}" width="auto" height="300">
+                {% endif %}
 
 				<!--Author-->
-				<p>
-					<img src="{{ post.author.profile_pic }}" class="img-responsive" height="50" width="50" style="display: inline-block;">
-					<a href="/home/user/{{ post.author.user_id }}" style="display: inline-block;" class="lead">{{ post.author.user_name }}</a>
-			        <span style="float: inherit"><span class="glyphicon glyphicon-time"></span>Posted on {{ post.timestamp | datetimefilter }}</span>
+				<img src="{{ post.author.profile_pic }}" class="img-responsive" height="50" width="50" style="display: inline-block;">
+				<span class="author-details-inline">
+					<a href="/home/user/{{ post.author.user_id }}">{{ post.author.user_name }}</a>
+					<span><span class="glyphicon glyphicon-time"></span>Posted on {{ post.timestamp | datetimefilter }}</span>
+		        </span>
 
-			    </p>
-				<hr>
 {#				<!--Date/Time and vote count -->#}
 {#				<p><span class="glyphicon glyphicon-time"></span>Posted on {{ post.timestamp | datetimefilter }}#}
 {#					<button class="btn btn-primary" type="button">#}
@@ -29,12 +31,12 @@
 				<!-- Only the author can see the delete post button-->
                 {% if session.get('loggedin', None) %}
                     {% if post.author_id == session['loggedin'] %}
-						<form action="/home/post/{{ post.post_id }}/delete" method="post" style="display: inline-block">
+						<form action="/home/post/{{ post.post_id }}/delete" method="post" style="display: inline-block; float:right">
 							<button type="submit" id="delete-post" class="btn btn-default">
 								<span class="glyphicon glyphicon-trash" aria-hidden="true" title="delete post"></span>
 							</button>
 						</form>
-						<button type="button" class="btn btn-default" data-toggle="modal" data-target="#myModal" style="display: inline-block">
+						<button type="button" class="btn btn-default" data-toggle="modal" data-target="#myModal" style="display: inline-block; float:right">
 							<span class="glyphicon glyphicon-lock" aria-hidden="true" title="close the question"></span>
 						</button>
 						<!--</form>-->
@@ -44,73 +46,70 @@
 
 				<!-- Your share button code -->
 
-				<button type="button" id="fb-share" class="btn btn-default">
+				<button type="button" id="fb-share" class="btn btn-default" style="display: inline-block; float: right">
 					<span class="glyphicon glyphicon-share" aria-hidden="true" title="share to Facebook"></span>
 				</button>
 			    <button class="btn btn-primary" type="button">
 						Votes <span class="badge" id="total-vote">{{ total_votes }}</span>
 			    </button>
-			    <hr>
-
-                {% if post.file_name %}
-					<img src="https://s3-us-west-2.amazonaws.com/opinionated/{{ post.file_name }}"
-					     alt="{{ post.description }}" width="auto" height="300">
-                {% endif %}
-
+				<hr>
 				<div class="tags tags--postTags tags--light">
 				<span class="glyphicon glyphicon-tag" aria-hidden="true" title="tags"></span>
                 {% for tag in tag_names %}
 	                <a href="/home/tag/{{ tag }}">{{ tag }}</a>
                 {% endfor %}
 				</div>
-
+			    <br>
 				<div class="row">
 					<form action="/home/post/{{ post.post_id }}/refresh" method="post" id="vote-form">
-
-                        {% for choice in choices %}
-							<div class="col-sm-6">
-                                {% if choice.choice_text and choice.file_name %}
+					    <div class="btn-group" data-toggle="buttons"> <!--a button group that turns the opton into clickable button-->
+						    {% for choice in choices %}
+							     <div class="col-sm-6">
+							     <label class="btn btn-block">
+								    {% if choice.choice_text and choice.file_name %}
 									<input type="radio" name="choice_id" value="{{ choice.choice_id }}" class="choice">
-                                    {{ choice.choice_text }}<br>
+                                    <h4>{{ choice.choice_text }}</h4><br>
 									<img src="https://s3-us-west-2.amazonaws.com/opinionated/{{ choice.file_name }}"
 									     alt="{{ choice.choice_text }}" width="auto" height="300">
 
 
-                                {% elif choice.file_name %}
+                                    {% elif choice.file_name %}
 									<input type="radio" name="choice_id" value="{{ choice.choice_id }}" class="choice">
-									choice {{ choices.index(choice) + 1 }}<br>
+									<h4>choice {{ choices.index(choice) + 1 }}</h4><br>
 									<img src="https://s3-us-west-2.amazonaws.com/opinionated/{{ choice.file_name }}"
 									     alt="{{ choice.file_name }}" width="auto" height="300">
 
-                                {% else %}
-                                    {{ choice.choice_text }}
-									<input type="radio" name="choice_id" value="{{ choice.choice_id }}" class="choice">
-                                {% endif %}
-
-								<div>
-                            <span class="vote-count-{{ choice.choice_id }}">
-                            {% if vote_dict is defined %}
-	                            Number of votes: {{ vote_dict[choice.choice_id] }}
-                            {% endif %}
-
-                            </span>
-
-									<span class="vote-count-percent-{{ choice.choice_id }}"></span>
-                                    {% if total_votes > 0 %}
-										<span class="vote-count-percent">{% if vote_dict is defined %}Percentage:
-                                            {% set perc_vote = vote_dict[choice.choice_id]/total_votes * 100 %}
-											({{'%0.2f'| format(perc_vote|float)}}%)
-										{% endif %}</span>
                                     {% else %}
-										<p class="no-vote">No one has vote yet</p>
+	                                <input type="radio" name="choice_id" value="{{ choice.choice_id }}" class="choice">
+                                    <h4>{{ choice.choice_text }}</h4>
                                     {% endif %}
-								</div>
+							     </label>
+								   <div class="caption">
+			                            <span class="vote-count-{{ choice.choice_id }}">
+			                            {% if vote_dict is defined %}
+				                            Number of votes: {{ vote_dict[choice.choice_id] }}
+			                            {% endif %}
+			                            </span>
 
-							</div>
-                        {% endfor %}
-					<div class="col-xs-12">
-						<input type="submit" value="Vote" id="submit-vote" class="btn btn-default">
-					</div>
+										<span class="vote-count-percent-{{ choice.choice_id }}"></span>
+			                            {% if total_votes > 0 %}
+											<span class="vote-count-percent">{% if vote_dict is defined %}Percentage:
+			                                    {% set perc_vote = vote_dict[choice.choice_id]/total_votes * 100 %}
+												({{'%0.2f'| format(perc_vote|float)}}%)
+											{% endif %}</span>
+			                            {% else %}
+											<p class="no-vote">No one has vote yet</p>
+			                            {% endif %}
+								   </div>
+
+							    </div>
+						    {% endfor %}
+					    </div>
+						<br>
+						<br>
+						<div class="col-xs-12">
+							<input type="submit" value="Vote" id="submit-vote" class="btn btn-default">
+						</div>
 					</form>
 				</div>
 			</div>
@@ -408,7 +407,7 @@
 						$('.no-vote').empty();
 					}
 					for (var choice_id in vote_count_percent) {
-						$('.vote-count-percent-' + choice_id).html("Percentage:" + vote_count_percent[choice_id].toString());
+						$('.vote-count-percent-' + choice_id).html("Percentage:" + (vote_count_percent[choice_id]*100).toString() + "%");
 						$('.vote-count-percent').empty();
 					}
 					$('#total-vote').html(total_votes.toString());
