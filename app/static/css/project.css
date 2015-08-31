@@ -5,3 +5,14 @@ body {
     z-index: 1020;
 }
 
+body {
+    color: #777;
+}
+
+.btn-default {
+    color: #777;
+}
+
+.btn-primary {
+    color: white;
+}

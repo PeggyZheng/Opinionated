@@ -55,7 +55,6 @@
                     <br>
                     <div class="row">
                         <div class="col-xs-12">
-                            <br>
                             <a class="btn btn-primary button-xs" role="button" data-toggle="collapse" href="#{{post.post_id}}"
                           aria-controls="{{post.post_id}}">view choices &raquo;</a>
                         </div>
@@ -72,7 +71,7 @@
                 <h4>Featured Tags</h4>
                     <!--<ul class="list-unstyled" display>-->
                         {% for tag in tags %}
-                        <h4><span class="label" style="display:inline"><a href="/home/tag/{{ tag.tag_name }}">{{ tag.tag_name }}</a></span></h4>
+                        <h4><span class="label" style="display:inline-block"><a href="/home/tag/{{ tag.tag_name }}">{{ tag.tag_name }}</a></span></h4>
                         {% endfor %}
                     <!--</ul>-->
 
