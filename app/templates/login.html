@@ -14,15 +14,15 @@
 
 				<div class="carousel-inner">
 					<div class="item active">
-						<img src="/static/img/7.jpg" class="img-responsive" alt="">
+						<img src="/static/img/photo1_crop.jpg" class="img-responsive" alt="">
 
 						<div class="carousel-caption">
 							<div class="wow fadeInUp" data-wow-offset="0" data-wow-delay="0.3s">
-								<h2><span>Opinionated</span></h2>
+								<h1><span>Opinionated</span></h1>
 							</div>
 							<div class="col-md-10 col-md-offset-1">
 								<div class="wow fadeInUp" data-wow-offset="0" data-wow-delay="0.6s">
-									<p>Be opinionated</p>
+									<h3>Be opinionated</h3>
 								</div>
 							</div>
 							<div class="wow fadeInUp" data-wow-offset="0" data-wow-delay="0.9s">
@@ -38,15 +38,15 @@
 					</div>
 
 					<div class="item">
-						<img src="/static/img/1.jpg" class="img-responsive" alt="">
+						<img src="/static/img/photo2.jpg" class="img-responsive" alt="">
 
 						<div class="carousel-caption">
 							<div class="wow fadeInUp" data-wow-offset="0" data-wow-delay="1.0s">
-								<h2>Making hard decision easy</h2>
+								<h1>Opinionated</h1>
 							</div>
 							<div class="col-md-10 col-md-offset-1">
 								<div class="wow fadeInUp" data-wow-offset="0" data-wow-delay="0.6s">
-									<p>Ask your question here and let people help</p>
+									<h3>Making hard decision easy</h3>
 								</div>
 							</div>
 							<div class="wow fadeInUp" data-wow-offset="0" data-wow-delay="1.6s">
@@ -61,15 +61,15 @@
 						</div>
 					</div>
 					<div class="item">
-						<img src="/static/img/2.jpg" class="img-responsive" alt="">
+						<img src="/static/img/photo3.jpg" class="img-responsive" alt="">
 
 						<div class="carousel-caption">
 							<div class="wow fadeInUp" data-wow-offset="0" data-wow-delay="0.3s">
-								<h2>Helping others decide</h2>
+								<h1>Opinionated</h1>
 							</div>
 							<div class="col-md-10 col-md-offset-1">
 								<div class="wow fadeInUp" data-wow-offset="0" data-wow-delay="0.6s">
-									<p>Share your opinions on anything</p>
+									<h3>Helping others decide</h3>
 								</div>
 							</div>
 							<div class="wow fadeInUp" data-wow-offset="0" data-wow-delay="0.9s">
@@ -97,38 +97,38 @@
 		</div>
 		<!--/#about-slider-->
 	</div><!--/#slider-->
-	{% if top_6_tags|length == 6 %}
-	<div class="gallery">
+{#	{% if top_6_tags|length == 6 %}#}
+	<div class="gallery" style="margin-top: 50px">
 		<div class="text-center">
 			<h2>Popular Tags</h2>
 			<p>Start your exploration with these popular tags</p>
 		</div>
 
-		<div class="container">
+		<div class="container" >
 			<div class="col-md-4">
 				<figure class="effect-marley">
-					<a href="/home/tag/{{ top_6_tags[0].tag_name }}"><img src="/static/img/8.jpg" alt="" class="img-responsive"/></a>
+					<a href="/home/tag/Fashion"><img src="/static/img/fashion1.jpg" alt="" class="img-responsive"/></a>
 					<figcaption>
-						<h4>{{ top_6_tags[0].tag_name }}</h4>
-						<p>Marley tried to convince her but she was not interested.</p>
+						<h4>Fashion</h4>
+						<p>Fashion in everyday life</p>
 					</figcaption>
 				</figure>
 			</div>
 			<div class="col-md-4">
 				<figure class="effect-marley">
-					<a href="/home/tag/{{ top_6_tags[1].tag_name }}"><img src="/static/img/9.jpg" alt="" class="img-responsive"/></a>
+					<a href="/home/tag/Tech"><img src="/static/img/tech.jpg" alt="" class="img-responsive"/></a>
 					<figcaption>
-						<h4>{{ top_6_tags[1].tag_name }}</h4>
-						<p>Marley tried to convince her but she was not interested.</p>
+						<h4>Technology</h4>
+						<p>Technology that connects people</p>
 					</figcaption>
 				</figure>
 			</div>
 			<div class="col-md-4">
 				<figure class="effect-marley">
-					<a href="/home/tag/{{ top_6_tags[2].tag_name }}"><img src="/static/img/10.jpg" alt="" class="img-responsive"/></a>
+					<a href="/home/tag/Travel"><img src="/static/img/travel.jpg" alt="" class="img-responsive"/></a>
 					<figcaption>
-						<h4>{{ top_6_tags[2].tag_name }}</h4>
-						<p>Marley tried to convince her but she was not interested.</p>
+						<h4>Travel</h4>
+						<p>Recharged with travelling</p>
 					</figcaption>
 				</figure>
 			</div>
@@ -137,32 +137,33 @@
 		<div class="container">
 			<div class="col-md-4">
 				<figure class="effect-marley">
-					<a href="/home/tag/{{ top_6_tags[3].tag_name }}"><img src="/static/img/11.jpg" alt="" class="img-responsive"/></a>
+					<a href="/home/tag/Personal ife"><img src="/static/img/personal.jpg" alt="" class="img-responsive"/></a>
 					<figcaption>
-						<h4>{{ top_6_tags[3].tag_name }}</h4>
-						<p>Marley tried to convince her but she was not interested.</p>
+						<h4>Personal life</h4>
+						<p>Life decisions that matter</p>
 					</figcaption>
 				</figure>
 			</div>
 			<div class="col-md-4">
 				<figure class="effect-marley">
-					<a href="/home/tag/{{ top_6_tags[4].tag_name }}"><img src="/static/img/12.jpg" alt="" class="img-responsive"/></a>
+					<a href="/home/tag/Dating"><img src="/static/img/love.jpg" alt="" class="img-responsive"/></a>
 					<figcaption>
-						<h4>{{ top_6_tags[4].tag_name }}</h4>
-						<p>Marley tried to convince her but she was not interested.</p>
+						<h4>Dating</h4>
+						<p>Love that enlightens life</p>
 					</figcaption>
 				</figure>
 			</div>
 			<div class="col-md-4">
 				<figure class="effect-marley">
-					<a href="/home/tag/{{ top_6_tags[5].tag_name }}"><img src="/static/img/13.jpg" alt="" class="img-responsive"/></a>
+					<a href="/home/tag/Food"><img src="/static/img/food.jpg" alt="" class="img-responsive"/></a>
 					<figcaption>
-						<h4>{{ top_6_tags[5].tag_name }}</h4>
-						<p>Marley tried to convince her but she was not interested.</p>
+						<h4>Food</h4>
+						<p>Eat well, live well</p>
 					</figcaption>
 				</figure>
 			</div>
 		</div>
+		<br>
 		<br>
 		<div class="container">
 			 <div class="text-right">
@@ -170,6 +171,6 @@
 			 </div>
 		</div>
 	</div>
-	{% endif %}
+{#	{% endif %}#}
 	<script src="/static/js/bootstrap.min.js"></script>
 {% endblock %}

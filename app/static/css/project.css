@@ -16,3 +16,10 @@ body {
 .btn-primary {
     color: white;
 }
+
+.carousel-inner>.item>img, .carousel-inner>.item>a>img {
+    width: 1500px;
+    height: 700px;
+
+}
+
