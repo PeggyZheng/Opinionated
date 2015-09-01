@@ -118,29 +118,39 @@
 			</div>
 		</div>
 
-		<div id="decision" class="col-sm-8 col-xs-offset-2">
-            {% if decision is defined %}
-                {% if decision and decision != 0 %}
-					<p>The user has decided to go with: {{ decision.choice_text }}</p>
-                {% elif decision and decision == 0 %}
-					<p>The author has made the decision but he/she likes to keep it secret</p>
-                {% endif %}
-            {% endif %}
-		</div>
+{#		<div id="decision" class="col-sm-8 col-xs-offset-2">#}
+{#            {% if decision is defined %}#}
+{#                {% if decision and decision != 0 %}#}
+{#					<p>The user has decided to go with: {{ decision.choice_text }}</p>#}
+{#                {% elif decision and decision == 0 %}#}
+{#					<p>The author has made the decision but he/she likes to keep it secret</p>#}
+{#                {% endif %}#}
+{#            {% endif %}#}
+{#		</div>#}
 
 	    <div class="col-sm-10 col-xs-offset-1">
 		    <div id="donutchart" style="width: 400px; height: 300px; display: inline-block"></div>
 		    <div id="barchart gender" style="width: 400px; height: 300px; display: inline-block"></div>
 		    <div id="geochart" style="width: 400px; height: 300px; display: inline-block"></div>
 		    <div id="barchart age" style="width: 400px; height: 300px; display: inline-block"></div>
-{#	    </div>#}
-{#	    <div class="col-sm-10 col-xs-offset-1">#}
+
+		    <div class="row" align="center">
+			    {% if decision is defined %}
+                {% if decision and decision != 0 %}
+					<p>The user has decided to go with: <big>{{ decision.choice_text }}</></p>
+                {% elif decision and decision == 0 %}
+					<p>The author has made the decision but he/she likes to keep it secret</p>
+                {% endif %}
+                {% endif %}
+		    </div>
+
 		    <nav>
 			    <ul class="pager">
 				    <li><a href="javascript:" onclick="previousPost({{ post.post_id }}, {{ post_ids }})">previous</a></li>
 				    <li><a href="javascript:" onclick="nextPost({{ post.post_id }}, {{ post_ids }})">next</a></li>
 			    </ul>
 		    </nav>
+
 	    </div>
 
 		<!--Blog Comments-->
@@ -414,7 +424,7 @@
 						$('.no-vote').empty();
 					}
 					for (var choice_id in vote_count_percent) {
-						$('.vote-count-percent-' + choice_id).html("Percentage:" + (vote_count_percent[choice_id]*100).toString() + "%");
+						$('.vote-count-percent-' + choice_id).html("Percentage:" + (vote_count_percent[choice_id]*100).toFixed(2).toString() + "%");
 						$('.vote-count-percent').empty();
 					}
 					$('#total-vote').html(total_votes.toString());

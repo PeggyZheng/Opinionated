@@ -57,25 +57,6 @@ def login():
     return render_template("login.html", top_6_tags=top_6_tags)
 
 
-# @app.route('/login', methods=['POST'])
-# def login_user():
-#     """login page for user"""
-#     email = request.form.get('email')
-#     password = request.form.get('password')
-#
-#     user = User.get_user_by_email(email)
-#     verify_password = user.verify_password(password)
-#
-#     if user:
-#         if verify_password:
-#             flash("Logged in")
-#             session['loggedin'] = user.user_id
-#             return redirect(url_for('show_all_posts'))
-#     else:
-#         flash("Your email or password is wrong, please re-enter")
-#         return redirect(url_for('login'))
-
-
 @app.route('/facebook-login-portal', methods=['POST'])
 def facebook_login():
     """Handles the login from the facebook login button)"""
@@ -98,7 +79,6 @@ def facebook_login():
     if user_details.get('age_range', None):
         age_range = user_details.get('age_range').get('min')
 
-    # age_range = user_details.get('age_range').get('min')
     location = user_details.get('location', None)
     if user_details.get('location', None):
         location = user_details.get('location').get('name')
@@ -154,23 +134,6 @@ def logout_user():
     flash ("You have logged out of Facebook")
     return redirect(url_for('login'))
 
-# @app.route('/signup-portal', methods=['POST'])
-# def signup_portal():
-# 	"""Handles the signup form"""
-#
-# 	email = request.form.get('email')
-# 	password = request.form.get('password')
-# 	user_name = request.form.get('user_name')
-#
-# 	user = User.create(email=email, password=password, user_name=user_name)
-#
-# 	#automatically sign in user after account creation
-# 	session['loggedin'] = user.user_id
-# 	flash('Account successfully created. Welcome to Opinionated!')
-#
-# 	return redirect('/home')
-
-
 
 #######################################################################################################
 # functions that render posts pages
@@ -219,8 +182,6 @@ def show_post_detail(post_id):
     bar_chart_gender = post.bar_chart_gender()
     geochart = post.count_votes_by_location()
     bar_chart_age = post.count_votes_by_age()
-    print bar_chart_age, "this is age data for bar chart"
-
 
     comments = Comment.get_comments_by_post_id(post_id)
     tag_names = [tag.tag_name for tag in Tag.get_tags_by_post_id(post_id)]
