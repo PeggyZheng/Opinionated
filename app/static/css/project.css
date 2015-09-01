@@ -19,7 +19,12 @@ body {
 
 .carousel-inner>.item>img, .carousel-inner>.item>a>img {
     width: 1500px;
-    height: 700px;
+    height: 750px;
 
+}
+
+.container {
+    padding-top: 10px;
+    padding-bottom: 10px;
 }
 

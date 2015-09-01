@@ -167,7 +167,6 @@
 					<input id="comment-submit-button" type="submit" class="btn btn-default">
 				</form>
 			</div>
-			<hr>
 		<!--Posted Comments-->
 
 		<!--Comment-->
@@ -361,7 +360,7 @@
 							"</a> <small>" + result.comment_timestamp + "</small></h4></div>";
 					var form = '<span><form action="/home/comment/' + result.comment_id + '/delete" method="post">' +
 							'<input type="submit" value="Delete comment" class="delete-comment btn btn-default btn-xs"></form></span>';
-					var content = result.content;
+					var content = result.content + "<hr>";
 
 					$('.comments').append(pic + author + form + content);
 					$('#no-comment').empty();
