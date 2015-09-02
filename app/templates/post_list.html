@@ -15,12 +15,13 @@
         <div class="col-xs-4 col-xs-offset-4">
             {% if session.get('loggedin', None) %}
                 <a href="/home?show-all=true">Show all posts</a>
+                <span style="margin-left: 20px"></span>
                 <a href="/home?show-all=false">Show followed posts</a> <!--embed the variable show-all in the url to display different post lists -->
             {% endif %}
         </div>
     </div>
     <div class="row">
-        <div class="col-xs-8">
+        <div class="col-xs-6 col-xs-offset-1">
             {% for post in posts %}
             <div class="row">
                 <div class="span-4 collapse-group">
@@ -32,7 +33,7 @@
                     <p class="lead">
                         by <a href="/home/user/{{post.author_id}}">{{post.author.user_name}}</a>
                     </p>
-                    <p><span class="glyphicon glyphicon-time"></span>Posted on {{post.timestamp | datetimefilter }}</p>
+                    <p><span class="glyphicon glyphicon-time"></span> Posted on {{post.timestamp | datetimefilter }}</p>
 
                     {% if post.state >= 0 %}
                     <p>This question has been closed by its author</p>

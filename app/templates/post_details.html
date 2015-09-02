@@ -8,7 +8,7 @@
 			<div class="col-sm-8 col-xs-offset-2">
 				<!--blog post-->
 				<!--Title-->
-				<h3>{{ post.description }}</h3>
+				<h3 align="left">{{ post.description }}</h3>
 				{% if post.file_name %}
 					<img src="https://s3-us-west-2.amazonaws.com/opinionated/{{ post.file_name }}"
 					     alt="{{ post.description }}" width="auto" height="300">
@@ -20,7 +20,7 @@
 					    <img src="{{ post.author.profile_pic }}" class="img-responsive" height="50" width="50" style="display: inline-block;">
 					    <span class="author-details-inline">
 						<a href="/home/user/{{ post.author.user_id }}">{{ post.author.user_name }}</a>
-						<span><span class="glyphicon glyphicon-time"></span>Posted on {{ post.timestamp | datetimefilter }}</span>
+						<span><span class="glyphicon glyphicon-time"></span> Posted on {{ post.timestamp | datetimefilter }}</span>
 					    </span>
 				    </span>
 {#				<!--Date/Time and vote count -->#}
@@ -47,7 +47,7 @@
 
 
 				<!-- Your share button code -->
-
+                    <span></span>
 					<button type="button" id="fb-share" class="btn btn-default" style="display: inline-block; float: right">
 						<span class="glyphicon glyphicon-share" aria-hidden="true" title="share to Facebook"></span>
 					</button>
@@ -69,24 +69,24 @@
 					    <div class="btn-group" data-toggle="buttons"> <!--a button group that turns the option into clickable button-->
 						    {% for choice in choices %}
 							     <div class="col-sm-6">
-							     <label class="btn btn-block">
-								    {% if choice.choice_text and choice.file_name %}
-									<input type="radio" name="choice_id" value="{{ choice.choice_id }}" class="choice">
-                                    <h4>{{ choice.choice_text }}</h4><br>
-									<img src="https://s3-us-west-2.amazonaws.com/opinionated/{{ choice.file_name }}"
-									     alt="{{ choice.choice_text }}" width="auto" height="300">
+								     <label class="btn btn-block" style="white-space: normal">
+									    {% if choice.choice_text and choice.file_name %}
+										<input type="radio" name="choice_id" value="{{ choice.choice_id }}" class="choice">
+	                                    <h4>{{ choice.choice_text }}</h4><br>
+										<img src="https://s3-us-west-2.amazonaws.com/opinionated/{{ choice.file_name }}"
+										     alt="{{ choice.choice_text }}" width="auto" height="300">
 
-                                    {% elif choice.file_name %}
-									<input type="radio" name="choice_id" value="{{ choice.choice_id }}" class="choice">
-									<h4>choice {{ choices.index(choice) + 1 }}</h4><br>
-									<img src="https://s3-us-west-2.amazonaws.com/opinionated/{{ choice.file_name }}"
-									     alt="{{ choice.file_name }}" width="auto" height="300">
+	                                    {% elif choice.file_name %}
+										<input type="radio" name="choice_id" value="{{ choice.choice_id }}" class="choice">
+										<h4>choice {{ choices.index(choice) + 1 }}</h4><br>
+										<img src="https://s3-us-west-2.amazonaws.com/opinionated/{{ choice.file_name }}"
+										     alt="{{ choice.file_name }}" width="auto" height="300">
 
-                                    {% else %}
-	                                <input type="radio" name="choice_id" value="{{ choice.choice_id }}" class="choice">
-                                    <h4>{{ choice.choice_text }}</h4>
-                                    {% endif %}
-							     </label>
+	                                    {% else %}
+		                                <input type="radio" name="choice_id" value="{{ choice.choice_id }}" class="choice">
+	                                    <h4>{{ choice.choice_text }}</h4>
+	                                    {% endif %}
+								     </label>
 								   <div class="caption">
 			                            <span class="vote-count-{{ choice.choice_id }}">
 			                            {% if vote_dict is defined %}
@@ -104,7 +104,6 @@
 											<p class="no-vote">No one has vote yet</p>
 			                            {% endif %}
 								   </div>
-
 							    </div>
 						    {% endfor %}
 					    </div>
