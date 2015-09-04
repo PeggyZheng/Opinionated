@@ -11,8 +11,6 @@ import facebook
 import json
 from decorators import login_required
 
-
-
 app = Flask(__name__)
 
 # Required to use Flask sessions and the debug toolbar
@@ -42,6 +40,7 @@ def datetimefilter(value, format='%Y/%m/%d %H:%M'):
     """convert a datetime to a different format."""
     return value.strftime(format)
 
+
 app.jinja_env.filters['datetimefilter'] = datetimefilter
 
 #######################################################################################################
@@ -67,8 +66,9 @@ def facebook_login():
     print type(user_id)
     graph = facebook.GraphAPI(access_token=current_access_token)
     friends = graph.get_connections(id='me', connection_name='friends')
-    profile_pic = graph.get_connections(id='me', connection_name='picture')['url'] #Todo: this line seems to be very slow,try
-    user_details= graph.get_object(id=user_id, fields='name, email, gender, age_range, birthday, location')
+    profile_pic = graph.get_connections(id='me', connection_name='picture')[
+        'url']  # Todo: this line seems to be very slow,try
+    user_details = graph.get_object(id=user_id, fields='name, email, gender, age_range, birthday, location')
 
     user_id = int(user_id)
     name = user_details.get('name')
@@ -105,25 +105,28 @@ def facebook_login():
                         user.follow(friend)
 
         flash('Thanks for logging into Opinionated')
-        return redirect('/home') # the return is not needed because this is a json post, do redirect in json
+        return redirect('/home')  # the return is not needed because this is a json post, do redirect in json
 
 
     else:
         # todo: need to generate random password for facebook user, password cannot be None
         new_user = User.create(user_id=user_id, email=email, user_name=name, age_range=int(age_range),
-                               gender=gender, location=location, password="", friend_ids=friend_ids, profile_pic=profile_pic)
+                               gender=gender, location=location, password="", friend_ids=friend_ids,
+                               profile_pic=profile_pic)
         session["loggedin"] = new_user.user_id
         session["current_access_token"] = current_access_token
         flash("Thanks for logging into Opinionated")
         return redirect("/home")
 
+
 def parsing_friends_data(friends):
     """parsing the data received from graph api call to return only the ids of the friends"""
     friend_data = friends.get('data', None)
     if friend_data:
-        return [int(friend['id']) for friend in friend_data] # turn the fb id into integer
+        return [int(friend['id']) for friend in friend_data]  # turn the fb id into integer
     else:
         return []
+
 
 @app.route('/logout')
 def logout_user():
@@ -131,7 +134,7 @@ def logout_user():
     session.pop('loggedin', None)
     flash("You have logged out")
     session.pop("current_access_token", None)
-    flash ("You have logged out of Facebook")
+    flash("You have logged out of Facebook")
     return redirect(url_for('login'))
 
 
@@ -161,8 +164,7 @@ def show_all_posts():
         session["post_ids"] = [post.post_id for post in posts_all]
     tags = Tag.sort_all_tags_by_popularity()
 
-    posts = pagination.items #the records in the current page
-
+    posts = pagination.items  # the records in the current page
 
     return render_template('post_list.html', posts=posts, tags=tags, pagination=pagination)
 
@@ -186,21 +188,20 @@ def show_post_detail(post_id):
     comments = Comment.get_comments_by_post_id(post_id)
     tag_names = [tag.tag_name for tag in Tag.get_tags_by_post_id(post_id)]
     post_ids = session.get("post_ids", None)
-    state = post.state #this gives a choice_id or Null, for displaying the decision the author has made
+    state = post.state  # this gives a choice_id or Null, for displaying the decision the author has made
     decision = None
     if state:
         decision = Choice.get_choice_by_id(state)
 
     if if_voted:
         return render_template('post_details.html', post=post, choices=choices, vote_dict=vote_dict,
-                       comments=comments, total_votes=total_votes, tag_names=tag_names,
-                       post_ids=post_ids, chart_dict=chart_dict, decision=decision, bar_chart_gender=bar_chart_gender,
-                       geochart=geochart, bar_chart_age=bar_chart_age)
+                               comments=comments, total_votes=total_votes, tag_names=tag_names,
+                               post_ids=post_ids, chart_dict=chart_dict, decision=decision,
+                               bar_chart_gender=bar_chart_gender,
+                               geochart=geochart, bar_chart_age=bar_chart_age)
     else:
         return render_template('post_details.html', post=post, choices=choices, comments=comments, post_ids=post_ids,
                                tag_names=tag_names, total_votes=total_votes)
-
-
 
 
 @app.route('/home/post/<int:post_id>/share', methods=['POST'])
@@ -216,13 +217,14 @@ def share_post_fb(post_id):
             'link': 'http://a6baa6c4.ngrok.io/home/post/%d' % post_id,
             'caption': 'Check out this new question I just posted',
             'description': 'This is an app that smooths out decision making process',
-            'picture':''
+            'picture': ''
         }
 
         graph.put_wall_post(message='Check this out', attachment=attachment)
         return json.dumps("Successfully posted")
     else:
         return json.dumps("Please logged in first")
+
 
 @app.route("/home/post/<int:post_id>/decide", methods=['POST'])
 def update_decision(post_id):
@@ -240,6 +242,8 @@ def update_decision(post_id):
         decision_file = ""
 
     return jsonify(decision_text=decision_text, decision_file=decision_file)
+
+
 #######################################################################################################
 # functions that render users profile
 
@@ -293,7 +297,7 @@ def follow(user_id):
     viewer_id = session.get('loggedin')
     viewer = User.get_user_by_id(viewer_id)
     if user is None:
-        flash ('Invalid user.')
+        flash('Invalid user.')
         return redirect(url_for('show_all_posts'))
     if viewer.is_following(user):
         flash('You are already following %s' % user.user_name)
@@ -310,7 +314,7 @@ def unfollow(user_id):
     viewer_id = session.get('loggedin')
     viewer = User.get_user_by_id(viewer_id)
     if user is None:
-        flash ('Invalid user.')
+        flash('Invalid user.')
     if viewer.is_following(user):
         viewer.unfollow(user)
         flash('You are now not following %s' % user.user_name)
@@ -341,13 +345,12 @@ def followeds(user_id):
     return render_template('followeds.html', followeds=followeds, user=user)
 
 
-
 #######################################################################################################
 # functions that handles votes
 
 
 @app.route('/home/post/<int:post_id>/refresh', methods=['POST'])
-#@login_required #add the decorator so if user is trying to vote without logging in, they will be directed to login page
+# @login_required #add the decorator so if user is trying to vote without logging in, they will be directed to login page
 def process_vote(post_id):
     """this is the function that process users' votes, so it updates the database and refresh the post-details
     page to show the updated votes and vote allocation"""
@@ -358,12 +361,12 @@ def process_vote(post_id):
         post = Post.get_post_by_id(post_id)
         previous_vote = post.check_choice_on_post_by_user_id(user_id)
 
-        if previous_vote: # if there is a previous vote, compare to the new vote see if they pointed to the same choice, update vote
+        if previous_vote:  # if there is a previous vote, compare to the new vote see if they pointed to the same choice, update vote
             if previous_vote != choice_id:
                 vote_id = Vote.get_vote_by_post_and_user_id(post.post_id, user_id)
                 Vote.update_vote(vote_id, choice_id)
         else:
-            Vote.create(user_id=user_id, choice_id=choice_id) #if it's first time vote, create a new vote
+            Vote.create(user_id=user_id, choice_id=choice_id)  # if it's first time vote, create a new vote
 
         vote_dict, total_votes, chart_dict = post.count_votes()
 
@@ -374,8 +377,9 @@ def process_vote(post_id):
         for vote in vote_dict:
             total_votes_percent[vote] = float(vote_dict[vote]) / total_votes
 
-        return json.dumps([vote_dict, total_votes_percent, total_votes, chart_dict, bar_chart_gender, geo_chart_location,
-                           bar_chart_age])
+        return json.dumps(
+            [vote_dict, total_votes_percent, total_votes, chart_dict, bar_chart_gender, geo_chart_location,
+             bar_chart_age])
     else:
         return json.dumps("undefined")
 
@@ -389,7 +393,6 @@ def post_question():
     """This is the render the page that users can edit their questions/posts """
     tag_names = [str(tag.tag_name) for tag in Tag.get_all_tags()]
     return render_template("post_question.html", tag_names=tag_names)
-
 
 
 @app.route('/home/post/process', methods=['GET', 'POST'])
@@ -410,10 +413,12 @@ def process_question():
 
     choice_data = [(text_option1, fileupload1), (text_option2, fileupload2)]
 
-    Post.create(author_id=author_id, description=description, tag_list=tags, choice_data=choice_data, file_name=file_name)
+    Post.create(author_id=author_id, description=description, tag_list=tags, choice_data=choice_data,
+                file_name=file_name)
     flash('Your question has been posted')
 
     return redirect(url_for('user_profile', user_id=author_id))
+
 
 #######################################################################################################
 # functions that handles deleting an existing post
@@ -459,7 +464,6 @@ def delete_comment(comment_id):
     return redirect(url_for('show_post_detail', post_id=post_id))
 
 
-
 #######################################################################################################
 
 @app.route('/home/search', methods=['GET', 'POST'])
@@ -492,7 +496,7 @@ def post_by_tag(tag_name):
 if __name__ == "__main__":
     # We have to set debug=True here, since it has to be True at the point
     # that we invoke the DebugToolbarExtension
-    app.debug = True
+    app.debug = False
 
     connect_to_db(app)
 
