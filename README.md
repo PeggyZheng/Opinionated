@@ -1,5 +1,7 @@
 # Opinionated
 
+![Alt Text](http://g.recordit.co/RQqCcgDayI.gif)<br><br>
+![Alt Text](http://g.recordit.co/DgcZyadFBy.gif)<br><br>
 Opinionated is social networking web app where users can post a question or a decision they need to make and let other users help through voting. Afte the users log in, they can post a question with text descriptions, choices, and images (stored on Amazon S3), as well as a tag associated with the question. Other users will be able to vote on the question and see a visual representation of the voting result instantly. Users could also leave comments and follow other users to engage with each other. 
 Built by <a href="https://www.linkedin.com/in/peggyzheng">Peggy Zheng</a> as part of her Hackbright Final Project
 
