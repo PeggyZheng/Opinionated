@@ -8,6 +8,7 @@ from boto.s3.connection import S3Connection
 from boto.s3.key import Key
 import os
 import hashlib
+import psycopg2, urlparse
 
 
 # This is the connection to the SQLite database; we're getting this through
@@ -684,8 +685,9 @@ def connect_to_db(app):
     # Configure to use our SQLite database
     # sqllite
     # app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///opinionated.db'
-    # psql
-    app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get("DATABASE_URL", 'postgresql:///opinionated')
+
+
+    app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get("HEROKU_POSTGRESQL_BLUE_URL", 'postgresql:///opinionated')
     db.app = app
     db.init_app(app)
 
