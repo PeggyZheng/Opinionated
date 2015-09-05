@@ -239,7 +239,7 @@ class Comment(db.Model):
 
     comment_id = db.Column(db.Integer, autoincrement=True, primary_key=True)
     content = db.Column(db.Text, nullable=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('users.user_id'), nullable=False)
+    user_id = db.Column(db.BigInteger, db.ForeignKey('users.user_id'), nullable=False)
     post_id = db.Column(db.Integer, db.ForeignKey('posts.post_id'), nullable=False)
     timestamp = db.Column(db.TIMESTAMP, index=True, default=datetime.utcnow())
 
@@ -278,7 +278,7 @@ class Post(db.Model):
     __tablename__ = 'posts'
 
     post_id = db.Column(db.Integer, autoincrement=True, primary_key=True)
-    author_id = db.Column(db.Integer, db.ForeignKey('users.user_id'), nullable=False)
+    author_id = db.Column(db.BigInteger, db.ForeignKey('users.user_id'), nullable=False)
     description = db.Column(db.Text)
     file_name = db.Column(db.String(250))  # user can also upload a file in question body
     state = db.Column(db.Integer) # this can be null (undecided) or a specific choice id
@@ -519,7 +519,7 @@ class Vote(db.Model):
     __tablename__ = 'votes'
 
     vote_id = db.Column(db.Integer, autoincrement=True, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('users.user_id'), nullable=False)
+    user_id = db.Column(db.BigInteger, db.ForeignKey('users.user_id'), nullable=False)
     choice_id = db.Column(db.Integer, db.ForeignKey('choices.choice_id'), nullable=False)
     timestamp = db.Column(db.TIMESTAMP, default=datetime.utcnow())
 
@@ -682,7 +682,10 @@ def connect_to_db(app):
     """Connect the database to our Flask app."""
 
     # Configure to use our SQLite database
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///opinionated.db'
+    # sqllite
+    # app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///opinionated.db'
+    # psql
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://localhost/opinionated'
     db.app = app
     db.init_app(app)
 
