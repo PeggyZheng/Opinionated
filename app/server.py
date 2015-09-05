@@ -214,7 +214,7 @@ def share_post_fb(post_id):
         graph = facebook.GraphAPI(access_token=current_access_token)
         attachment = {
             'name': 'Opinionated',
-            'link': 'http://a6baa6c4.ngrok.io/home/post/%d' % post_id,
+            'link': 'http://opinionatedpeggy.herokuapp.com/home/post/%d' % post_id,
             'caption': 'Check out this new question I just posted',
             'description': 'This is an app that smooths out decision making process',
             'picture': ''
