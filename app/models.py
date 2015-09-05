@@ -685,7 +685,7 @@ def connect_to_db(app):
     # sqllite
     # app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///opinionated.db'
     # psql
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://localhost/opinionated'
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql:///opinionated'
     db.app = app
     db.init_app(app)
 
