@@ -497,7 +497,7 @@ if __name__ == "__main__":
     # We have to set debug=True here, since it has to be True at the point
     # that we invoke the DebugToolbarExtension
     #
-    DEBUG = "NO_DEBUG" not in os.environ
+    # DEBUG = "NO_DEBUG" not in os.environ
     PORT = int(os.environ.get('PORT', 5000))
 
     connect_to_db(app)
@@ -505,4 +505,4 @@ if __name__ == "__main__":
     # Use the DebugToolbar
     DebugToolbarExtension(app)
 
-    app.run(debug=DEBUG, host="0.0.0.0", port=PORT)
+    app.run(debug=True, host="0.0.0.0", port=PORT)
