@@ -9,6 +9,7 @@ import os
 from flask import jsonify
 import facebook
 import json
+
 from decorators import login_required
 
 app = Flask(__name__)
