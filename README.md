@@ -1,4 +1,5 @@
 # Opinionated
+The app is live! Check it out <a href="https://opinionatedpeggy.herokuapp.com/">here</a>!
 
 ![Alt Text](http://g.recordit.co/RQqCcgDayI.gif)<br><br>
 ![Alt Text](http://g.recordit.co/DgcZyadFBy.gif)<br><br>
